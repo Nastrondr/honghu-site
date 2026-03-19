@@ -6,10 +6,11 @@ const CompetitionDetail = () => {
   const [isRewardsOpen, setIsRewardsOpen] = useState(false);
   
   const competition = {
-    title: '2024年梧桐·鸿鹄人工智能应用创新大赛',
+    title: '梧桐·鸿鹄人工智能应用创新大赛-武汉纺织大学赛区',
     status: '进行中',
-    date: '2024年10月15日 - 2024年12月31日',
-    location: '线上',
+    organizer: '武汉纺织大学',
+    date: '2025.4-2026.3',
+    location: '武汉纺织大学',
     description: '面向全国的人工智能应用创新大赛，鼓励选手开发具有实际应用价值的AI解决方案。',
     tracks: [
       {
@@ -242,167 +243,46 @@ const CompetitionDetail = () => {
               </div>
             </div>
             
-
             
-            <div className="mb-10">
+            
+            <div className="mb-20">
               <h2 className="text-2xl font-semibold text-neutral-800 mb-4">赛事简介</h2>
-              <p className="text-neutral-600 mb-4">
-                {competition.description}
-              </p>
-              <p className="text-neutral-600 mb-4">
+              <p className="text-neutral-600">
                 本次大赛旨在推动人工智能技术在各行业的应用落地，鼓励创新思维和实践能力。通过比赛平台，参赛选手可以展示自己的技术实力和创新想法，获得专业指导和资源支持。
               </p>
-              <p className="text-neutral-600">
-                大赛面向全国高校学生、科研机构和企业团队，欢迎所有对人工智能创新有热情的个人和团队参与。我们期待通过本次大赛，发现和培养更多AI领域的优秀人才，推动人工智能技术的创新发展。
-              </p>
             </div>
             
-
             
-            <div className="mb-10">
+            
+            <div className="mb-20">
               <h2 className="text-2xl font-semibold text-neutral-800 mb-6">赛程安排</h2>
-              <div className="relative">
-                {/* 横向进度线 */}
-                <div className="hidden md:block absolute top-6 left-0 right-0 h-0.5 bg-neutral-200"></div>
-                
-                {/* 横向时间轴 */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-0">
-                  {[
-                    { phase: '报名阶段', time: '2024.10.15 – 11.30' },
-                    { phase: '初赛评审', time: '2024.12.01 – 12.15' },
-                    { phase: '复赛路演', time: '2024.12.20 – 12.25' },
-                    { phase: '决赛展示', time: '2024.12.31 – 12.31' }
-                  ].map((item, index) => (
-                    <div key={index} className="relative text-center md:px-4 flex flex-col items-center">
-                      {/* 节点 */}
-                      <div className="flex justify-center mb-4">
-                        <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold">
-                          {index + 1}
-                        </div>
-                      </div>
-                      
-                      {/* 内容 */}
-                      <div className="flex flex-col items-center">
-                        <h3 className="text-lg font-semibold text-neutral-800 mb-2">{item.phase}</h3>
-                        <p className="text-sm text-neutral-500">{item.time}</p>
-                      </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { phase: '报名阶段', time: '2025.4-5', status: 'completed' },
+                  { phase: '初赛', time: '2025.6', status: 'current' },
+                  { phase: '决赛', time: '2025.9', status: 'pending' },
+                  { phase: '成果支持', time: '2025.10-12', status: 'pending' }
+                ].map((item, index) => (
+                  <div key={index} className="text-center">
+                    <div className={`text-base font-semibold mb-1 ${item.status === 'current' ? 'text-primary' : item.status === 'completed' ? 'text-neutral-800' : 'text-neutral-500'}`}>
+                      {item.phase}
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            
-            <div className="mb-10">
-              <h2 className="text-2xl font-semibold text-neutral-800 mb-6">奖项设置</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                <div className="bg-neutral-50 rounded-xl p-4">
-                  <h3 className="text-lg font-semibold text-neutral-800 mb-2">一等奖</h3>
-                  <p className="text-sm text-neutral-600">100元算力券 + 1500元培训券 + 获奖证书</p>
-                </div>
-                <div className="bg-neutral-50 rounded-xl p-4">
-                  <h3 className="text-lg font-semibold text-neutral-800 mb-2">二等奖</h3>
-                  <p className="text-sm text-neutral-600">100元算力券 + 1000元培训券 + 获奖证书</p>
-                </div>
-                <div className="bg-neutral-50 rounded-xl p-4">
-                  <h3 className="text-lg font-semibold text-neutral-800 mb-2">三等奖</h3>
-                  <p className="text-sm text-neutral-600">100元通信算力券 + 获奖证书</p>
-                </div>
-                <div className="bg-neutral-50 rounded-xl p-4">
-                  <h3 className="text-lg font-semibold text-neutral-800 mb-2">国赛奖励</h3>
-                  <p className="text-sm text-neutral-600">最高100000元通用算力券</p>
-                </div>
-              </div>
-              
-              {/* 引导行 */}
-              <div className="text-center mb-4">
-                <button onClick={() => setIsRewardsOpen(!isRewardsOpen)} className="text-primary font-medium flex items-center justify-center gap-2 hover:underline transition-colors">
-                  查看完整奖励规则
-                  <svg className={`w-5 h-5 transition-transform ${isRewardsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              </div>
-              
-              {/* 奖励细则 - 可折叠模块 */}
-              <div className={`bg-neutral-50 rounded-xl p-6 border border-neutral-200 overflow-hidden transition-all duration-300 ease-in-out ${isRewardsOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                <div className="space-y-6">
-                  {/* 参赛者奖励 */}
-                  <div>
-                    <h3 className="text-xl font-semibold text-neutral-800 mb-4">参赛者奖励</h3>
-                    
-                    <div className="mb-4">
-                      <h4 className="text-lg font-medium text-neutral-800 mb-2">基础奖励：</h4>
-                      <ul className="list-disc pl-6 space-y-2 text-neutral-600">
-                        <li>所有报名参赛者：获得100元通信算力券</li>
-                      </ul>
+                    <div className="text-sm text-neutral-500 mb-3">
+                      {item.time}
                     </div>
-                    
-                    <div className="mb-4">
-                      <h4 className="text-lg font-medium text-neutral-800 mb-2">校区赛 & 决赛奖励：</h4>
-                      <ul className="list-disc pl-6 space-y-2 text-neutral-600">
-                        <li>前10名（个人）/ 前3名（团队） → 100元算力券 + 1500元培训券 + 获奖证书</li>
-                        <li>第11–100名（个人）/ 第4–10名（团队） → 100元算力券 + 1000元培训券 + 获奖证书</li>
-                      </ul>
-                    </div>
-                    
-                    <div className="mb-4">
-                      <h4 className="text-lg font-medium text-neutral-800 mb-2">省赛晋级奖励：</h4>
-                      <ul className="list-disc pl-6 space-y-2 text-neutral-600">
-                        <li>校区赛第1名（个人 / 团队） → 100元算力券 + 2500元培训券 + 获奖证书</li>
-                      </ul>
-                    </div>
-                    
-                    <div>
-                      <h4 className="text-lg font-medium text-neutral-800 mb-2">国赛奖励：</h4>
-                      <div className="mb-3">
-                        <h5 className="font-medium text-neutral-700 mb-2">个人赛：</h5>
-                        <ul className="list-disc pl-6 space-y-2 text-neutral-600">
-                          <li>第1名：50000元通用算力券</li>
-                          <li>第2名：20000元通用算力券</li>
-                          <li>第3名：10000元通用算力券</li>
-                        </ul>
-                      </div>
-                      <div>
-                        <h5 className="font-medium text-neutral-700 mb-2">团队赛：</h5>
-                        <ul className="list-disc pl-6 space-y-2 text-neutral-600">
-                          <li>第1名：100000元通用算力券</li>
-                          <li>第2名：40000元通用算力券</li>
-                          <li>第3名：20000元通用算力券</li>
-                        </ul>
-                      </div>
+                    <div className="h-1.5 rounded-full bg-neutral-200 overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full transition-all ${item.status === 'completed' ? 'bg-primary w-full' : item.status === 'current' ? 'bg-primary w-2/3' : 'bg-neutral-200 w-0'}`}
+                      ></div>
                     </div>
                   </div>
-                  
-                  {/* 指导教师奖励 */}
-                  <div>
-                    <h3 className="text-xl font-semibold text-neutral-800 mb-4">指导教师奖励</h3>
-                    <ul className="list-disc pl-6 space-y-2 text-neutral-600">
-                      <li>入围国赛团队指导教师 → 优秀指导教师称号 + 5000元通用算力券</li>
-                    </ul>
-                  </div>
-                  
-                  {/* 参赛学校奖励 */}
-                  <div>
-                    <h3 className="text-xl font-semibold text-neutral-800 mb-4">参赛学校奖励</h3>
-                    <ul className="list-disc pl-6 space-y-2 text-neutral-600">
-                      <li>各省参与人数排名前三高校 → 优秀组织单位称号 → 推荐成为省赛及国赛承办单位</li>
-                    </ul>
-                  </div>
-                  
-                  {/* 命题赛道奖励 */}
-                  <div>
-                    <h3 className="text-xl font-semibold text-neutral-800 mb-4">命题赛道奖励</h3>
-                    <ul className="list-disc pl-6 space-y-2 text-neutral-600">
-                      <li>由政府、企业及高校根据具体赛道单独设置奖励</li>
-                    </ul>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
             
 
             
-            <div className="mb-10">
+            <div className="mb-20">
               <h2 className="text-2xl font-semibold text-neutral-800 mb-6">作品提交要求</h2>
               <div className="space-y-4">
                 {competition.submissionRequirements.map((req, index) => (
@@ -423,7 +303,7 @@ const CompetitionDetail = () => {
             
 
             
-            <div className="mb-10">
+            <div className="mb-20">
               <h2 className="text-2xl font-semibold text-neutral-800 mb-6">评审标准</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {competition.evaluationCriteria.map((criterion, index) => (

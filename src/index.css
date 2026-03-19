@@ -11,12 +11,121 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --motion-fast: 0.2s;
+  --motion-normal: 0.3s;
+  --motion-slow: 0.6s;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+}
+
+@media (min-width: 1025px) {
+  body {
+    cursor: none;
+  }
+  
+  a, button, [role="button"], .cursor-pointer {
+    cursor: pointer;
+  }
+  
+  input, textarea, select, [contenteditable="true"] {
+    cursor: auto;
+  }
+}
+
+/* 全局浅色渐变背景 */
+body {
+  background: 
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 70% 50% at 80% 90%, rgba(116, 99, 236, 0.06) 0%, transparent 50%),
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #f8fafc 100%);
+  background-attachment: fixed;
+  background-size: 100% 100%;
+}
+
+/* 玻璃卡片基础样式 */
+.glass-card {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all var(--motion-normal) var(--ease-standard);
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.06);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+/* 玻璃卡片深色变体 */
+.glass-card-dark {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.04);
+  transition: all var(--motion-normal) var(--ease-standard);
+}
+
+.glass-card-dark:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px -6px rgba(0, 0, 0, 0.08);
+}
+
+/* 玻璃下拉菜单 */
+.glass-dropdown {
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 14px;
+  box-shadow: 0 8px 32px -4px rgba(59, 130, 246, 0.12), 0 4px 16px -4px rgba(0, 0, 0, 0.08);
+  padding: 8px;
+  overflow: hidden;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #374151;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+  position: relative;
+}
+
+.dropdown-item:hover {
+  background: rgba(116, 99, 236, 0.08);
+  color: #7463EC;
+  transform: translateX(4px);
+}
+
+.dropdown-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(116, 99, 236, 0.1);
+  color: #7463EC;
+}
+
+.dropdown-icon svg {
+  width: 16px;
+  height: 16px;
 }
 
 #root {
@@ -37,16 +146,168 @@ body {
   }
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
 .animate-fadeIn {
-  animation: fadeIn 0.6s ease-out forwards;
+  animation: fadeIn var(--motion-slow) var(--ease-standard) forwards;
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp var(--motion-slow) var(--ease-standard) forwards;
+  opacity: 0;
+}
+
+.animate-delay-100 {
+  animation-delay: 0.1s;
+}
+
+.animate-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animate-delay-300 {
+  animation-delay: 0.3s;
+}
+
+.animate-delay-400 {
+  animation-delay: 0.4s;
+}
+
+.animate-delay-500 {
+  animation-delay: 0.5s;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.hero-glow {
+  box-shadow: 0 0 40px rgba(59, 130, 246, 0), 0 0 80px rgba(59, 130, 246, 0);
+  transition: all var(--motion-normal) var(--ease-standard);
+}
+
+.hero-glow:hover {
+  box-shadow: 0 0 40px rgba(59, 130, 246, 0.4), 0 0 80px rgba(59, 130, 246, 0.2);
+  transform: scale(1.05);
 }
 
 /* 为所有卡片添加统一的 hover 效果 */
 .card-hover {
-  transition: all 0.3s ease;
+  transition: all var(--motion-normal) var(--ease-standard);
 }
 
 .card-hover:hover {
   transform: translateY(-4px);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.transition-standard {
+  transition: all var(--motion-normal) var(--ease-standard);
+}
+
+.transition-fast {
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+
+.transition-slow {
+  transition: all var(--motion-slow) var(--ease-standard);
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes page-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes page-scale-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+
+.track-card {
+  position: relative;
+  background: white;
+  border: 1px solid transparent;
+  transition: all 0.4s var(--ease-standard);
+  overflow: hidden;
+}
+
+.track-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(116, 99, 236, 0.05) 0%, rgba(252, 115, 36, 0.05) 50%, rgba(116, 99, 236, 0.1) 100%);
+  background-size: 200% 200%;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-standard);
+  z-index: 0;
+}
+
+.track-card:hover {
+  border-color: rgba(116, 99, 236, 0.3);
+  box-shadow: 0 0 20px rgba(116, 99, 236, 0.15), 0 0 40px rgba(116, 99, 236, 0.1);
+  transform: translateY(-4px);
+}
+
+.track-card:hover::before {
+  opacity: 1;
+  animation: gradient-shift 3s ease infinite;
+}
+
+.track-card:active {
+  transform: scale(0.98);
+}
+
+.track-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.page-enter {
+  animation: page-scale-in 0.4s var(--ease-standard) forwards;
+}
+
+.page-exit {
+  animation: page-scale-out 0.4s var(--ease-standard) forwards;
 }

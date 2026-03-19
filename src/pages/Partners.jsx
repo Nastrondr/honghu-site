@@ -3,6 +3,91 @@ import { Link } from 'react-router-dom';
 import PrimaryButton from '../components/common/PrimaryButton';
 import SecondaryButton from '../components/common/SecondaryButton';
 
+const universities = [
+  { name: '中国科学院大学', type: 'university' },
+  { name: '重庆理工大学', type: 'university' },
+  { name: '北方工业大学', type: 'university' },
+  { name: '汕头大学', type: 'university' },
+  { name: '安徽师范大学', type: 'university' },
+  { name: '广东工业大学', type: 'university' },
+  { name: '南京邮电大学', type: 'university' },
+  { name: '华南师范大学', type: 'university' },
+  { name: '深圳大学', type: 'university' },
+  { name: '北京邮电大学', type: 'university' },
+  { name: '暨南大学', type: 'university' },
+  { name: '北京交通大学', type: 'university' },
+  { name: '华南理工大学', type: 'university' },
+  { name: '南开大学', type: 'university' },
+  { name: '北京师范大学', type: 'university' },
+  { name: '北京理工大学', type: 'university' },
+  { name: '北京航空航天大学', type: 'university' },
+  { name: '中山大学', type: 'university' },
+  { name: '华中科技大学', type: 'university' },
+  { name: '南京大学', type: 'university' },
+  { name: '西安电子科技大学', type: 'university' },
+  { name: '东南大学', type: 'university' },
+  { name: '浙江大学', type: 'university' },
+  { name: '长沙理工大学', type: 'university' },
+  { name: '珠海科技学院', type: 'university' },
+  { name: '复旦大学', type: 'university' },
+  { name: '湖南大学', type: 'university' },
+  { name: '中南大学', type: 'university' },
+  { name: '华中师范大学', type: 'university' },
+  { name: '河北师范大学', type: 'university' },
+  { name: '天津大学', type: 'university' },
+  { name: '北京工业大学', type: 'university' },
+  { name: '北京石油化工学院', type: 'university' },
+  { name: '长沙民政职业技术学院', type: 'university' },
+  { name: '宿州学院', type: 'university' },
+  { name: '连云港职业技术学院', type: 'university' },
+  { name: '宿迁泽达职业技术学院', type: 'university' },
+  { name: '扬州工业职业技术学院', type: 'university' },
+  { name: '上海闵行职业技术学院', type: 'university' },
+  { name: '江苏农林职业技术学院', type: 'university' },
+  { name: '南通职业大学', type: 'university' },
+  { name: '宁夏理工学院', type: 'university' },
+  { name: '河南机电职业学院', type: 'university' },
+  { name: '郑州铁路职业技术学院', type: 'university' }
+];
+
+const companies = [
+  { name: '华为', type: 'company' },
+  { name: '文思海辉', type: 'company' },
+  { name: '亚信科技', type: 'company' },
+  { name: '东软', type: 'company' },
+  { name: '嘉环', type: 'company' },
+  { name: '中安国发', type: 'company' },
+  { name: '帆软软件', type: 'company' },
+  { name: '中兴', type: 'company' },
+  { name: '启明星辰', type: 'company' },
+  { name: '浪潮', type: 'company' },
+  { name: '商汤科技', type: 'company' },
+  { name: '科大讯飞', type: 'company' },
+  { name: '天融信', type: 'company' },
+  { name: '奇安信', type: 'company' },
+  { name: '绿盟科技', type: 'company' },
+  { name: '富数科技', type: 'company' },
+  { name: '网神', type: 'company' },
+  { name: '偶数科技', type: 'company' },
+  { name: '天玑科技', type: 'company' },
+  { name: '彩讯股份', type: 'company' },
+  { name: '南大通用', type: 'company' },
+  { name: '浩鲸科技', type: 'company' },
+  { name: '智行科技', type: 'company' },
+  { name: '观安信息', type: 'company' },
+  { name: '东方国信', type: 'company' },
+  { name: '超亮科技', type: 'company' },
+  { name: '华胜天成', type: 'company' },
+  { name: '九章云极', type: 'company' },
+  { name: '神州泰岳', type: 'company' },
+  { name: '深度零', type: 'company' },
+  { name: '卓望', type: 'company' },
+  { name: '领航动力', type: 'company' },
+  { name: '新大陆软件', type: 'company' },
+  { name: '明通科技', type: 'company' },
+  { name: '龙盾数据', type: 'company' }
+];
+
 const Partners = () => {
   return (
     <div className="min-h-screen bg-neutral-50 animate-fadeIn">
@@ -96,11 +181,14 @@ const Partners = () => {
           {/* 产业合作单位 */}
           <div className="mb-16">
             <h3 className="text-xl font-medium text-neutral-800 mb-6">产业合作单位</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="bg-white rounded-xl shadow-sm p-6 border border-neutral-100 flex items-center justify-center hover:shadow-md transition-shadow">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10">
+              {companies.map((company, index) => (
+                <div 
+                  key={index} 
+                  className="bg-white rounded-xl shadow-sm p-6 border border-neutral-100 flex items-center justify-center hover:shadow-md transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(116,99,236,0.2)] opacity-70 hover:opacity-100"
+                >
                   <div className="w-20 h-20 bg-neutral-100 rounded-lg flex items-center justify-center">
-                    <span className="text-neutral-500 text-sm">科技企业{i}</span>
+                    <span className="text-neutral-500 text-sm text-center">{company.name}</span>
                   </div>
                 </div>
               ))}
@@ -110,11 +198,14 @@ const Partners = () => {
           {/* 教育合作单位 */}
           <div>
             <h3 className="text-xl font-medium text-neutral-800 mb-6">教育合作单位</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="bg-white rounded-xl shadow-sm p-6 border border-neutral-100 flex items-center justify-center hover:shadow-md transition-shadow">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+              {universities.map((university, index) => (
+                <div 
+                  key={index} 
+                  className="bg-white rounded-xl shadow-sm p-6 border border-neutral-100 flex items-center justify-center hover:shadow-md transition-all duration-300 hover:scale-105 grayscale-[80%] hover:grayscale-0"
+                >
                   <div className="w-20 h-20 bg-neutral-100 rounded-lg flex items-center justify-center">
-                    <span className="text-neutral-500 text-sm">高校{i}</span>
+                    <span className="text-neutral-500 text-sm text-center">{university.name}</span>
                   </div>
                 </div>
               ))}

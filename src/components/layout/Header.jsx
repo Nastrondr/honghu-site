@@ -1,27 +1,103 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import Dropdown from '../common/Dropdown';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
   const location = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
 
-  const navLinks = [
-    { path: '/', label: '首页' },
-    { path: '/competition-center', label: '赛事中心' },
-    { path: '/resources', label: '资源支持' },
-    { path: '/news', label: '新闻动态' },
-    { path: '/partners', label: '合作生态' },
+  const navItems = [
+    { 
+      path: '/competition-center', 
+      label: '赛事中心',
+      children: [
+        { path: '/competition-center', label: '赛事列表' },
+        { path: '/competition-center?tab=info', label: '关键信息' },
+        { path: '/apply-competition', label: '申请办赛' },
+      ]
+    },
+    { 
+      path: '/resources', 
+      label: '资源支持',
+      children: [
+        { type: 'header', label: '学习资源' },
+        { path: '/resources?type=course', label: '在线课程' },
+        { path: '/resources?type=docs', label: '技术文档' },
+        { type: 'divider' },
+        { type: 'header', label: '开发资源' },
+        { path: '/resources?type=compute', label: '算力资源' },
+        { path: '/resources?type=dataset', label: '数据集' },
+      ]
+    },
+    { 
+      path: '/news', 
+      label: '新闻动态',
+      children: [
+        { type: 'header', label: '新闻' },
+        { path: '/news?category=notice', label: '通知公告' },
+        { path: '/news?category=progress', label: '赛程动态' },
+        { path: '/news?category=result', label: '获奖名单', badge: '新' },
+      ]
+    },
+    { 
+      path: '/partners', 
+      label: '合作单位',
+      children: [
+        { type: 'header', label: '合作伙伴' },
+        { path: '/partners?type=enterprise', label: '企业合作' },
+        { path: '/partners?type=university', label: '高校合作' },
+        { path: '/partners?type=investor', label: '投资机构' },
+      ]
+    },
+    { path: '/experts', label: '专家查询' },
+    { path: '/eco-products', label: '生态产品' },
     { path: '/about', label: '关于大赛' },
   ];
+
+  const renderNavLink = (item, index) => {
+    const isActive = location.pathname === item.path;
+    
+    if (item.children) {
+      return (
+        <Dropdown
+          key={index}
+          trigger={
+            <span className={`flex items-center text-sm font-medium transition-all duration-300 cursor-pointer ${isActive ? 'text-primary' : 'text-neutral-700 hover:text-primary'}`}>
+              {item.label}
+              <svg className="w-4 h-4 ml-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </span>
+          }
+          items={item.children}
+          onOpenChange={(isOpen) => setOpenDropdown(isOpen ? index : null)}
+        />
+      );
+    }
+
+    return (
+      <Link
+        key={index}
+        to={item.path}
+        className={`text-sm font-medium transition-all duration-300 relative ${isActive ? 'text-primary' : 'text-neutral-700 hover:text-primary'}`}
+      >
+        {item.label}
+        {isActive && (
+          <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full"></span>
+        )}
+      </Link>
+    );
+  };
 
   const handleLogout = () => {
     logout();
   };
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <header className="bg-white/70 backdrop-blur-md border-b border-white/50 sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
@@ -32,29 +108,42 @@ const Header = () => {
           </div>
           
           {/* 桌面导航 */}
-          <nav className="hidden md:flex space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`text-sm font-medium transition-all duration-300 relative ${location.pathname === link.path ? 'text-primary' : 'text-neutral-700 hover:text-primary'}`}
-              >
-                {link.label}
-                {location.pathname === link.path && (
-                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full"></span>
-                )}
-              </Link>
-            ))}
-            <div className="flex space-x-4">
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link
+              to="/"
+              className={`text-sm font-medium transition-all duration-300 relative ${location.pathname === '/' ? 'text-primary' : 'text-neutral-700 hover:text-primary'}`}
+            >
+              首页
+            </Link>
+            
+            {navItems.map((item, index) => renderNavLink(item, index))}
+            
+            <div className="flex items-center space-x-4 ml-4 border-l border-neutral-200 pl-6">
               {isAuthenticated ? (
-                <>
-                  <Link to="/dashboard" className="text-sm font-medium text-neutral-700 hover:text-primary transition-all duration-300">
-                    {user?.name || user?.phone || user?.phoneOrEmail}的个人中心
-                  </Link>
-                  <button onClick={handleLogout} className="text-sm font-medium text-neutral-700 hover:text-primary transition-all duration-300">
-                    退出
-                  </button>
-                </>
+                <Dropdown
+                  trigger={
+                    <span className="flex items-center text-sm font-medium text-neutral-700 hover:text-primary transition-all duration-300 cursor-pointer">
+                      <span className="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center mr-2">
+                        <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </span>
+                      {user?.name || user?.phone || user?.phoneOrEmail}
+                      <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </span>
+                  }
+                  items={[
+                    { path: '/dashboard', label: '个人中心' },
+                    { path: '/team-hall', label: '我的团队' },
+                    { path: '/competition-data', label: '赛题数据' },
+                    { path: '/work-submission', label: '作品提交' },
+                    { type: 'divider' },
+                    { path: '#', label: '退出登录', onClick: handleLogout },
+                  ]}
+                  align="right"
+                />
               ) : (
                 <>
                   <Link to="/login" className="text-sm font-medium text-neutral-700 hover:text-primary transition-all duration-300">
@@ -87,36 +176,101 @@ const Header = () => {
         
         {/* 移动端菜单 */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 space-y-3">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`block px-4 py-2 text-sm font-medium transition-all duration-300 ${location.pathname === link.path ? 'text-primary bg-primary/5' : 'text-neutral-700 hover:text-primary'}`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
-            <div className="flex space-x-4 px-4">
-              {isAuthenticated ? (
-                <>
-                  <Link to="/dashboard" className="text-sm font-medium text-neutral-700 hover:text-primary transition-all duration-300">
-                    {user?.name || user?.phone || user?.phoneOrEmail}的个人中心
+          <div className="md:hidden py-4 space-y-2">
+            <Link
+              to="/"
+              className={`block px-4 py-3 text-sm font-medium transition-all duration-300 ${location.pathname === '/' ? 'text-primary bg-primary/5' : 'text-neutral-700 hover:text-primary hover:bg-neutral-50'}`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              首页
+            </Link>
+            
+            {navItems.map((item, index) => (
+              <div key={index}>
+                {item.children ? (
+                  <div>
+                    <button
+                      className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+                      onClick={() => setOpenDropdown(openDropdown === index ? null : index)}
+                    >
+                      <span>{item.label}</span>
+                      <svg 
+                        className={`w-4 h-4 transition-transform ${openDropdown === index ? 'rotate-180' : ''}`} 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    
+                    {openDropdown === index && (
+                      <div className="ml-4 mt-1 space-y-1 bg-white/50 rounded-xl p-3">
+                        {item.children.map((child, childIndex) => (
+                          child.type === 'header' ? (
+                            <div key={childIndex} className="px-3 py-2 text-xs font-semibold text-neutral-400 uppercase">
+                              {child.label}
+                            </div>
+                          ) : child.type === 'divider' ? (
+                            <div key={childIndex} className="my-2 border-t border-neutral-200/50" />
+                          ) : (
+                            <Link
+                              key={childIndex}
+                              to={child.path}
+                              className="block px-3 py-2 text-sm text-neutral-600 hover:text-primary hover:bg-primary/5 rounded-lg"
+                              onClick={() => {
+                                setIsMenuOpen(false);
+                                setOpenDropdown(null);
+                              }}
+                            >
+                              {child.label}
+                            </Link>
+                          )
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Link
+                    to={item.path}
+                    className={`block px-4 py-3 text-sm font-medium transition-all duration-300 ${location.pathname === item.path ? 'text-primary bg-primary/5' : 'text-neutral-700 hover:text-primary hover:bg-neutral-50'}`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.label}
                   </Link>
-                  <button onClick={handleLogout} className="text-sm font-medium text-neutral-700 hover:text-primary transition-all duration-300">
-                    退出
+                )}
+              </div>
+            ))}
+            
+            <div className="pt-4 border-t border-neutral-200">
+              {isAuthenticated ? (
+                <div className="space-y-2">
+                  <Link
+                    to="/dashboard"
+                    className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    个人中心
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    退出登录
                   </button>
-                </>
+                </div>
               ) : (
-                <>
-                  <Link to="/login" className="text-sm font-medium text-neutral-700 hover:text-primary transition-all duration-300">
+                <div className="flex space-x-4 px-4">
+                  <Link to="/login" className="text-sm font-medium text-neutral-700 hover:text-primary">
                     登录
                   </Link>
-                  <Link to="/register" className="text-sm font-medium text-primary hover:text-primary/80 transition-all duration-300">
+                  <Link to="/register" className="text-sm font-medium text-primary hover:text-primary/80">
                     注册
                   </Link>
-                </>
+                </div>
               )}
             </div>
           </div>
