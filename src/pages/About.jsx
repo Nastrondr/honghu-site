@@ -10,16 +10,29 @@ const About = () => {
           <p className="text-xl text-gray-600">聚焦人工智能应用创新与人才孵化的赛事平台</p>
         </div>
 
-        {/* 大赛定位模块 */}
-        <div className="bg-white rounded-2xl shadow-sm p-8 mb-16">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">大赛定位</h2>
-          <div className="space-y-4">
-            <p className="text-gray-600 leading-relaxed">
-              梧桐·鸿鹄人工智能应用创新大赛致力于打造一个面向未来的人工智能应用创新与人才孵化平台。我们以“以赛促学、以赛促用、以赛促创”为理念，推动人工智能技术在实际场景中的应用落地，培养和发掘优秀的AI人才。
-            </p>
-            <p className="text-gray-600 leading-relaxed">
-              大赛聚焦人工智能应用创新，强调场景驱动和产学研协同，旨在搭建一个连接高校、企业和研究机构的桥梁，促进AI技术与产业需求的深度融合，为人工智能行业的可持续发展注入新动力。
-            </p>
+        {/* 定位与愿景模块 */}
+        <div className="bg-neutral-50/50 rounded-2xl border border-neutral-200/60 p-8 mb-16">
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold text-neutral-800 mb-2">定位与愿景</h2>
+            <p className="text-neutral-500 text-sm">面向未来的AI应用创新与人才孵化平台</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+            <div className="relative pl-5">
+              <div className="absolute left-0 top-1.5 w-1 h-5 bg-gradient-to-b from-violet-500 to-violet-400 rounded-full"></div>
+              <h3 className="text-lg font-semibold text-neutral-800 mb-3">定位</h3>
+              <p className="text-neutral-600 leading-relaxed text-sm">
+                梧桐·鸿鹄人工智能应用创新大赛致力于打造一个面向未来的人工智能应用创新与人才孵化平台。我们以"以赛促学、以赛促用、以赛促创"为理念，推动人工智能技术在实际场景中的应用落地，培养和发掘优秀的AI人才。
+              </p>
+            </div>
+            
+            <div className="relative pl-5 md:border-l md:border-neutral-200 md:pl-8">
+              <div className="absolute left-0 top-1.5 w-1 h-5 bg-gradient-to-b from-cyan-500 to-cyan-400 rounded-full"></div>
+              <h3 className="text-lg font-semibold text-neutral-800 mb-3">愿景</h3>
+              <p className="text-neutral-600 leading-relaxed text-sm">
+                大赛聚焦人工智能应用创新，强调场景驱动和产学研协同，旨在搭建一个连接高校、企业和研究机构的桥梁，促进AI技术与产业需求的深度融合，为人工智能行业的可持续发展注入新动力。
+              </p>
+            </div>
           </div>
         </div>
 
