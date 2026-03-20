@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { motion } from 'framer-motion';
+import { useReducedMotion } from '../components/common/Animations';
 
 const CompetitionCenter = () => {
   const [searchParams] = useSearchParams();
@@ -85,6 +87,7 @@ const CompetitionCenter = () => {
   ];
 
   const [activeTab, setActiveTab] = useState(tab);
+  const reducedMotion = useReducedMotion();
 
   const handleTabChange = (newTab) => {
     setActiveTab(newTab);
@@ -94,21 +97,49 @@ const CompetitionCenter = () => {
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: reducedMotion ? 0 : 0.06, delayChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 16 },
+    visible: { opacity: 1, y: 0, transition: { duration: reducedMotion ? 0.1 : 0.35, ease: [0.25, 0.1, 0.25, 1] } }
+  };
+
   return (
-    <div className="container mx-auto px-4 py-12 animate-fadeIn">
-      <h1 className="text-3xl font-bold text-neutral-800 mb-2 text-center">赛事中心</h1>
-      <p className="text-neutral-600 mb-8 text-center">这里展示了梧桐·鸿鹄人工智能应用创新大赛的相关赛事信息</p>
+    <div className="container mx-auto px-4 py-12">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        <motion.h1
+          className="text-3xl font-bold text-neutral-800 mb-2 text-center"
+          variants={itemVariants}
+        >
+          赛事中心
+        </motion.h1>
+        <motion.p
+          className="text-neutral-600 mb-8 text-center"
+          variants={itemVariants}
+        >
+          这里展示了梧桐·鸿鹄人工智能应用创新大赛的相关赛事信息
+        </motion.p>
 
       {/* 分段切换控件 */}
       <div className="flex items-center justify-center mb-8">
-        <div className="relative bg-white/50 backdrop-blur-[12px] rounded-full p-1 inline-flex">
+        <div className="relative bg-slate-100/60 backdrop-blur-sm rounded-full p-1 inline-flex">
           {tabs.map((t, index) => {
             const isActive = activeTab === t.key;
             return (
               <button
                 key={t.key}
                 onClick={() => handleTabChange(t.key)}
-                className={`relative z-10 px-6 py-2.5 text-sm font-medium transition-all duration-300 ${isActive ? 'text-white' : 'text-neutral-600 hover:text-neutral-800'}`}
+                className={`relative z-10 px-8 py-2 text-sm font-medium transition-all duration-300 rounded-full ${isActive ? 'text-white' : 'text-slate-500 hover:text-slate-700'}`}
               >
                 {t.label}
               </button>
@@ -116,10 +147,11 @@ const CompetitionCenter = () => {
           })}
           {/* 滑动底板 */}
           <div 
-            className="absolute top-1 left-1 bottom-1 rounded-full bg-gradient-to-r from-primary to-purple-500 shadow-md shadow-primary/20 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            className="absolute top-1 bottom-1 rounded-full bg-gradient-to-r from-[#7463EC] to-[#8B5CF6] shadow-md shadow-primary/25 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
             style={{
-              width: `calc(50% - 2px)`,
-              transform: `translateX(${activeTab === 'list' ? '0%' : '100%'})`
+              width: `calc(50% - 4px)`,
+              transform: `translateX(${activeTab === 'list' ? '0%' : '100%'})`,
+              left: '4px'
             }}
           />
         </div>
@@ -235,10 +267,15 @@ const CompetitionCenter = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-6">
+        <motion.div
+          className="grid grid-cols-1 gap-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {filteredCompetitions.map((competition) => (
-            <Link 
-              key={competition.id} 
+            <motion.div key={competition.id} variants={itemVariants}>
+              <Link
               to={`/competition/${competition.id}`}
               className="track-card rounded-2xl p-5 group hover:bg-white/70 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
             >
@@ -299,8 +336,9 @@ const CompetitionCenter = () => {
                 </div>
               </div>
             </Link>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {!isAuthenticated && (
           <div className="mt-6 glass-card rounded-xl p-6 text-center">
@@ -503,6 +541,7 @@ const CompetitionCenter = () => {
         </section>
       </>
       )}
+      </motion.div>
     </div>
   );
 };

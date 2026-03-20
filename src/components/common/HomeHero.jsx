@@ -1,19 +1,199 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+
+const PARTICLE_COLORS = ['#7C5CFF', '#60A5FA', '#22D3EE'];
+
+function MouseTrailParticles() {
+  const canvasRef = useRef(null);
+  const particlesRef = useRef([]);
+  const mouseRef = useRef({ x: -100, y: -100, moving: false });
+  const animationRef = useRef(null);
+  const moveTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    const isMobile = () => window.innerWidth < 768;
+    if (isMobile()) return;
+
+    const handleResize = () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+
+    const handleMouseMove = (e) => {
+      mouseRef.current.x = e.clientX;
+      mouseRef.current.y = e.clientY;
+      mouseRef.current.moving = true;
+
+      if (moveTimeoutRef.current) {
+        clearTimeout(moveTimeoutRef.current);
+      }
+      moveTimeoutRef.current = setTimeout(() => {
+        mouseRef.current.moving = false;
+      }, 100);
+    };
+
+    class Particle {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.size = Math.random() * 3 + 1;
+        this.color = PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)];
+        this.speedX = (Math.random() - 0.5) * 0.8;
+        this.speedY = (Math.random() - 0.5) * 0.8 - 0.3;
+        this.opacity = 1;
+        this.decay = Math.random() * 0.015 + 0.01;
+      }
+
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.opacity -= this.decay;
+        this.size *= 0.97;
+      }
+
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = this.opacity;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = this.color;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size * 0.5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    const spawnParticles = (x, y) => {
+      if (particlesRef.current.length < 40) {
+        particlesRef.current.push(new Particle(x, y));
+      }
+    };
+
+    let lastSpawn = 0;
+    const animate = (timestamp) => {
+      ctx.clearRect(0, 0, width, height);
+
+      if (mouseRef.current.moving && mouseRef.current.x > 0 && mouseRef.current.y > 0) {
+        if (timestamp - lastSpawn > 30) {
+          spawnParticles(mouseRef.current.x, mouseRef.current.y);
+          lastSpawn = timestamp;
+        }
+      }
+
+      particlesRef.current = particlesRef.current.filter(p => p.opacity > 0 && p.size > 0.1);
+      particlesRef.current.forEach(p => {
+        p.update();
+        p.draw();
+      });
+
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('mousemove', handleMouseMove);
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (moveTimeoutRef.current) {
+        clearTimeout(moveTimeoutRef.current);
+      }
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="pointer-events-none absolute inset-0 z-[5]"
+      style={{ mixBlendMode: 'screen' }}
+    />
+  );
+}
+
+const highlights = [
+  {
+    id: 1,
+    title: 'OPC定向孵化',
+    description: '专属导师团队，全周期项目辅导，助力商业化落地',
+    position: 'left'
+  },
+  {
+    id: 2,
+    title: '个人算力全程赋能',
+    description: '提供强大算力资源支持，降低参赛门槛',
+    position: 'right'
+  },
+  {
+    id: 3,
+    title: '场景与产业对接',
+    description: '直连真实产业需求，打通从作品到产品的最后一公里',
+    position: 'bottom'
+  }
+];
+
+function HeroHotspot({ highlight }) {
+  const positionClasses = {
+    left: 'top-[22%] left-[10%] md:left-[14%] lg:left-[18%]',
+    right: 'top-[22%] right-[10%] md:right-[14%] lg:right-[18%]',
+    bottom: 'bottom-[28%] right-[12%] md:right-[16%] lg:right-[20%]'
+  };
+
+  return (
+    <div className={`absolute ${positionClasses[highlight.position]} z-20 group cursor-pointer`}>
+      <div className="relative">
+        <button
+          className="relative flex items-center justify-center w-3 h-3 md:w-3.5 md:h-3.5 cursor-pointer focus:outline-none"
+          aria-label={highlight.title}
+        >
+          <span className="absolute inset-0 rounded-full bg-white/40 animate-ping" />
+          <span className="absolute inset-0 rounded-full bg-white/70 border border-white/50" />
+          <span className="absolute inset-0 rounded-full bg-white/90 shadow-[0_0_10px_rgba(124,92,255,0.7)] animate-pulse" />
+        </button>
+
+        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 ease-out group-hover:translate-y-[-6px] w-52 md:w-56">
+          <div className="bg-[#12121f]/90 backdrop-blur-xl border border-white/20 rounded-xl p-4 shadow-2xl">
+            <h4 className="text-sm font-semibold text-white mb-1.5">{highlight.title}</h4>
+            <p className="text-xs text-white/70 leading-relaxed">{highlight.description}</p>
+          </div>
+          <div className="absolute left-1/2 -translate-x-1/2 -mt-1.5 w-3 h-3 bg-[#12121f]/90 border-l border-b border-white/20 rotate-45" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HeroHotspots() {
+  return (
+    <div className="absolute inset-0 z-10">
+      {highlights.map(highlight => (
+        <HeroHotspot key={highlight.id} highlight={highlight} />
+      ))}
+    </div>
+  );
+}
 
 function HeroBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* 背景图片 */}
       <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: 'url(/assets/image/herobanner.png)' }} />
-      
-      {/* 半透明深色遮罩 */}
       <div className="absolute inset-0 bg-black/30" />
-      
-      {/* 顶部过渡层 - 与导航融合 */}
-      <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#05081f] to-transparent" />
-      
-      {/* 底部过渡层 - 平滑过渡到下一区域 */}
       <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#f8f9ff]/10 via-[#f8f9ff]/4 to-transparent" />
     </div>
   );
@@ -21,58 +201,59 @@ function HeroBackground() {
 
 export default function HomeHero() {
   return (
-    <section className="relative isolate overflow-hidden">
-      <div className="relative min-h-[85vh] md:min-h-[88vh] lg:min-h-[90vh]">
-        <HeroBackground />
+    <section className="relative isolate overflow-hidden min-h-[85vh] md:min-h-[88vh] lg:min-h-[90vh]">
+      <HeroBackground />
+      <MouseTrailParticles />
 
-        <div className="relative z-10 mx-auto flex min-h-[85vh] md:min-h-[88vh] lg:min-h-[90vh] max-w-5xl items-center justify-center px-5 pt-32 pb-20 md:px-6 lg:pt-36 lg:pb-24">
-          <div className="mx-auto max-w-2xl text-center">
-            {/* 标签 */}
-            <div className="mb-16 inline-flex items-center rounded-full border border-white/15 bg-white/8 px-5 py-2 text-[13px] text-white/80 backdrop-blur-sm">
-              <span className="mr-2 h-1.5 w-1.5 rounded-full bg-[#7463EC] shadow-[0_0_8px_rgba(116,99,236,0.7)]" />
-              全国性人工智能赛事 · OPC 核心孵化平台
-            </div>
+      <div className="relative z-10 mx-auto flex min-h-[85vh] md:min-h-[88vh] lg:min-h-[90vh] max-w-5xl items-center justify-center px-5 pt-24 pb-20 md:px-6 lg:pt-28 lg:pb-24">
+        <div className="mx-auto max-w-2xl text-center">
+          {/* 标签 */}
+          <div className="hero-badge mb-16 inline-flex items-center rounded-full px-5 py-2 text-[13px] text-white/90 font-medium">
+            <span className="hero-badge-dot mr-2" />
+            全国性人工智能赛事 · OPC 核心孵化平台
+          </div>
 
-            {/* 主标题 */}
-            <h1 className="mx-auto max-w-xl">
-              <span className="block text-[32px] md:text-[48px] lg:text-[56px] font-semibold leading-[1.2] tracking-tight text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.25)]">
-                梧桐·鸿鹄
-              </span>
-              <span className="block mt-3 text-[36px] md:text-[56px] lg:text-[72px] font-bold leading-[1.05] tracking-tight text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]">
-                人工智能应用创新大赛
-              </span>
-            </h1>
+          {/* 主标题 */}
+          <h1 className="mx-auto max-w-xl">
+            <span className="block text-[32px] md:text-[48px] lg:text-[56px] font-semibold leading-[1.2] tracking-tight text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.25)]">
+              梧桐·鸿鹄
+            </span>
+            <span className="block mt-3 text-[36px] md:text-[56px] lg:text-[72px] font-bold leading-[1.05] tracking-tight text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]">
+              人工智能应用创新大赛
+            </span>
+          </h1>
 
-            {/* 副标题 */}
-            <div className="mt-16 space-y-3">
-              <p className="text-[16px] leading-7 text-white/90 md:text-lg">
-                以赛促学 · 以赛促用 · 以赛促创
-              </p>
-              <p className="text-[15px] leading-6 text-white/70 md:text-[16px]">
-                打造面向未来的人工智能应用创新与人才孵化平台
-              </p>
-            </div>
+          {/* 副标题 */}
+          <div className="mt-16 space-y-3">
+            <p className="text-[16px] leading-7 text-white/90 md:text-lg">
+              以赛促学 · 以赛促用 · 以赛促创
+            </p>
+            <p className="text-[15px] leading-6 text-white/70 md:text-[16px]">
+              打造面向未来的人工智能应用创新与人才孵化平台
+            </p>
+          </div>
 
-            {/* 按钮 */}
-            <div className="mt-20 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link
-                to="/register"
-                className="group relative inline-flex min-w-[160px] items-center justify-center overflow-hidden rounded-2xl px-8 py-4 text-[15px] font-semibold text-white shadow-[0_4px_20px_rgba(116,99,236,0.4)] transition-all duration-300 ease-out bg-[#7463EC] hover:-translate-y-1 hover:shadow-[0_6px_28px_rgba(116,99,236,0.55)] active:scale-[0.98]"
-              >
-                <span className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)] skew-x-12 -translate-x-full group-hover:translate-x-full" />
-                <span className="relative">立即报名</span>
-              </Link>
+          {/* 按钮 */}
+          <div className="mt-20 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Link
+              to="/register"
+              className="group relative inline-flex min-w-[160px] items-center justify-center overflow-hidden rounded-2xl px-8 py-4 text-[15px] font-semibold text-white shadow-[0_4px_20px_rgba(116,99,236,0.4)] transition-all duration-300 ease-out bg-[#7463EC] hover:-translate-y-1 hover:shadow-[0_6px_28px_rgba(116,99,236,0.55)] active:scale-[0.98]"
+            >
+              <span className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)] skew-x-12 -translate-x-full group-hover:translate-x-full" />
+              <span className="relative">立即报名</span>
+            </Link>
 
-              <Link
-                to="/competition-center"
-                className="inline-flex min-w-[160px] items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-8 py-4 text-[15px] font-semibold text-white/80 backdrop-blur-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:bg-white/18 hover:text-white hover:border-white/30 active:scale-[0.98]"
-              >
-                查看赛事
-              </Link>
-            </div>
+            <Link
+              to="/competition-center"
+              className="inline-flex min-w-[160px] items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-8 py-4 text-[15px] font-semibold text-white/80 backdrop-blur-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:bg-white/18 hover:text-white hover:border-white/30 active:scale-[0.98]"
+            >
+              查看赛事
+            </Link>
           </div>
         </div>
       </div>
+
+      <HeroHotspots />
     </section>
   );
 }

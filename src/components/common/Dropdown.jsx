@@ -5,7 +5,8 @@ const Dropdown = ({
   trigger, 
   items, 
   align = 'left',
-  onOpenChange 
+  onOpenChange,
+  isHomePage = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -70,6 +71,22 @@ const Dropdown = ({
     }
   };
 
+  const dropdownBgClass = isHomePage 
+    ? 'bg-black/60 backdrop-blur-md border border-white/10 shadow-lg shadow-black/30' 
+    : 'glass-dropdown';
+  
+  const textClass = isHomePage
+    ? 'text-pink-100 hover:text-white hover:bg-white/10'
+    : 'text-neutral-600 hover:text-primary hover:bg-primary/5';
+  
+  const headerTextClass = isHomePage
+    ? 'text-pink-200/60'
+    : 'text-neutral-400';
+  
+  const dividerClass = isHomePage
+    ? 'border-white/10'
+    : 'border-neutral-200/50';
+
   return (
     <div 
       ref={dropdownRef}
@@ -94,7 +111,7 @@ const Dropdown = ({
         }}
       >
         <div 
-          className="glass-dropdown"
+          className={`rounded-xl p-2 ${dropdownBgClass}`}
           style={{
             minWidth: '200px',
           }}
@@ -102,15 +119,15 @@ const Dropdown = ({
           {items.map((item, index) => (
             <div key={index}>
               {item.type === 'divider' ? (
-                <div className="my-2 border-t border-neutral-200/50" />
+                <div className={`my-2 border-t ${dividerClass}`} />
               ) : item.type === 'header' ? (
-                <div className="px-4 py-2 text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+                <div className={`px-4 py-2 text-xs font-semibold uppercase tracking-wider ${headerTextClass}`}>
                   {item.label}
                 </div>
               ) : item.children ? (
                 <Dropdown 
                   trigger={
-                    <div className="dropdown-item">
+                    <div className={`dropdown-item rounded-lg ${textClass} ${isHomePage ? 'home' : ''}`}>
                       {item.icon && <span className="dropdown-icon">{item.icon}</span>}
                       <span>{item.label}</span>
                       <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,11 +137,12 @@ const Dropdown = ({
                   }
                   items={item.children}
                   align="right"
+                  isHomePage={isHomePage}
                 />
               ) : (
                 <Link
                   to={item.path || '#'}
-                  className="dropdown-item"
+                  className={`dropdown-item rounded-lg ${textClass} ${isHomePage ? 'home' : ''}`}
                   onClick={() => {
                     setIsOpen(false);
                     onOpenChange?.(false);
@@ -133,7 +151,7 @@ const Dropdown = ({
                   {item.icon && <span className="dropdown-icon">{item.icon}</span>}
                   <span>{item.label}</span>
                   {item.badge && (
-                    <span className="ml-auto px-2 py-0.5 text-xs bg-primary/10 text-primary rounded-full">
+                    <span className={`ml-auto px-2 py-0.5 text-xs rounded-full ${isHomePage ? 'bg-white/20 text-white' : 'bg-primary/10 text-primary'}`}>
                       {item.badge}
                     </span>
                   )}

@@ -24,27 +24,26 @@ const News = () => {
       </section>
 
       {/* 分类筛选 */}
-      <section className="py-10 bg-slate-50/50">
+      <section className="py-8 bg-slate-50/50">
         <div className="container mx-auto px-4 max-w-7xl">
-          <div className="flex justify-center gap-3">
-            <button 
-              onClick={() => setActiveCategory('全部')}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${activeCategory === '全部' ? 'bg-neutral-700 text-white' : 'bg-white text-neutral-700 hover:bg-neutral-100 border border-neutral-200'}`}
-            >
-              全部
-            </button>
-            <button 
-              onClick={() => setActiveCategory('公告通知')}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${activeCategory === '公告通知' ? 'bg-[#7463EC] text-white' : 'bg-white text-neutral-700 hover:bg-[#7463EC]/10 border border-neutral-200'}`}
-            >
-              公告通知
-            </button>
-            <button 
-              onClick={() => setActiveCategory('赛事动态')}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${activeCategory === '赛事动态' ? 'bg-[#F59E0B] text-white' : 'bg-white text-neutral-700 hover:bg-[#F59E0B]/10 border border-neutral-200'}`}
-            >
-              赛事动态
-            </button>
+          <div className="flex justify-center gap-8 border-b border-slate-200/60">
+            {['全部', '公告通知', '赛事动态'].map((category) => {
+              const isActive = activeCategory === category;
+              return (
+                <button
+                  key={category}
+                  onClick={() => setActiveCategory(category)}
+                  className="relative pb-4 text-sm font-medium transition-colors group"
+                >
+                  <span className={`relative z-10 ${isActive ? 'text-slate-800' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                    {category}
+                  </span>
+                  {isActive && (
+                    <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-[#7463EC] to-[#8B5CF6] rounded-full" />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -79,21 +78,21 @@ const News = () => {
       {/* 底部CTA */}
       <section className="py-20 bg-slate-50/50">
         <div className="container mx-auto px-4 max-w-7xl">
-          <div className="bg-gradient-to-r from-primary to-indigo-600 rounded-2xl p-12 text-center">
+          <div className="bg-gradient-to-r from-[#7463EC] via-[#5b4cdb] to-[#4338ca] rounded-2xl p-12 text-center shadow-lg shadow-primary/20">
             <h2 className="text-3xl font-bold text-white mb-6">立即参与赛事，获取更多机会</h2>
-            <p className="text-white/90 mb-8 max-w-2xl mx-auto">
+            <p className="text-white/80 mb-8 max-w-2xl mx-auto">
               关注大赛动态，把握每一个创新机会，开启你的AI应用创新之旅
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link to="/competition-center">
-                <SecondaryButton className="text-lg px-8 py-3 bg-white text-primary hover:bg-neutral-100">
+                <button className="border border-white/30 text-white px-8 py-3.5 rounded-xl font-semibold hover:bg-white/10 transition-all duration-300 backdrop-blur-sm">
                   查看赛事
-                </SecondaryButton>
+                </button>
               </Link>
               <Link to="/competition-center">
-                <PrimaryButton className="text-lg px-8 py-3 bg-white text-primary hover:bg-neutral-100">
+                <button className="bg-white text-[#7463EC] px-8 py-3.5 rounded-xl font-semibold hover:bg-neutral-50 transition-all duration-300 shadow-md">
                   立即报名
-                </PrimaryButton>
+                </button>
               </Link>
             </div>
           </div>

@@ -102,24 +102,41 @@ const Partners = () => {
       </section>
 
       {/* 主办单位 */}
-      <section className="py-16 bg-slate-50/50">
+      <section className="py-16">
         <div className="container mx-auto px-4 max-w-7xl">
           <h2 className="text-2xl font-semibold text-neutral-800 mb-10 text-center">主办单位</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white rounded-2xl shadow-sm p-10 border border-neutral-100 flex items-center justify-center hover:shadow-md transition-shadow">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="glass-card rounded-2xl p-8 group">
               <div className="text-center">
-                <div className="w-32 h-32 bg-neutral-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-neutral-500 font-medium">某某科技创新中心</span>
+                <div className="w-24 h-24 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-neutral-800">某某科技创新中心</h3>
+                <h3 className="text-lg font-semibold text-neutral-800 mb-2 group-hover:text-primary transition-colors">工信部国际经济技术合作中心</h3>
+                <p className="text-neutral-500 text-sm">推动国际经济技术合作，促进人工智能产业发展的重要机构</p>
               </div>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm p-10 border border-neutral-100 flex items-center justify-center hover:shadow-md transition-shadow">
+            <div className="glass-card rounded-2xl p-8 group">
               <div className="text-center">
-                <div className="w-32 h-32 bg-neutral-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-neutral-500 font-medium">某人工智能研究院</span>
+                <div className="w-24 h-24 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-12 h-12 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-neutral-800">某人工智能研究院</h3>
+                <h3 className="text-lg font-semibold text-neutral-800 mb-2 group-hover:text-primary transition-colors">中科北龙</h3>
+                <p className="text-neutral-500 text-sm">专注于人工智能技术研发与创新的前沿科技企业</p>
+              </div>
+            </div>
+            <div className="glass-card rounded-2xl p-8 group">
+              <div className="text-center">
+                <div className="w-24 h-24 bg-gradient-to-br from-green-50 to-green-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-neutral-800 mb-2 group-hover:text-primary transition-colors">中国移动</h3>
+                <p className="text-neutral-500 text-sm">全球领先的通信运营商，提供5G网络与算力支持</p>
               </div>
             </div>
           </div>
@@ -248,18 +265,18 @@ const Partners = () => {
       {/* 底部CTA */}
       <section className="py-20">
         <div className="container mx-auto px-4 max-w-7xl">
-          <div className="bg-gradient-to-r from-primary to-indigo-600 rounded-2xl p-12 text-center">
+          <div className="bg-gradient-to-r from-[#7463EC] via-[#5b4cdb] to-[#4338ca] rounded-2xl p-12 text-center shadow-lg shadow-primary/20">
             <h2 className="text-3xl font-bold text-white mb-6">携手合作，共建创新生态</h2>
-            <p className="text-white/90 mb-8 max-w-2xl mx-auto">
+            <p className="text-white/80 mb-8 max-w-2xl mx-auto">
               加入我们的合作伙伴网络，共同推动人工智能应用创新，培养优秀人才，构建可持续发展的AI生态系统
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <SecondaryButton className="text-lg px-8 py-3 bg-white text-primary hover:bg-neutral-100">
+              <button className="border border-white/30 text-white px-8 py-3.5 rounded-xl font-semibold hover:bg-white/10 transition-all duration-300 backdrop-blur-sm">
                 联系我们
-              </SecondaryButton>
-              <PrimaryButton className="text-lg px-8 py-3 bg-white text-primary hover:bg-neutral-100">
+              </button>
+              <button className="bg-white text-[#7463EC] px-8 py-3.5 rounded-xl font-semibold hover:bg-neutral-50 transition-all duration-300 shadow-md">
                 成为合作伙伴
-              </PrimaryButton>
+              </button>
             </div>
           </div>
         </div>

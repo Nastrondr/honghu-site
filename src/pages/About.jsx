@@ -125,12 +125,12 @@ const About = () => {
         </div>
 
         {/* 页面底部 CTA 模块 */}
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-700 rounded-2xl p-10 text-center">
+        <div className="bg-gradient-to-r from-[#7463EC] via-[#5b4cdb] to-[#4338ca] rounded-2xl p-10 text-center shadow-lg shadow-primary/20">
           <h2 className="text-2xl font-bold text-white mb-4">了解赛事，参与创新实践</h2>
-          <p className="text-purple-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-white/80 mb-8 max-w-2xl mx-auto">
             加入梧桐·鸿鹄人工智能应用创新大赛，展示你的创新能力，获得专业指导和资源支持，开启AI应用创新之旅。
           </p>
-          <a href="/competition-center" className="inline-block bg-white text-[#7463EC] font-medium px-8 py-3 rounded-lg hover:bg-gray-100 transition duration-300">
+          <a href="/competition-center" className="inline-block bg-white text-[#7463EC] font-semibold px-8 py-3.5 rounded-xl hover:bg-neutral-50 transition-all duration-300 shadow-md">
             查看赛事
           </a>
         </div>

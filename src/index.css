@@ -114,6 +114,89 @@ body {
   transform: translateX(4px);
 }
 
+/* 首页下拉菜单样式 */
+.dropdown-item.home {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.dropdown-item.home:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  transform: translateX(4px);
+}
+
+/* 首页 Hero 炫彩流动标签 */
+.hero-badge {
+  position: relative;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  overflow: hidden;
+}
+
+.hero-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(124, 92, 255, 0.15) 25%,
+    rgba(167, 139, 250, 0.2) 50%,
+    rgba(96, 165, 250, 0.15) 75%,
+    transparent 100%
+  );
+  animation: badge-flow 12s linear infinite;
+}
+
+@keyframes badge-flow {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(50%);
+  }
+}
+
+.hero-badge-dot {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #60A5FA;
+  box-shadow: 
+    0 0 6px rgba(96, 165, 250, 0.8),
+    0 0 12px rgba(192, 132, 252, 0.5);
+  animation: dot-pulse 3s ease-in-out infinite;
+}
+
+.hero-badge-dot::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #C084FC;
+}
+
+@keyframes dot-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.1);
+  }
+}
+
 .dropdown-icon {
   display: flex;
   align-items: center;
@@ -269,32 +352,20 @@ body {
 
 .track-card {
   position: relative;
-  background: white;
-  border: 1px solid transparent;
-  transition: all 0.4s var(--ease-standard);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 2px 16px rgba(116, 99, 236, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all var(--motion-normal) var(--ease-standard);
   overflow: hidden;
 }
 
-.track-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(116, 99, 236, 0.05) 0%, rgba(252, 115, 36, 0.05) 50%, rgba(116, 99, 236, 0.1) 100%);
-  background-size: 200% 200%;
-  opacity: 0;
-  transition: opacity 0.4s var(--ease-standard);
-  z-index: 0;
-}
-
 .track-card:hover {
-  border-color: rgba(116, 99, 236, 0.3);
-  box-shadow: 0 0 20px rgba(116, 99, 236, 0.15), 0 0 40px rgba(116, 99, 236, 0.1);
-  transform: translateY(-4px);
-}
-
-.track-card:hover::before {
-  opacity: 1;
-  animation: gradient-shift 3s ease infinite;
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 6px 28px rgba(116, 99, 236, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05);
+  border-color: rgba(255, 255, 255, 0.8);
 }
 
 .track-card:active {
