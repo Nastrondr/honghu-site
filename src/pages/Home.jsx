@@ -1,17 +1,66 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import HomeHero from '../components/common/HomeHero';
+import ScrollReveal from '../components/common/ScrollReveal';
+
+const TrackCard = ({ track }) => {
+  const [imageError, setImageError] = useState(false);
+
+  const themeGradients = {
+    violet: 'from-violet-600/20 via-violet-500/12 to-transparent',
+    blue: 'from-blue-600/20 via-blue-500/12 to-transparent',
+    cyan: 'from-cyan-600/20 via-cyan-500/12 to-transparent',
+    indigo: 'from-indigo-600/20 via-indigo-500/12 to-transparent',
+    purple: 'from-purple-600/20 via-purple-500/12 to-transparent'
+  };
+
+  const fallbackGradients = {
+    violet: 'from-violet-600/30 via-violet-900/50 to-slate-900/80',
+    blue: 'from-blue-600/30 via-blue-900/50 to-slate-900/80',
+    cyan: 'from-cyan-600/30 via-cyan-900/50 to-slate-900/80',
+    indigo: 'from-indigo-600/30 via-indigo-900/50 to-slate-900/80',
+    purple: 'from-purple-600/30 via-purple-900/50 to-slate-900/80'
+  };
+
+  return (
+    <div className="group relative h-72 md:h-64 rounded-2xl overflow-hidden cursor-pointer">
+      {!imageError && (
+        <img
+          src={track.imageUrl}
+          alt={track.title}
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          onError={() => setImageError(true)}
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+      <div className={`absolute inset-0 bg-gradient-to-t ${imageError ? fallbackGradients[track.accentColor] : themeGradients[track.accentColor]} opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out`} />
+      <div className="absolute inset-0 flex flex-col justify-end p-5 md:p-6">
+        <span className="text-xs text-white/50 mb-1.5 tracking-wide">
+          {track.subtitle}
+        </span>
+        <h3 className="text-lg md:text-xl font-semibold text-white mb-1 md:mb-2 drop-shadow-lg">
+          {track.title}
+        </h3>
+        <p className="text-xs md:text-sm text-white/85 leading-relaxed line-clamp-2 opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out">
+          {track.description}
+        </p>
+      </div>
+    </div>
+  );
+};
 
 const Home = () => {
   return (
-    <div className="min-h-screen animate-fadeIn">
+    <div className="min-h-screen">
       {/* Hero 首屏 */}
       <HomeHero />
 
       {/* 一、大赛核心亮点 */}
       <section className="py-20">
         <div className="container mx-auto px-4 max-w-7xl">
-          <h2 className="text-3xl font-bold text-neutral-800 mb-16 text-center">大赛核心亮点</h2>
+          <ScrollReveal>
+            <h2 className="text-3xl font-bold text-neutral-800 mb-16 text-center">大赛核心亮点</h2>
+          </ScrollReveal>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* OPC定向孵化 */}
             <div className="glass-card rounded-2xl p-8 relative overflow-hidden group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
@@ -84,67 +133,51 @@ const Home = () => {
       {/* 二、五大专项赛道 */}
       <section className="py-20">
         <div className="container mx-auto px-4 max-w-7xl">
-          <h2 className="text-3xl font-bold text-neutral-800 mb-16 text-center">五大专项赛道</h2>
+          <ScrollReveal>
+            <h2 className="text-3xl font-bold text-neutral-800 mb-16 text-center">五大专项赛道</h2>
+          </ScrollReveal>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="glass-card rounded-2xl p-8 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
-              <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:shadow-md transition-all">
-                <svg className="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-neutral-800 mb-4">数字金融</h3>
-              <p className="text-neutral-600 text-sm">
-                探索AI在金融风险控制、智能投顾、反欺诈等领域的创新应用
-              </p>
-            </div>
-            
-            <div className="glass-card rounded-2xl p-8 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
-              <div className="w-14 h-14 bg-gradient-to-br from-secondary/20 to-secondary/5 rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:shadow-md transition-all">
-                <svg className="w-7 h-7 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-neutral-800 mb-4">数字教育</h3>
-              <p className="text-neutral-600 text-sm">
-                开发AI驱动的智能教育工具，提升教学效率和学习体验
-              </p>
-            </div>
-            
-            <div className="glass-card rounded-2xl p-8 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
-              <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:shadow-md transition-all">
-                <svg className="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-neutral-800 mb-4">数字健康</h3>
-              <p className="text-neutral-600 text-sm">
-                运用AI技术辅助诊断、药物研发和健康管理，提升医疗服务质量
-              </p>
-            </div>
-            
-            <div className="glass-card rounded-2xl p-8 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
-              <div className="w-14 h-14 bg-gradient-to-br from-secondary/20 to-secondary/5 rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:shadow-md transition-all">
-                <svg className="w-7 h-7 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-neutral-800 mb-4">数字文旅</h3>
-              <p className="text-neutral-600 text-sm">
-                利用AI技术推动文化传播、旅游服务智能化与体验创新
-              </p>
-            </div>
-
-            <div className="glass-card rounded-2xl p-8 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
-              <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:shadow-md transition-all">
-                <svg className="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-neutral-800 mb-4">数字法务</h3>
-              <p className="text-neutral-600 text-sm">
-                运用AI技术提升法律服务效率，推动智能合规与风险预警
-              </p>
-            </div>
+            {[
+              {
+                title: '数字金融',
+                subtitle: '智能金融创新',
+                description: '探索AI在金融风险控制、智能投顾、反欺诈等领域的创新应用',
+                accentColor: 'violet',
+                imageUrl: '/assets/image/matchcategory card/finance.jpg'
+              },
+              {
+                title: '数字教育',
+                subtitle: '智慧教育未来',
+                description: '开发AI驱动的智能教育工具，提升教学效率和学习体验',
+                accentColor: 'blue',
+                imageUrl: '/assets/image/matchcategory card/AI education technology.jpg'
+              },
+              {
+                title: '数字健康',
+                subtitle: 'AI医疗健康',
+                description: '运用AI技术辅助诊断、药物研发和健康管理，提升医疗服务质量',
+                accentColor: 'cyan',
+                imageUrl: '/assets/image/matchcategory card/smart healthcare.jpg'
+              },
+              {
+                title: '数字文旅',
+                subtitle: '智慧文旅体验',
+                description: '利用AI技术推动文化传播、旅游服务智能化与体验创新',
+                accentColor: 'indigo',
+                imageUrl: '/assets/image/matchcategory card/digital culture immersive.jpg'
+              },
+              {
+                title: '数字法务',
+                subtitle: '智能法律服务',
+                description: '运用AI技术提升法律服务效率，推动智能合规与风险预警',
+                accentColor: 'purple',
+                imageUrl: '/assets/image/matchcategory card/legal tech interface.jpg'
+              }
+            ].map((track, index) => (
+              <ScrollReveal key={track.title} delay={index * 0.08}>
+                <TrackCard track={track} />
+              </ScrollReveal>
+            ))}
           </div>
         </div>
       </section>

@@ -111,7 +111,7 @@ const CompetitionCenter = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto px-4 py-12 bg-neutral-50/30 min-h-screen">
       <motion.div
         initial="hidden"
         animate="visible"
@@ -267,78 +267,60 @@ const CompetitionCenter = () => {
           </div>
         )}
 
-        <motion.div
-          className="grid grid-cols-1 gap-6"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
+        <div className="space-y-4">
           {filteredCompetitions.map((competition) => (
-            <motion.div key={competition.id} variants={itemVariants}>
-              <Link
+            <Link
+              key={competition.id}
               to={`/competition/${competition.id}`}
-              className="track-card rounded-2xl p-5 group hover:bg-white/70 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              className="competition-card block"
             >
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 h-full">
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3">
-                    <h2 className="text-xl font-semibold text-neutral-800 mb-2 sm:mb-0">
-                      {competition.title}
-                    </h2>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${competition.status === '进行中' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                      {competition.status}
-                    </span>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-3 mb-3 text-neutral-500 text-sm">
-                    <div className="flex items-center">
-                      <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      {competition.organizer}
-                    </div>
-                    <div className="flex items-center">
-                      <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      {competition.date}
-                    </div>
-                    <div className="flex items-center">
-                      <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      {competition.location}
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {competition.tags.map((tag, index) => (
-                      <span key={index} className="px-2.5 py-1 bg-primary/10 text-primary rounded-full text-xs">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  
-                  <p className="text-neutral-600 text-sm line-clamp-2">
-                    {competition.description}
-                  </p>
+              <div className="competition-card__main">
+                <div className="competition-card__header">
+                  <h3 className="competition-card__title">{competition.title}</h3>
+                  <span className={`competition-card__status ${competition.status === '进行中' ? 'status-active' : 'status-ended'}`}>
+                    {competition.status}
+                  </span>
                 </div>
                 
-                {/* 右侧线性箭头入口 */}
-                <div className="relative flex items-center justify-center w-12 flex-shrink-0 group-hover:translate-x-2 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
-                  <div className="absolute left-0 w-8 h-px bg-neutral-300 group-hover:bg-primary transition-colors duration-300"></div>
-                  <svg className="w-5 h-5 text-neutral-400 group-hover:text-primary transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
-                  <div className="absolute right-0 w-12 h-12 bg-gradient-to-l from-primary/10 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="competition-card__meta">
+                  <span className="meta-item">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    {competition.organizer}
+                  </span>
+                  <span className="meta-item">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {competition.date}
+                  </span>
+                  <span className="meta-item">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    {competition.location}
+                  </span>
                 </div>
+                
+                <div className="competition-card__tags">
+                  {competition.tags.map((tag, index) => (
+                    <span key={index} className="tag-chip">{tag}</span>
+                  ))}
+                </div>
+                
+                <p className="competition-card__desc">{competition.description}</p>
+              </div>
+              
+              <div className="competition-card__side">
+                <svg className="w-5 h-5 arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
               </div>
             </Link>
-            </motion.div>
           ))}
-        </motion.div>
+        </div>
 
         {!isAuthenticated && (
           <div className="mt-6 glass-card rounded-xl p-6 text-center">
@@ -354,8 +336,6 @@ const CompetitionCenter = () => {
           </div>
         )}
       </section>
-
-
       </>
       )}
 

@@ -127,68 +127,6 @@ function MouseTrailParticles() {
   );
 }
 
-const highlights = [
-  {
-    id: 1,
-    title: 'OPC定向孵化',
-    description: '专属导师团队，全周期项目辅导，助力商业化落地',
-    position: 'left'
-  },
-  {
-    id: 2,
-    title: '个人算力全程赋能',
-    description: '提供强大算力资源支持，降低参赛门槛',
-    position: 'right'
-  },
-  {
-    id: 3,
-    title: '场景与产业对接',
-    description: '直连真实产业需求，打通从作品到产品的最后一公里',
-    position: 'bottom'
-  }
-];
-
-function HeroHotspot({ highlight }) {
-  const positionClasses = {
-    left: 'top-[22%] left-[10%] md:left-[14%] lg:left-[18%]',
-    right: 'top-[22%] right-[10%] md:right-[14%] lg:right-[18%]',
-    bottom: 'bottom-[28%] right-[12%] md:right-[16%] lg:right-[20%]'
-  };
-
-  return (
-    <div className={`absolute ${positionClasses[highlight.position]} z-20 group cursor-pointer`}>
-      <div className="relative">
-        <button
-          className="relative flex items-center justify-center w-3 h-3 md:w-3.5 md:h-3.5 cursor-pointer focus:outline-none"
-          aria-label={highlight.title}
-        >
-          <span className="absolute inset-0 rounded-full bg-white/40 animate-ping" />
-          <span className="absolute inset-0 rounded-full bg-white/70 border border-white/50" />
-          <span className="absolute inset-0 rounded-full bg-white/90 shadow-[0_0_10px_rgba(124,92,255,0.7)] animate-pulse" />
-        </button>
-
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 ease-out group-hover:translate-y-[-6px] w-52 md:w-56">
-          <div className="bg-[#12121f]/90 backdrop-blur-xl border border-white/20 rounded-xl p-4 shadow-2xl">
-            <h4 className="text-sm font-semibold text-white mb-1.5">{highlight.title}</h4>
-            <p className="text-xs text-white/70 leading-relaxed">{highlight.description}</p>
-          </div>
-          <div className="absolute left-1/2 -translate-x-1/2 -mt-1.5 w-3 h-3 bg-[#12121f]/90 border-l border-b border-white/20 rotate-45" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function HeroHotspots() {
-  return (
-    <div className="absolute inset-0 z-10">
-      {highlights.map(highlight => (
-        <HeroHotspot key={highlight.id} highlight={highlight} />
-      ))}
-    </div>
-  );
-}
-
 function HeroBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -252,8 +190,6 @@ export default function HomeHero() {
           </div>
         </div>
       </div>
-
-      <HeroHotspots />
     </section>
   );
 }

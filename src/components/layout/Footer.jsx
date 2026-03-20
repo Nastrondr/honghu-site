@@ -12,21 +12,13 @@ const Footer = () => {
               <div className="flex flex-wrap items-center gap-8 mt-4">
                 <div className="flex flex-col items-center">
                   <div className="w-28 h-28 rounded-xl bg-white/8 backdrop-blur-sm border border-white/15 flex items-center justify-center p-4 mb-2">
-                    <img
-                      src="/assets-image-logo/zhongguoyidong.jpg"
-                      alt="中国移动通信集团"
-                      className="w-full h-full object-contain object-center"
-                    />
+                    <span className="text-xs text-white/40">中国移动</span>
                   </div>
                   <span className="text-xs text-white/60">中国移动通信集团</span>
                 </div>
                 <div className="flex flex-col items-center">
                   <div className="w-28 h-28 rounded-xl bg-white/8 backdrop-blur-sm border border-white/15 flex items-center justify-center p-4 mb-2">
-                    <img
-                      src="/assets-image-logo/gongxinbu.jpg"
-                      alt="工业和信息化部"
-                      className="w-full h-full object-contain object-center"
-                    />
+                    <span className="text-xs text-white/40">工信部</span>
                   </div>
                   <span className="text-xs text-white/60">工业和信息化部</span>
                 </div>

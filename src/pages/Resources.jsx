@@ -73,7 +73,7 @@ const Resources = () => {
         <div className="container mx-auto px-4 max-w-7xl">
           <h2 className="text-3xl font-bold text-neutral-800 mb-12 text-center">资源详情</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="bg-white rounded-2xl shadow-sm p-8 border border-neutral-100">
+            <div className="glass-card rounded-2xl p-8 group">
               <h3 className="text-xl font-semibold text-neutral-800 mb-4">高性能GPU算力</h3>
               <p className="text-neutral-600 mb-4">
                 提供大规模GPU集群资源，支持复杂模型训练和推理，为参赛项目提供强大的计算支持。
@@ -82,7 +82,7 @@ const Resources = () => {
                 包含多种型号GPU，满足不同场景的计算需求，降低参赛团队的硬件成本。
               </p>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm p-8 border border-neutral-100">
+            <div className="glass-card rounded-2xl p-8 group">
               <h3 className="text-xl font-semibold text-neutral-800 mb-4 group-hover:text-primary transition-colors duration-300">专业导师团队</h3>
               <p className="text-neutral-600 mb-4">
                 汇聚行业专家和学术大咖，为参赛团队提供专业指导和技术支持，助力项目优化。
@@ -91,7 +91,7 @@ const Resources = () => {
                 定期举办线上线下辅导活动，解答技术难题，分享行业经验和最佳实践。
               </p>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm p-8 border border-neutral-100">
+            <div className="glass-card rounded-2xl p-8 group">
               <h3 className="text-xl font-semibold text-neutral-800 mb-4">开放数据集</h3>
               <p className="text-neutral-600 mb-4">
                 提供多领域高质量数据集，覆盖计算机视觉、自然语言处理、语音识别等多个AI应用方向。
@@ -100,7 +100,7 @@ const Resources = () => {
                 数据经过脱敏处理，确保合规性，为参赛项目提供丰富的训练和测试数据。
               </p>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm p-8 border border-neutral-100">
+            <div className="glass-card rounded-2xl p-8 group">
               <h3 className="text-xl font-semibold text-neutral-800 mb-4">开发工具支持</h3>
               <p className="text-neutral-600 mb-4">
                 提供主流AI开发框架和工具，包括PyTorch、TensorFlow、Hugging Face等，简化开发流程。
@@ -109,7 +109,7 @@ const Resources = () => {
                 配置开发环境，提供技术文档和教程，帮助参赛团队快速上手和开发。
               </p>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm p-8 border border-neutral-100">
+            <div className="glass-card rounded-2xl p-8 group">
               <h3 className="text-xl font-semibold text-neutral-800 mb-4">项目孵化机会</h3>
               <p className="text-neutral-600 mb-4">
                 优秀项目有机会获得孵化支持，包括办公空间、资金支持、市场推广等全方位资源。
@@ -118,7 +118,7 @@ const Resources = () => {
                 对接投资机构和产业合作伙伴，为项目提供商业化落地的机会和渠道。
               </p>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm p-8 border border-neutral-100">
+            <div className="glass-card rounded-2xl p-8 group">
               <h3 className="text-xl font-semibold text-neutral-800 mb-4">丰厚奖励体系</h3>
               <p className="text-neutral-600 mb-4">
                 设立多个奖项，包括一二三等奖、最佳创新奖、最佳应用奖等，提供丰厚奖金和证书。
@@ -147,19 +147,19 @@ const Resources = () => {
                 提供最新GPU集群和AI训练环境，支持大规模模型训练，为参赛项目提供强大计算支持。
               </p>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm p-8 border border-neutral-100 hover:shadow-md transition-shadow">
-              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
+            <div className="glass-card rounded-2xl p-8 group">
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-neutral-800 mb-4">专业导师团队</h3>
+              <h3 className="text-xl font-semibold text-neutral-800 mb-4 group-hover:text-primary transition-colors duration-300">专业导师团队</h3>
               <p className="text-neutral-600">
                 汇聚行业专家和学术大咖，为参赛团队提供全程辅导，解答技术难题，分享行业经验。
               </p>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm p-8 border border-neutral-100 hover:shadow-md transition-shadow">
-              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
+            <div className="glass-card rounded-2xl p-8 group">
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>

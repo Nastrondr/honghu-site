@@ -57,11 +57,11 @@ const Dashboard = () => {
   ];
 
   const steps = [
-    { name: '报名参赛', status: 'completed' },
-    { name: '组队协作', status: 'completed' },
-    { name: '下载数据', status: 'completed' },
-    { name: '提交作品', status: 'current' },
-    { name: '查看结果', status: 'pending' }
+    { name: '报名参赛', status: 'completed', date: '2025.4-5' },
+    { name: '组队协作', status: 'completed', date: '2025.4-5' },
+    { name: '下载数据', status: 'completed', date: '2025.6' },
+    { name: '提交作品', status: 'current', date: '2025.7-8' },
+    { name: '查看结果', status: 'pending', date: '2025.9' }
   ];
 
   if (!isAuthenticated) {
@@ -133,35 +133,30 @@ const Dashboard = () => {
         </div>
 
         <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-          <h2 className="text-lg font-bold text-neutral-800 mb-6">我的进度</h2>
-          <div className="relative">
-            <div className="hidden md:block absolute top-5 left-0 right-0 h-1 bg-neutral-200"></div>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              {steps.map((step, index) => (
-                <div key={index} className="relative text-center">
-                  <div className="flex justify-center mb-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-medium ${
-                      step.status === 'completed' ? 'bg-primary text-white' :
-                      step.status === 'current' ? 'bg-primary text-white ring-4 ring-primary/20' :
-                      'bg-neutral-200 text-neutral-500'
-                    }`}>
-                      {step.status === 'completed' ? (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : (
-                        index + 1
-                      )}
-                    </div>
-                  </div>
-                  <p className={`text-sm font-medium ${
-                    step.status === 'completed' || step.status === 'current' ? 'text-neutral-800' : 'text-neutral-400'
-                  }`}>
-                    {step.name}
-                  </p>
+          <h2 className="text-xl font-semibold text-neutral-800 mb-4">我的进度</h2>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {steps.map((step, index) => (
+              <div key={index} className="text-center">
+                <div className={`text-base font-semibold mb-1 ${
+                  step.status === 'current' ? 'text-primary' : 
+                  step.status === 'completed' ? 'text-neutral-800' : 'text-neutral-500'
+                }`}>
+                  {step.name}
                 </div>
-              ))}
-            </div>
+                <div className="text-sm text-neutral-500 mb-3">
+                  {step.date}
+                </div>
+                <div className="h-1.5 rounded-full bg-neutral-200 overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full transition-all ${
+                      step.status === 'completed' ? 'bg-primary w-full' : 
+                      step.status === 'current' ? 'bg-primary w-2/3' : 
+                      'bg-neutral-200 w-0'
+                    }`}
+                  ></div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
