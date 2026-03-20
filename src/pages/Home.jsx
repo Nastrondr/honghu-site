@@ -12,57 +12,68 @@ const Home = () => {
       <section className="py-20">
         <div className="container mx-auto px-4 max-w-7xl">
           <h2 className="text-3xl font-bold text-neutral-800 mb-16 text-center">大赛核心亮点</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* 主卡 - 百万奖金 */}
-            <div className="lg:col-span-2 glass-card rounded-2xl p-8 relative overflow-hidden group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
-              <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-primary/20 to-transparent rounded-full blur-2xl group-hover:scale-110 transition-all duration-500"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* OPC定向孵化 */}
+            <div className="glass-card rounded-2xl p-8 relative overflow-hidden group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/20 to-transparent rounded-full blur-2xl group-hover:scale-110 transition-all duration-500"></div>
               <div className="relative z-10">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary to-purple-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-primary/20">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <div className="w-14 h-14 bg-gradient-to-br from-primary to-purple-500 rounded-xl flex items-center justify-center mb-5 shadow-lg shadow-primary/20">
+                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-bold text-neutral-800 mb-4">百万奖金池</h3>
-                <p className="text-neutral-600 mb-6">
-                  总奖金池超过100万元，设置金奖、银奖、铜奖及最佳创新奖等多个奖项，奖励优秀参赛项目和团队
+                <h3 className="text-xl font-semibold text-neutral-800 mb-3">OPC定向孵化</h3>
+                <p className="text-neutral-600 text-sm">
+                  通过实战赛题、创业辅导、算力支持、投融资对接，选拔"超级个体"
                 </p>
-                <div className="flex items-center gap-2 text-sm text-primary font-medium">
-                  了解详情
-                  <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
-                </div>
               </div>
             </div>
             
-            {/* 次卡 - 顶级导师 */}
+            {/* 个人算力全程赋能 */}
             <div className="glass-card rounded-2xl p-8 relative overflow-hidden group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-secondary/20 to-transparent rounded-full blur-2xl group-hover:scale-110 transition-all duration-500"></div>
               <div className="relative z-10">
                 <div className="w-14 h-14 bg-gradient-to-br from-secondary to-orange-400 rounded-xl flex items-center justify-center mb-5 shadow-lg shadow-secondary/20">
                   <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-neutral-800 mb-3">顶级导师</h3>
+                <h3 className="text-xl font-semibold text-neutral-800 mb-3">个人算力全程赋能</h3>
                 <p className="text-neutral-600 text-sm">
-                  汇聚行业专家和学术领袖，提供专业指导和评审，助力项目成长
+                  为每位选手配备个人算力账户，引入算力额度及交易机制
                 </p>
               </div>
             </div>
             
-            {/* 次卡 - 产业对接 */}
+            {/* 场景与市场对接 */}
             <div className="glass-card rounded-2xl p-8 relative overflow-hidden group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/20 to-transparent rounded-full blur-2xl group-hover:scale-110 transition-all duration-500"></div>
               <div className="relative z-10">
                 <div className="w-14 h-14 bg-gradient-to-br from-primary to-blue-400 rounded-xl flex items-center justify-center mb-5 shadow-lg shadow-primary/20">
                   <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-neutral-800 mb-3">产业对接</h3>
+                <h3 className="text-xl font-semibold text-neutral-800 mb-3">场景与市场对接</h3>
                 <p className="text-neutral-600 text-sm">
-                  优秀项目有机会对接企业资源，实现商业化落地，开启创业之路
+                  赛题源自数字金融、教育、健康等真实场景，对接中国移动生态渠道
+                </p>
+              </div>
+            </div>
+
+            {/* 资本闭环 */}
+            <div className="glass-card rounded-2xl p-8 relative overflow-hidden group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-secondary/20 to-transparent rounded-full blur-2xl group-hover:scale-110 transition-all duration-500"></div>
+              <div className="relative z-10">
+                <div className="w-14 h-14 bg-gradient-to-br from-secondary to-purple-400 rounded-xl flex items-center justify-center mb-5 shadow-lg shadow-secondary/20">
+                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-neutral-800 mb-3">资本闭环</h3>
+                <p className="text-neutral-600 text-sm">
+                  联合中投万方等机构，"投早、投小、投长期"，提供全周期资本服务
                 </p>
               </div>
             </div>
@@ -70,15 +81,15 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 二、四大专项赛道 */}
+      {/* 二、五大专项赛道 */}
       <section className="py-20">
         <div className="container mx-auto px-4 max-w-7xl">
-          <h2 className="text-3xl font-bold text-neutral-800 mb-16 text-center">四大专项赛道</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <h2 className="text-3xl font-bold text-neutral-800 mb-16 text-center">五大专项赛道</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="glass-card rounded-2xl p-8 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
               <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:shadow-md transition-all">
                 <svg className="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <h3 className="text-xl font-semibold text-neutral-800 mb-4">数字金融</h3>
@@ -90,10 +101,10 @@ const Home = () => {
             <div className="glass-card rounded-2xl p-8 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
               <div className="w-14 h-14 bg-gradient-to-br from-secondary/20 to-secondary/5 rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:shadow-md transition-all">
                 <svg className="w-7 h-7 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-neutral-800 mb-4">智慧教育</h3>
+              <h3 className="text-xl font-semibold text-neutral-800 mb-4">数字教育</h3>
               <p className="text-neutral-600 text-sm">
                 开发AI驱动的智能教育工具，提升教学效率和学习体验
               </p>
@@ -102,24 +113,36 @@ const Home = () => {
             <div className="glass-card rounded-2xl p-8 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
               <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:shadow-md transition-all">
                 <svg className="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-neutral-800 mb-4">智能制造</h3>
+              <h3 className="text-xl font-semibold text-neutral-800 mb-4">数字健康</h3>
               <p className="text-neutral-600 text-sm">
-                利用AI技术优化生产流程，实现智能工厂和工业互联网创新
+                运用AI技术辅助诊断、药物研发和健康管理，提升医疗服务质量
               </p>
             </div>
             
             <div className="glass-card rounded-2xl p-8 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
               <div className="w-14 h-14 bg-gradient-to-br from-secondary/20 to-secondary/5 rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:shadow-md transition-all">
                 <svg className="w-7 h-7 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-neutral-800 mb-4">智慧医疗</h3>
+              <h3 className="text-xl font-semibold text-neutral-800 mb-4">数字文旅</h3>
               <p className="text-neutral-600 text-sm">
-                运用AI技术辅助诊断、药物研发和健康管理，提升医疗服务质量
+                利用AI技术推动文化传播、旅游服务智能化与体验创新
+              </p>
+            </div>
+
+            <div className="glass-card rounded-2xl p-8 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
+              <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center mb-6 shadow-sm group-hover:shadow-md transition-all">
+                <svg className="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-neutral-800 mb-4">数字法务</h3>
+              <p className="text-neutral-600 text-sm">
+                运用AI技术提升法律服务效率，推动智能合规与风险预警
               </p>
             </div>
           </div>
@@ -132,79 +155,12 @@ const Home = () => {
           <h2 className="text-3xl font-bold text-neutral-800 mb-4 text-center">赛事中心</h2>
           <p className="text-neutral-600 mb-12 text-center">当前开放赛事 · 实时更新</p>
           
-          {/* 分段切换控件 */}
-          <div className="flex items-center justify-center mb-8">
-            <div className="relative bg-white/50 backdrop-blur-[12px] rounded-full p-1 inline-flex">
-              <Link 
-                to="/competition-center" 
-                className="relative z-10 px-6 py-2.5 text-sm font-medium transition-all duration-300 text-white"
-              >
-                赛事列表
-              </Link>
-              <Link 
-                to="/competition-center?tab=info" 
-                className="relative z-10 px-6 py-2.5 text-sm font-medium transition-all duration-300 text-neutral-600 hover:text-neutral-800"
-              >
-                关键信息
-              </Link>
-              {/* 滑动底板 */}
-              <div 
-                className="absolute top-1 left-1 bottom-1 rounded-full bg-gradient-to-r from-primary to-purple-500 shadow-md shadow-primary/20 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                style={{ width: 'calc(50% - 2px)' }}
-              />
-            </div>
-            
-            {/* 申请办赛CTA */}
-            <div className="ml-4">
-              <Link 
-                to="/apply-competition" 
-                className="text-sm text-primary/80 hover:text-primary font-medium flex items-center gap-1 transition-all hover:translate-x-1"
-              >
-                想举办赛事？
-                <span className="flex items-center">
-                  申请成为主办方
-                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
-                </span>
-              </Link>
-            </div>
-          </div>
-          
-          {/* 搜索栏 */}
-          <div className="glass-card rounded-2xl p-6 mb-8">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <input
-                  type="text"
-                  placeholder="搜索赛事名称、描述..."
-                  className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                />
-              </div>
-              <div className="flex gap-4">
-                <select className="px-3 py-2 rounded-lg border border-neutral-200 text-sm focus:border-primary focus:outline-none">
-                  <option>全部赛道</option>
-                  <option>数字金融</option>
-                  <option>智慧教育</option>
-                  <option>智能制造</option>
-                  <option>智慧医疗</option>
-                </select>
-                <select className="px-3 py-2 rounded-lg border border-neutral-200 text-sm focus:border-primary focus:outline-none">
-                  <option>全部状态</option>
-                  <option>进行中</option>
-                  <option>即将开始</option>
-                  <option>已结束</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          
           {/* 赛事卡片 */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="glass-card rounded-2xl p-6 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-semibold text-neutral-800">2025年梧桐·鸿鹄人工智能应用创新大赛</h3>
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">进行中</span>
+            <Link to="/competition/1" className="glass-card rounded-2xl p-6 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col h-full cursor-pointer">
+              <div className="flex justify-between items-start gap-3 mb-4">
+                <h3 className="text-lg font-semibold text-neutral-800 flex-1 min-w-0">2025年梧桐·鸿鹄人工智能应用创新大赛</h3>
+                <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 flex-shrink-0">进行中</span>
               </div>
               <div className="text-neutral-600 text-sm mb-4">
                 <div className="flex items-center mb-2">
@@ -224,20 +180,17 @@ const Home = () => {
                   面向全国的人工智能应用创新大赛，鼓励选手开发具有实际应用价值的AI解决方案。
                 </p>
               </div>
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="flex flex-wrap gap-2 mt-auto">
                 <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs">人工智能</span>
                 <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs">创新应用</span>
                 <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs">全国赛</span>
               </div>
-              <Link to="/competition/1" className="block w-full py-2 text-center border border-primary text-primary rounded-lg text-sm font-medium hover:bg-primary/10 transition-all">
-                查看详情
-              </Link>
-            </div>
+            </Link>
             
-            <div className="glass-card rounded-2xl p-6 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-semibold text-neutral-800">2025年梧桐·鸿鹄AI算法挑战赛</h3>
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">即将开始</span>
+            <Link to="/competition/2" className="glass-card rounded-2xl p-6 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col h-full cursor-pointer">
+              <div className="flex justify-between items-start gap-3 mb-4">
+                <h3 className="text-lg font-semibold text-neutral-800 flex-1 min-w-0">2025年梧桐·鸿鹄AI算法挑战赛</h3>
+                <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 flex-shrink-0">即将开始</span>
               </div>
               <div className="text-neutral-600 text-sm mb-4">
                 <div className="flex items-center mb-2">
@@ -257,20 +210,17 @@ const Home = () => {
                   专注于AI算法优化的技术挑战赛，考验选手的算法设计和实现能力。
                 </p>
               </div>
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="flex flex-wrap gap-2 mt-auto">
                 <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs">算法</span>
                 <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs">AI</span>
                 <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs">技术挑战</span>
               </div>
-              <Link to="/competition/2" className="block w-full py-2 text-center border border-primary text-primary rounded-lg text-sm font-medium hover:bg-primary/10 transition-all">
-                查看详情
-              </Link>
-            </div>
+            </Link>
             
-            <div className="glass-card rounded-2xl p-6 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-semibold text-neutral-800">2025年梧桐·鸿鹄区县AI应用创新大赛</h3>
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">进行中</span>
+            <Link to="/competition/3" className="glass-card rounded-2xl p-6 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col h-full cursor-pointer">
+              <div className="flex justify-between items-start gap-3 mb-4">
+                <h3 className="text-lg font-semibold text-neutral-800 flex-1 min-w-0">2025年梧桐·鸿鹄区县AI应用创新大赛</h3>
+                <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 flex-shrink-0">进行中</span>
               </div>
               <div className="text-neutral-600 text-sm mb-4">
                 <div className="flex items-center mb-2">
@@ -290,15 +240,12 @@ const Home = () => {
                   面向各区县的人工智能应用创新大赛，鼓励选手开发适合本地场景的AI解决方案。
                 </p>
               </div>
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="flex flex-wrap gap-2 mt-auto">
                 <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs">人工智能</span>
                 <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs">区县应用</span>
                 <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs">地方赛</span>
               </div>
-              <Link to="/competition/3" className="block w-full py-2 text-center border border-primary text-primary rounded-lg text-sm font-medium hover:bg-primary/10 transition-all">
-                查看详情
-              </Link>
-            </div>
+            </Link>
           </div>
           
           <div className="text-center mt-12">

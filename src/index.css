@@ -39,39 +39,41 @@ body {
   }
 }
 
-/* 全局浅色渐变背景 */
+/* 全局统一背景系统 - 从Hero到全站 */
 body {
   background: 
-    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse 70% 50% at 80% 90%, rgba(116, 99, 236, 0.06) 0%, transparent 50%),
-    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #f8fafc 100%);
+    radial-gradient(ellipse 100% 80% at 50% 0%, rgba(116, 99, 236, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 20% 20%, rgba(91, 110, 255, 0.04) 0%, transparent 40%),
+    radial-gradient(ellipse 50% 30% at 80% 80%, rgba(116, 99, 236, 0.03) 0%, transparent 40%),
+    linear-gradient(180deg, #f8faff 0%, #f5f7ff 30%, #f8faff 60%, #fafbff 100%);
   background-attachment: fixed;
   background-size: 100% 100%;
 }
 
-/* 玻璃卡片基础样式 */
+/* 玻璃卡片基础样式 - 统一全站 */
 .glass-card {
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 2px 16px rgba(116, 99, 236, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
   transition: all var(--motion-normal) var(--ease-standard);
 }
 
 .glass-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.06);
-  border-color: rgba(255, 255, 255, 0.7);
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 6px 28px rgba(116, 99, 236, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05);
+  border-color: rgba(255, 255, 255, 0.8);
 }
 
 /* 玻璃卡片深色变体 */
 .glass-card-dark {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.4);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 2px 12px rgba(116, 99, 236, 0.04);
   transition: all var(--motion-normal) var(--ease-standard);
 }
 

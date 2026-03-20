@@ -22,6 +22,7 @@ import Dashboard from './pages/Dashboard';
 import Experts from './pages/Experts';
 import EcoProducts from './pages/EcoProducts';
 import ApplyCompetition from './pages/ApplyCompetition';
+import Contact from './pages/Contact';
 import { AuthProvider } from './context/AuthContext';
 
 const AnimatedRoutes = () => {
@@ -41,6 +42,7 @@ const AnimatedRoutes = () => {
         <Route path="/experts" element={<Experts />} />
         <Route path="/eco-products" element={<EcoProducts />} />
         <Route path="/apply-competition" element={<ApplyCompetition />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/register-competition" element={<RegisterCompetition />} />
@@ -58,7 +60,7 @@ function App() {
     <AuthProvider>
       <CustomCursor />
       <Router>
-      <div className="min-h-screen flex flex-col bg-neutral-100">
+      <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow">
           <AnimatedRoutes />

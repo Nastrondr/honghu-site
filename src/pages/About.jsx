@@ -2,7 +2,7 @@ import React from 'react';
 
 const About = () => {
   return (
-    <div className="bg-gray-50 min-h-screen animate-fadeIn">
+    <div className="min-h-screen animate-fadeIn">
       {/* 页面头部 */}
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">

@@ -55,6 +55,7 @@ const Header = () => {
     { path: '/experts', label: '专家查询' },
     { path: '/eco-products', label: '生态产品' },
     { path: '/about', label: '关于大赛' },
+    { path: '/contact', label: '联系我们' },
   ];
 
   const renderNavLink = (item, index) => {
@@ -65,9 +66,9 @@ const Header = () => {
         <Dropdown
           key={index}
           trigger={
-            <span className={`flex items-center text-sm font-medium transition-all duration-300 cursor-pointer ${isActive ? 'text-primary' : 'text-neutral-700 hover:text-primary'}`}>
+            <span className={`flex items-center text-[13px] transition-all duration-300 cursor-pointer ${isActive ? 'text-primary font-medium' : 'text-neutral-500 hover:text-primary'}`}>
               {item.label}
-              <svg className="w-4 h-4 ml-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 ml-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </span>
@@ -82,7 +83,7 @@ const Header = () => {
       <Link
         key={index}
         to={item.path}
-        className={`text-sm font-medium transition-all duration-300 relative ${isActive ? 'text-primary' : 'text-neutral-700 hover:text-primary'}`}
+        className={`text-[13px] transition-all duration-300 relative ${isActive ? 'text-primary font-medium' : 'text-neutral-500 hover:text-primary'}`}
       >
         {item.label}
         {isActive && (
@@ -97,34 +98,41 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white/70 backdrop-blur-md border-b border-white/50 sticky top-0 z-50">
+    <header className="bg-white/50 backdrop-blur-sm border-b border-slate-100/50 sticky top-0 z-50">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14">
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <span className="text-2xl font-bold text-primary">梧桐·鸿鹄</span>
-              <span className="ml-2 text-sm text-neutral-600">AI创新大赛</span>
+              <img 
+                src="/assets/image/logo/logonotext.png" 
+                alt="梧桐·鸿鹄" 
+                className="w-8 h-8 mr-1.5"
+              />
+              <div>
+                <span className="text-xl font-semibold text-primary">梧桐·鸿鹄</span>
+                <span className="ml-1.5 text-xs text-neutral-500">AI创新大赛</span>
+              </div>
             </Link>
           </div>
           
           {/* 桌面导航 */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-6">
             <Link
               to="/"
-              className={`text-sm font-medium transition-all duration-300 relative ${location.pathname === '/' ? 'text-primary' : 'text-neutral-700 hover:text-primary'}`}
+              className={`text-[13px] transition-all duration-300 relative ${location.pathname === '/' ? 'text-primary font-medium' : 'text-neutral-500 hover:text-primary'}`}
             >
               首页
             </Link>
             
             {navItems.map((item, index) => renderNavLink(item, index))}
             
-            <div className="flex items-center space-x-4 ml-4 border-l border-neutral-200 pl-6">
+            <div className="flex items-center space-x-3 ml-3 border-l border-slate-200/50 pl-4">
               {isAuthenticated ? (
                 <Dropdown
                   trigger={
-                    <span className="flex items-center text-sm font-medium text-neutral-700 hover:text-primary transition-all duration-300 cursor-pointer">
-                      <span className="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center mr-2">
-                        <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <span className="flex items-center text-[13px] text-neutral-500 hover:text-primary transition-all duration-300 cursor-pointer">
+                      <span className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center mr-1.5">
+                        <svg className="w-3.5 h-3.5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                       </span>
@@ -146,10 +154,10 @@ const Header = () => {
                 />
               ) : (
                 <>
-                  <Link to="/login" className="text-sm font-medium text-neutral-700 hover:text-primary transition-all duration-300">
+                  <Link to="/login" className="text-[13px] text-neutral-500 hover:text-primary transition-all duration-300">
                     登录
                   </Link>
-                  <Link to="/register" className="text-sm font-medium text-primary hover:text-primary/80 transition-all duration-300">
+                  <Link to="/register" className="text-[13px] text-primary hover:text-primary/80 transition-all duration-300">
                     注册
                   </Link>
                 </>

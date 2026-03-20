@@ -136,7 +136,7 @@ const Experts = () => {
                     setSelectedField(field);
                     setCurrentPage(1);
                   }}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  className={`px-4 py-1 rounded-full text-sm font-medium transition-all ${
                     selectedField === field
                       ? 'bg-primary text-white'
                       : 'bg-neutral-100 text-neutral-600 hover:bg-primary/10 hover:text-primary'

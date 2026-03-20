@@ -12,9 +12,9 @@ const News = () => {
     : newsData.filter(item => item.category === activeCategory);
 
   return (
-    <div className="min-h-screen bg-neutral-50 animate-fadeIn">
+    <div className="min-h-screen animate-fadeIn">
       {/* 页面头部 */}
-      <section className="py-20 bg-white">
+      <section className="py-20">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-neutral-800 mb-4">新闻公告</h1>
@@ -24,7 +24,7 @@ const News = () => {
       </section>
 
       {/* 分类筛选 */}
-      <section className="py-10 bg-neutral-50">
+      <section className="py-10 bg-slate-50/50">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="flex justify-center gap-3">
             <button 
@@ -50,7 +50,7 @@ const News = () => {
       </section>
 
       {/* 新闻列表 */}
-      <section className="py-16 bg-white">
+      <section className="py-16">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {filteredNews.map((news) => (
@@ -77,7 +77,7 @@ const News = () => {
       </section>
 
       {/* 底部CTA */}
-      <section className="py-20 bg-neutral-50">
+      <section className="py-20 bg-slate-50/50">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="bg-gradient-to-r from-primary to-indigo-600 rounded-2xl p-12 text-center">
             <h2 className="text-3xl font-bold text-white mb-6">立即参与赛事，获取更多机会</h2>

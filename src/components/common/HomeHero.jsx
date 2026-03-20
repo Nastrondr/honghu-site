@@ -1,27 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import ParticleCanvas from './ParticleCanvas';
 
-function HeroParticleBg() {
+function HeroBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* 背景主渐变 - 比其他区域稍强 */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(116,99,236,0.15),transparent_30%),linear-gradient(180deg,#f8fafc_0%,#f0f4ff_50%,#f8fafc_100%)]" />
-
-      {/* 标题后方中心光晕 - 蓝紫色 */}
-      <div className="absolute left-1/2 top-[42%] h-[480px] w-[860px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(59,130,246,0.18)_0%,rgba(116,99,236,0.15)_30%,rgba(252,115,36,0.08)_60%,rgba(255,255,255,0)_100%)] blur-3xl" />
-
-      {/* 左侧淡光 - 使用primary紫色 */}
-      <div className="absolute left-[8%] top-[15%] h-[280px] w-[280px] rounded-full bg-[#7463EC]/12 blur-3xl" />
-
-      {/* 右下淡光 - 使用secondary橙色 */}
-      <div className="absolute right-[10%] bottom-[20%] h-[300px] w-[300px] rounded-full bg-[#FC7324]/10 blur-3xl" />
-
-      {/* 顶部轻微白雾，缓和导航栏白底衔接 */}
-      <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/60 via-white/25 to-transparent" />
-
-      {/* 底部平滑过渡层：Hero -> 页面背景 */}
-      <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#f1f5f9]/80 via-transparent to-transparent" />
+      {/* 背景图片 */}
+      <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: 'url(/assets/image/herobanner.png)' }} />
+      
+      {/* 半透明深色遮罩 */}
+      <div className="absolute inset-0 bg-black/30" />
+      
+      {/* 顶部过渡层 - 与导航融合 */}
+      <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#05081f] to-transparent" />
+      
+      {/* 底部过渡层 - 平滑过渡到下一区域 */}
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#f8f9ff]/10 via-[#f8f9ff]/4 to-transparent" />
     </div>
   );
 }
@@ -29,45 +22,50 @@ function HeroParticleBg() {
 export default function HomeHero() {
   return (
     <section className="relative isolate overflow-hidden">
-      <div className="relative min-h-[640px] md:min-h-[720px]">
-        <HeroParticleBg />
+      <div className="relative min-h-[85vh] md:min-h-[88vh] lg:min-h-[90vh]">
+        <HeroBackground />
 
-        {/* 粒子层 */}
-        <div className="absolute inset-0 opacity-50 pointer-events-none">
-          <ParticleCanvas />
-        </div>
-
-        <div className="relative z-10 mx-auto flex min-h-[640px] md:min-h-[720px] max-w-7xl items-center justify-center px-6 pt-24 pb-24 md:px-8">
-          <div className="mx-auto max-w-5xl text-center">
-            {/* 上方标签 */}
-            <div className="mb-6 inline-flex items-center rounded-full border border-white/60 bg-white/55 px-4 py-2 text-sm text-slate-600 shadow-[0_8px_30px_rgba(116,99,236,0.08)] backdrop-blur-md">
-              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#7463EC] shadow-[0_0_10px_rgba(116,99,236,0.6)]" />
+        <div className="relative z-10 mx-auto flex min-h-[85vh] md:min-h-[88vh] lg:min-h-[90vh] max-w-5xl items-center justify-center px-5 pt-32 pb-20 md:px-6 lg:pt-36 lg:pb-24">
+          <div className="mx-auto max-w-2xl text-center">
+            {/* 标签 */}
+            <div className="mb-16 inline-flex items-center rounded-full border border-white/15 bg-white/8 px-5 py-2 text-[13px] text-white/80 backdrop-blur-sm">
+              <span className="mr-2 h-1.5 w-1.5 rounded-full bg-[#7463EC] shadow-[0_0_8px_rgba(116,99,236,0.7)]" />
               全国性人工智能赛事 · OPC 核心孵化平台
             </div>
 
-            <h1 className="hero-title mx-auto max-w-4xl text-[44px] font-black leading-[1.08] tracking-[-0.04em] text-transparent md:text-[78px] bg-clip-text bg-gradient-to-b from-slate-800 to-slate-900">
-              梧桐·鸿鹄
-              <br />
-              人工智能应用创新大赛
+            {/* 主标题 */}
+            <h1 className="mx-auto max-w-xl">
+              <span className="block text-[32px] md:text-[48px] lg:text-[56px] font-semibold leading-[1.2] tracking-tight text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.25)]">
+                梧桐·鸿鹄
+              </span>
+              <span className="block mt-3 text-[36px] md:text-[56px] lg:text-[72px] font-bold leading-[1.05] tracking-tight text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]">
+                人工智能应用创新大赛
+              </span>
             </h1>
 
-            <p className="mx-auto mt-8 max-w-3xl text-lg leading-9 text-slate-600 md:text-[30px] md:leading-[1.7]">
-              以赛促学 · 以赛促用 · 以赛促创，
-              打造面向未来的人工智能应用创新与人才孵化平台
-            </p>
+            {/* 副标题 */}
+            <div className="mt-16 space-y-3">
+              <p className="text-[16px] leading-7 text-white/90 md:text-lg">
+                以赛促学 · 以赛促用 · 以赛促创
+              </p>
+              <p className="text-[15px] leading-6 text-white/70 md:text-[16px]">
+                打造面向未来的人工智能应用创新与人才孵化平台
+              </p>
+            </div>
 
-            <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            {/* 按钮 */}
+            <div className="mt-20 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
                 to="/register"
-                className="group relative inline-flex min-w-[170px] items-center justify-center overflow-hidden rounded-2xl px-8 py-4 text-base font-semibold text-white shadow-[0_12px_34px_rgba(79,70,229,0.28),0_0_0_1px_rgba(255,255,255,0.18)_inset] transition-all duration-300 ease-out bg-[linear-gradient(135deg,#6D5EF8_0%,#5B6EFF_45%,#4F8CFF_100%)] hover:-translate-y-[2px] hover:scale-[1.02] hover:shadow-[0_18px_50px_rgba(79,70,229,0.34),0_0_22px_rgba(96,165,250,0.28)] active:scale-[0.98]"
+                className="group relative inline-flex min-w-[160px] items-center justify-center overflow-hidden rounded-2xl px-8 py-4 text-[15px] font-semibold text-white shadow-[0_4px_20px_rgba(116,99,236,0.4)] transition-all duration-300 ease-out bg-[#7463EC] hover:-translate-y-1 hover:shadow-[0_6px_28px_rgba(116,99,236,0.55)] active:scale-[0.98]"
               >
-                <span className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-[linear-gradient(120deg,transparent_15%,rgba(255,255,255,0.28)_50%,transparent_85%)] translate-x-[-120%] group-hover:translate-x-[120%]" />
-                <span className="relative z-10">立即报名</span>
+                <span className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)] skew-x-12 -translate-x-full group-hover:translate-x-full" />
+                <span className="relative">立即报名</span>
               </Link>
 
               <Link
                 to="/competition-center"
-                className="inline-flex min-w-[170px] items-center justify-center rounded-2xl border border-[#7463EC]/30 bg-white/55 px-8 py-4 text-base font-semibold text-[#7463EC] backdrop-blur-md shadow-[0_8px_24px_rgba(116,99,236,0.08)] transition-all duration-300 ease-out hover:-translate-y-[2px] hover:scale-[1.02] hover:border-[#7463EC]/50 hover:bg-white/72 hover:shadow-[0_14px_34px_rgba(116,99,236,0.14)] active:scale-[0.98]"
+                className="inline-flex min-w-[160px] items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-8 py-4 text-[15px] font-semibold text-white/80 backdrop-blur-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:bg-white/18 hover:text-white hover:border-white/30 active:scale-[0.98]"
               >
                 查看赛事
               </Link>

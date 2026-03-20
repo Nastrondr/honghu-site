@@ -4,9 +4,9 @@ import PrimaryButton from '../components/common/PrimaryButton';
 
 const Resources = () => {
   return (
-    <div className="min-h-screen bg-neutral-50 animate-fadeIn">
+    <div className="min-h-screen animate-fadeIn">
       {/* 页面头部 */}
-      <section className="py-20 bg-white">
+      <section className="py-20">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-neutral-800 mb-4">资源支持</h1>
@@ -16,7 +16,7 @@ const Resources = () => {
       </section>
 
       {/* 资源类型总览 */}
-      <section className="py-16 bg-neutral-50">
+      <section className="py-16 bg-slate-50/50">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             <div className="bg-white rounded-2xl shadow-sm p-6 border border-neutral-100">
@@ -69,7 +69,7 @@ const Resources = () => {
       </section>
 
       {/* 详细说明模块 */}
-      <section className="py-20 bg-white">
+      <section className="py-20">
         <div className="container mx-auto px-4 max-w-7xl">
           <h2 className="text-3xl font-bold text-neutral-800 mb-12 text-center">资源详情</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -132,7 +132,7 @@ const Resources = () => {
       </section>
 
       {/* 重点强化模块 */}
-      <section className="py-20 bg-neutral-50">
+      <section className="py-20 bg-slate-50/50">
         <div className="container mx-auto px-4 max-w-7xl">
           <h2 className="text-3xl font-bold text-neutral-800 mb-12 text-center">核心支持亮点</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -174,7 +174,7 @@ const Resources = () => {
       </section>
 
       {/* 底部CTA */}
-      <section className="py-20 bg-white">
+      <section className="py-20">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="bg-gradient-to-r from-primary to-indigo-600 rounded-2xl p-12 text-center">
             <h2 className="text-3xl font-bold text-white mb-6">加入大赛，开启你的AI创新实践</h2>

@@ -215,7 +215,7 @@ const CompetitionDetail = () => {
         <div className="lg:col-span-2">
           <div className="bg-white rounded-xl shadow-md p-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
-              <h1 className="text-3xl font-bold text-neutral-800 mb-4 md:mb-0">{competition.title}</h1>
+              <h1 className="text-[26px] font-semibold text-neutral-800 mb-4 md:mb-0">{competition.title}</h1>
               <span className={`px-4 py-2 rounded-full text-sm font-medium ${competition.status === '进行中' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
                 {competition.status}
               </span>
@@ -246,7 +246,7 @@ const CompetitionDetail = () => {
             
             
             <div className="mb-20">
-              <h2 className="text-2xl font-semibold text-neutral-800 mb-4">赛事简介</h2>
+              <h2 className="text-xl font-semibold text-neutral-800 mb-4">赛事简介</h2>
               <p className="text-neutral-600">
                 本次大赛旨在推动人工智能技术在各行业的应用落地，鼓励创新思维和实践能力。通过比赛平台，参赛选手可以展示自己的技术实力和创新想法，获得专业指导和资源支持。
               </p>
@@ -255,7 +255,7 @@ const CompetitionDetail = () => {
             
             
             <div className="mb-20">
-              <h2 className="text-2xl font-semibold text-neutral-800 mb-6">赛程安排</h2>
+              <h2 className="text-xl font-semibold text-neutral-800 mb-4">赛程安排</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
                   { phase: '报名阶段', time: '2025.4-5', status: 'completed' },
@@ -283,7 +283,7 @@ const CompetitionDetail = () => {
 
             
             <div className="mb-20">
-              <h2 className="text-2xl font-semibold text-neutral-800 mb-6">作品提交要求</h2>
+              <h2 className="text-xl font-semibold text-neutral-800 mb-4">作品提交要求</h2>
               <div className="space-y-4">
                 {competition.submissionRequirements.map((req, index) => (
                   <div key={index} className="flex">
@@ -293,7 +293,7 @@ const CompetitionDetail = () => {
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-neutral-800 mb-1">{req.title}</h3>
+                      <h3 className="text-base font-medium text-neutral-800 mb-1">{req.title}</h3>
                       <p className="text-neutral-600">{req.description}</p>
                     </div>
                   </div>
@@ -304,7 +304,7 @@ const CompetitionDetail = () => {
 
             
             <div className="mb-20">
-              <h2 className="text-2xl font-semibold text-neutral-800 mb-6">评审标准</h2>
+              <h2 className="text-xl font-semibold text-neutral-800 mb-4">评审标准</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {competition.evaluationCriteria.map((criterion, index) => (
                   <div key={index} className="bg-neutral-50 rounded-xl p-6">
@@ -330,7 +330,7 @@ const CompetitionDetail = () => {
                         </svg>
                       )}
                     </div>
-                    <h3 className="text-lg font-semibold text-neutral-800 mb-3">{criterion.title}</h3>
+                    <h3 className="text-base font-medium text-neutral-800 mb-3">{criterion.title}</h3>
                     <p className="text-neutral-600">{criterion.description}</p>
                   </div>
                 ))}
@@ -342,7 +342,7 @@ const CompetitionDetail = () => {
 
             
             <div className="bg-primary/10 rounded-xl p-8 text-center mb-8">
-              <h2 className="text-2xl font-bold text-neutral-800 mb-4">立即报名参赛</h2>
+              <h2 className="text-xl font-semibold text-neutral-800 mb-4">立即报名参赛</h2>
               <p className="text-neutral-600 mb-6">
                 参与梧桐·鸿鹄人工智能应用创新大赛，展示你的创新才华，开启AI领域的精彩旅程
               </p>
@@ -364,7 +364,7 @@ const CompetitionDetail = () => {
           <div className="sticky top-8 space-y-6">
             {/* 报名卡 */}
             <div className="bg-[#7463EC] text-white rounded-2xl p-8 shadow-lg">
-              <h3 className="text-xl font-bold mb-4">立即报名</h3>
+              <h3 className="text-lg font-semibold mb-4">立即报名</h3>
               <p className="mb-6 text-white/90">报名参赛，参与人工智能应用创新实践</p>
               <Link to="/register-competition" className="w-full bg-white text-[#7463EC] px-6 py-3 rounded-lg font-medium hover:bg-neutral-100 transition-colors mb-4 inline-block text-center">
                 立即报名
@@ -376,7 +376,7 @@ const CompetitionDetail = () => {
             
             {/* 参赛指引 */}
             <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-lg font-semibold text-neutral-800 mb-4">参赛指引</h3>
+              <h3 className="text-base font-medium text-neutral-800 mb-4">参赛指引</h3>
               <ul className="space-y-3 text-neutral-600">
                 <li className="flex items-start">
                   <svg className="w-5 h-5 mr-3 text-primary mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -407,7 +407,7 @@ const CompetitionDetail = () => {
             
             {/* 联系方式 */}
             <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-lg font-semibold text-neutral-800 mb-4">联系方式</h3>
+              <h3 className="text-base font-medium text-neutral-800 mb-4">联系方式</h3>
               <div className="space-y-3">
                 <div className="flex items-start">
                   <svg className="w-5 h-5 mr-3 text-primary mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

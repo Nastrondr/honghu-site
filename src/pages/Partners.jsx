@@ -90,9 +90,9 @@ const companies = [
 
 const Partners = () => {
   return (
-    <div className="min-h-screen bg-neutral-50 animate-fadeIn">
+    <div className="min-h-screen animate-fadeIn">
       {/* 页面头部 */}
-      <section className="py-20 bg-white">
+      <section className="py-20">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-neutral-800 mb-4">合作单位</h1>
@@ -102,7 +102,7 @@ const Partners = () => {
       </section>
 
       {/* 主办单位 */}
-      <section className="py-16 bg-neutral-50">
+      <section className="py-16 bg-slate-50/50">
         <div className="container mx-auto px-4 max-w-7xl">
           <h2 className="text-2xl font-semibold text-neutral-800 mb-10 text-center">主办单位</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -127,7 +127,7 @@ const Partners = () => {
       </section>
 
       {/* 联合主办/指导单位 */}
-      <section className="py-16 bg-white">
+      <section className="py-16">
         <div className="container mx-auto px-4 max-w-7xl">
           <h2 className="text-2xl font-semibold text-neutral-800 mb-10 text-center">联合主办 / 指导单位</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -160,7 +160,7 @@ const Partners = () => {
       </section>
 
       {/* 合作伙伴 */}
-      <section className="py-16 bg-neutral-50">
+      <section className="py-16 bg-slate-50/50">
         <div className="container mx-auto px-4 max-w-7xl">
           <h2 className="text-2xl font-semibold text-neutral-800 mb-10 text-center">合作伙伴</h2>
           
@@ -215,7 +215,7 @@ const Partners = () => {
       </section>
 
       {/* 支持机构 */}
-      <section className="py-16 bg-white">
+      <section className="py-16">
         <div className="container mx-auto px-4 max-w-7xl">
           <h2 className="text-2xl font-semibold text-neutral-800 mb-10 text-center">支持机构</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -231,7 +231,7 @@ const Partners = () => {
       </section>
 
       {/* 合作说明 */}
-      <section className="py-16 bg-neutral-50">
+      <section className="py-16 bg-slate-50/50">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="bg-white rounded-2xl shadow-sm p-10 border border-neutral-100">
             <h2 className="text-2xl font-semibold text-neutral-800 mb-6 text-center">合作说明</h2>
@@ -246,7 +246,7 @@ const Partners = () => {
       </section>
 
       {/* 底部CTA */}
-      <section className="py-20 bg-white">
+      <section className="py-20">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="bg-gradient-to-r from-primary to-indigo-600 rounded-2xl p-12 text-center">
             <h2 className="text-3xl font-bold text-white mb-6">携手合作，共建创新生态</h2>
