@@ -67,59 +67,94 @@ const About = () => {
         </div>
 
         {/* 组织架构模块 */}
-        <div className="bg-white rounded-2xl shadow-sm p-8 mb-16">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">组织架构</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <h3 className="text-lg font-medium text-gray-800 mb-4">主办单位</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li>梧桐科技有限公司</li>
-                <li>中国人工智能学会</li>
+        <div className="bg-neutral-50/50 rounded-2xl border border-neutral-200/60 p-8 mb-16">
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold text-neutral-800 mb-2">组织架构</h2>
+            <p className="text-neutral-500 text-sm">大赛主办、联合及支持单位</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6">
+            <div className="relative">
+              <div className="absolute top-0 left-0 w-12 h-0.5 bg-gradient-to-r from-violet-500 to-violet-400 rounded-full"></div>
+              <h3 className="text-base font-semibold text-neutral-800 mb-4 pt-2">主办单位</h3>
+              <ul className="space-y-3 text-neutral-600">
+                <li className="leading-relaxed">梧桐科技有限公司</li>
+                <li className="leading-relaxed">中国人工智能学会</li>
               </ul>
             </div>
-            <div>
-              <h3 className="text-lg font-medium text-gray-800 mb-4">联合单位</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li>清华大学计算机科学与技术系</li>
-                <li>北京大学人工智能研究院</li>
-                <li>中国科学院自动化研究所</li>
+            <div className="relative md:border-l md:border-neutral-200 md:pl-6">
+              <div className="absolute top-0 left-0 w-12 h-0.5 bg-gradient-to-r from-blue-500 to-blue-400 rounded-full"></div>
+              <h3 className="text-base font-semibold text-neutral-800 mb-4 pt-2">联合单位</h3>
+              <ul className="space-y-3 text-neutral-600">
+                <li className="leading-relaxed">清华大学计算机科学与技术系</li>
+                <li className="leading-relaxed">北京大学人工智能研究院</li>
+                <li className="leading-relaxed">中国科学院自动化研究所</li>
               </ul>
             </div>
-            <div>
-              <h3 className="text-lg font-medium text-gray-800 mb-4">支持机构</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li>国家科技部</li>
-                <li>工业和信息化部</li>
-                <li>教育部</li>
-                <li>中国科学技术协会</li>
+            <div className="relative md:border-l md:border-neutral-200 md:pl-6">
+              <div className="absolute top-0 left-0 w-12 h-0.5 bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full"></div>
+              <h3 className="text-base font-semibold text-neutral-800 mb-4 pt-2">支持机构</h3>
+              <ul className="space-y-3 text-neutral-600">
+                <li className="leading-relaxed">国家科技部</li>
+                <li className="leading-relaxed">工业和信息化部</li>
+                <li className="leading-relaxed">教育部</li>
+                <li className="leading-relaxed">中国科学技术协会</li>
               </ul>
             </div>
           </div>
         </div>
 
         {/* 参赛对象模块 */}
-        <div className="bg-white rounded-2xl shadow-sm p-8 mb-16">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">参赛对象</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="border border-gray-100 rounded-xl p-5">
-              <h3 className="text-lg font-medium text-gray-800 mb-2">高校学生</h3>
-              <p className="text-gray-600">全日制在校本科生、研究生，对人工智能应用创新有兴趣的学生团队。</p>
+        <div className="bg-neutral-50/50 rounded-2xl border border-neutral-200/60 p-8 mb-16">
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold text-neutral-800 mb-2">参赛对象</h2>
+            <p className="text-neutral-500 text-sm">面向多元创新主体的开放赛事</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            <div className="group bg-white rounded-xl border border-neutral-200/60 p-5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300">
+              <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center mb-4">
+                <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                </svg>
+              </div>
+              <h3 className="text-base font-semibold text-neutral-800 mb-2">高校学生</h3>
+              <p className="text-sm text-neutral-500 leading-relaxed">全日制在校本科生、研究生，对人工智能应用创新有兴趣的学生团队。</p>
             </div>
-            <div className="border border-gray-100 rounded-xl p-5">
-              <h3 className="text-lg font-medium text-gray-800 mb-2">教师</h3>
-              <p className="text-gray-600">高校和研究机构的教师，可作为团队指导老师或参与专项赛道。</p>
+            <div className="group bg-white rounded-xl border border-neutral-200/60 p-5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300">
+              <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center mb-4">
+                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-base font-semibold text-neutral-800 mb-2">教师</h3>
+              <p className="text-sm text-neutral-500 leading-relaxed">高校和研究机构的教师，可作为团队指导老师或参与专项赛道。</p>
             </div>
-            <div className="border border-gray-100 rounded-xl p-5">
-              <h3 className="text-lg font-medium text-gray-800 mb-2">开发者</h3>
-              <p className="text-gray-600">AI领域专业开发者，具备相关技术背景和项目经验的个人或团队。</p>
+            <div className="group bg-white rounded-xl border border-neutral-200/60 p-5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300">
+              <div className="w-8 h-8 rounded-lg bg-cyan-100 flex items-center justify-center mb-4">
+                <svg className="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+              </div>
+              <h3 className="text-base font-semibold text-neutral-800 mb-2">开发者</h3>
+              <p className="text-sm text-neutral-500 leading-relaxed">AI领域专业开发者，具备相关技术背景和项目经验的个人或团队。</p>
             </div>
-            <div className="border border-gray-100 rounded-xl p-5">
-              <h3 className="text-lg font-medium text-gray-800 mb-2">创新团队</h3>
-              <p className="text-gray-600">由企业、高校或研究机构组成的跨学科创新团队。</p>
+            <div className="group bg-white rounded-xl border border-neutral-200/60 p-5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300">
+              <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center mb-4">
+                <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <h3 className="text-base font-semibold text-neutral-800 mb-2">创新团队</h3>
+              <p className="text-sm text-neutral-500 leading-relaxed">由企业、高校或研究机构组成的跨学科创新团队。</p>
             </div>
-            <div className="border border-gray-100 rounded-xl p-5">
-              <h3 className="text-lg font-medium text-gray-800 mb-2">合作机构</h3>
-              <p className="text-gray-600">关注AI应用创新的企业、投资机构、行业协会等组织。</p>
+            <div className="group bg-white rounded-xl border border-neutral-200/60 p-5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300">
+              <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center mb-4">
+                <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <h3 className="text-base font-semibold text-neutral-800 mb-2">合作机构</h3>
+              <p className="text-sm text-neutral-500 leading-relaxed">关注AI应用创新的企业，投资机构、行业协会等组织。</p>
             </div>
           </div>
         </div>

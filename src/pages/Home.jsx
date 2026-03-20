@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import HomeHero from '../components/common/HomeHero';
-import ScrollReveal from '../components/common/ScrollReveal';
+import ScrollReveal, { ScrollRevealStagger } from '../components/common/ScrollReveal';
 
 const TrackCard = ({ track }) => {
   const [imageError, setImageError] = useState(false);
@@ -58,7 +58,7 @@ const Home = () => {
       {/* 一、大赛核心亮点 */}
       <section className="py-20">
         <div className="container mx-auto px-4 max-w-7xl">
-          <ScrollReveal>
+          <ScrollReveal type="title">
             <h2 className="text-3xl font-bold text-neutral-800 mb-16 text-center">大赛核心亮点</h2>
           </ScrollReveal>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -133,7 +133,7 @@ const Home = () => {
       {/* 二、五大专项赛道 */}
       <section className="py-20">
         <div className="container mx-auto px-4 max-w-7xl">
-          <ScrollReveal>
+          <ScrollReveal type="title">
             <h2 className="text-3xl font-bold text-neutral-800 mb-16 text-center">五大专项赛道</h2>
           </ScrollReveal>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -185,8 +185,12 @@ const Home = () => {
       {/* 三、赛事中心 */}
       <section className="py-20">
         <div className="container mx-auto px-4 max-w-7xl">
-          <h2 className="text-3xl font-bold text-neutral-800 mb-4 text-center">赛事中心</h2>
-          <p className="text-neutral-600 mb-12 text-center">当前开放赛事 · 实时更新</p>
+          <ScrollReveal type="title">
+            <h2 className="text-3xl font-bold text-neutral-800 mb-4 text-center">赛事中心</h2>
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <p className="text-neutral-600 mb-12 text-center">当前开放赛事 · 实时更新</p>
+          </ScrollReveal>
           
           {/* 赛事卡片 */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -475,26 +479,28 @@ const Home = () => {
       <section className="py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(116,99,236,0.08),transparent_50%)]"></div>
         <div className="container mx-auto px-4 max-w-7xl relative z-10">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-neutral-800 mb-6">立即加入 AI 创新实践</h2>
-            <p className="text-xl text-neutral-600 mb-10 max-w-2xl mx-auto">
-              参与梧桐·鸿鹄人工智能应用创新大赛，展示你的创新才华，开启AI领域的精彩旅程
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-6">
-              <Link 
-                to="/register-competition" 
-                className="bg-primary text-white px-10 py-4 rounded-lg font-medium hover:bg-primary/90 transition-all duration-300 text-lg"
-              >
-                立即报名
-              </Link>
-              <Link 
-                to="/competition-center" 
-                className="border border-primary text-primary px-10 py-4 rounded-lg font-medium hover:bg-primary/10 transition-all duration-300 text-lg"
-              >
-                查看赛事
-              </Link>
+          <ScrollReveal type="title">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-3xl md:text-4xl font-bold text-neutral-800 mb-6">立即加入 AI 创新实践</h2>
+              <p className="text-xl text-neutral-600 mb-10 max-w-2xl mx-auto">
+                参与梧桐·鸿鹄人工智能应用创新大赛，展示你的创新才华，开启AI领域的精彩旅程
+              </p>
+              <div className="flex flex-col sm:flex-row justify-center gap-6">
+                <Link
+                  to="/register-competition"
+                  className="bg-primary text-white px-10 py-4 rounded-lg font-medium hover:bg-primary/90 transition-all duration-300 text-lg"
+                >
+                  立即报名
+                </Link>
+                <Link
+                  to="/competition-center"
+                  className="border border-primary text-primary px-10 py-4 rounded-lg font-medium hover:bg-primary/10 transition-all duration-300 text-lg"
+                >
+                  查看赛事
+                </Link>
+              </div>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
     </div>
