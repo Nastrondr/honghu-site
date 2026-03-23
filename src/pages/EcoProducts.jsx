@@ -100,6 +100,19 @@ const EcoProducts = () => {
             以上产品和服务均面向大赛参赛者开放，部分产品需报名成功后登录使用。如有疑问，请联系大赛工作组。
           </p>
         </div>
+
+        <div className="mt-16 bg-gradient-to-r from-[#7463EC] via-[#5b4cdb] to-[#4338ca] rounded-2xl p-10 text-center shadow-lg shadow-primary/20">
+          <h2 className="text-2xl font-bold text-white mb-4">开启AI创新之旅</h2>
+          <p className="text-white/80 mb-8 max-w-2xl mx-auto">
+            立即报名参赛，解锁全部生态产品，在竞赛中快速成长
+          </p>
+          <a 
+            href="/register-competition" 
+            className="inline-block bg-white text-[#7463EC] font-semibold px-8 py-3.5 rounded-xl hover:bg-neutral-50 transition-all duration-300 shadow-md"
+          >
+            立即报名
+          </a>
+        </div>
       </div>
     </div>
   );

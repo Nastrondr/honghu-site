@@ -19,50 +19,50 @@ const Resources = () => {
       <section className="py-16">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-            <div className="glass-card rounded-2xl p-6 group">
-              <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <svg className="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="glass-card rounded-2xl p-6 group text-center">
+              <div className="w-14 h-14 bg-violet-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-7 h-7 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-neutral-800 mb-2 group-hover:text-primary transition-colors duration-300">算力支持</h3>
-              <p className="text-neutral-600 text-sm">提供GPU算力资源与训练环境支持</p>
+              <h3 className="text-lg font-semibold text-neutral-800 mb-2 group-hover:text-violet-600 transition-colors duration-300">算力支持</h3>
+              <p className="text-neutral-600 text-sm">免费CPU/GPU算力</p>
             </div>
-            <div className="glass-card rounded-2xl p-6 group">
-              <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <svg className="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="glass-card rounded-2xl p-6 group text-center">
+              <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-neutral-800 mb-2 group-hover:text-primary transition-colors duration-300">导师指导</h3>
-              <p className="text-neutral-600 text-sm">行业专家与技术导师全程辅导</p>
+              <h3 className="text-lg font-semibold text-neutral-800 mb-2 group-hover:text-blue-600 transition-colors duration-300">导师指导</h3>
+              <p className="text-neutral-600 text-sm">1000+ 企业专家导师</p>
             </div>
-            <div className="glass-card rounded-2xl p-6 group">
-              <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <svg className="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="glass-card rounded-2xl p-6 group text-center">
+              <div className="w-14 h-14 bg-cyan-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-7 h-7 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-neutral-800 mb-2 group-hover:text-primary transition-colors duration-300">数据与工具</h3>
-              <p className="text-neutral-600 text-sm">开放数据集与开发工具支持</p>
+              <h3 className="text-lg font-semibold text-neutral-800 mb-2 group-hover:text-cyan-600 transition-colors duration-300">开放数据</h3>
+              <p className="text-neutral-600 text-sm">脱敏行业数据集</p>
             </div>
-            <div className="glass-card rounded-2xl p-6 group">
-              <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <svg className="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="glass-card rounded-2xl p-6 group text-center">
+              <div className="w-14 h-14 bg-indigo-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-neutral-800 mb-2 group-hover:text-primary transition-colors duration-300">孵化与对接</h3>
-              <p className="text-neutral-600 text-sm">优秀项目可获得产业资源与落地机会</p>
+              <h3 className="text-lg font-semibold text-neutral-800 mb-2 group-hover:text-indigo-600 transition-colors duration-300">开发工具</h3>
+              <p className="text-neutral-600 text-sm">鸿鹄实训平台低代码工具</p>
             </div>
-            <div className="glass-card rounded-2xl p-6 group">
-              <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <svg className="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="glass-card rounded-2xl p-6 group text-center">
+              <div className="w-14 h-14 bg-amber-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-7 h-7 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-neutral-800 mb-2 group-hover:text-primary transition-colors duration-300">奖励与激励</h3>
-              <p className="text-neutral-600 text-sm">奖金、证书与荣誉体系</p>
+              <h3 className="text-lg font-semibold text-neutral-800 mb-2 group-hover:text-amber-600 transition-colors duration-300">丰厚奖励</h3>
+              <p className="text-neutral-600 text-sm">多项奖金、证书与荣誉体系</p>
             </div>
           </div>
         </div>
