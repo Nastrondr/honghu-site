@@ -48,9 +48,7 @@ const Login = () => {
 
   // 管理员入口点击处理
   const handleAdminLogin = () => {
-    // TODO: 接入管理员登录页面
-    alert('管理员登录页面（mock）\n\n将跳转至 /admin/login');
-    // navigate('/admin/login');
+    navigate('/admin/login');
   };
 
   return (

@@ -28,6 +28,7 @@ import { AuthProvider } from './context/AuthContext';
 
 // 后台管理相关组件
 import AdminLayout from './components/layout/AdminLayout';
+import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminCompetitions from './pages/admin/AdminCompetitions';
 import AdminEnrollments from './pages/admin/AdminEnrollments';
@@ -90,6 +91,9 @@ function App() {
           {/* 前台路由 - 有Header和Footer */}
           <Route path="/*" element={<FrontendLayout />} />
           
+          {/* 后台登录页 - 独立布局 */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+
           {/* 后台路由 - 使用AdminLayout */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
