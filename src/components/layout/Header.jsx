@@ -204,8 +204,6 @@ const Header = () => {
                     { path: '/competition-data', label: '赛题数据' },
                     { path: '/work-submission', label: '作品提交' },
                     { type: 'divider' },
-                    { path: '/admin', label: '后台管理', badge: '管理' },
-                    { type: 'divider' },
                     { path: '#', label: '退出登录', onClick: handleLogout },
                   ]}
                   align="right"
