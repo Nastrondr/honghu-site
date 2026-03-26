@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Outlet } from 'react-router-dom';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import PageTransition from './components/common/PageTransition';
@@ -26,7 +26,18 @@ import Enterprise from './pages/Enterprise';
 import Contact from './pages/Contact';
 import { AuthProvider } from './context/AuthContext';
 
-const AnimatedRoutes = () => {
+// 后台管理相关组件
+import AdminLayout from './components/layout/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminCompetitions from './pages/admin/AdminCompetitions';
+import AdminEnrollments from './pages/admin/AdminEnrollments';
+import AdminWorks from './pages/admin/AdminWorks';
+import AdminReviews from './pages/admin/AdminReviews';
+import AdminNews from './pages/admin/AdminNews';
+import AdminStats from './pages/admin/AdminStats';
+
+// 前台路由组件
+const FrontendRoutes = () => {
   const location = useLocation();
 
   return (
@@ -57,19 +68,41 @@ const AnimatedRoutes = () => {
   );
 };
 
+// 前台布局组件
+const FrontendLayout = () => {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-grow">
+        <FrontendRoutes />
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
 function App() {
   return (
     <AuthProvider>
       <CustomCursor />
       <Router>
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-grow">
-          <AnimatedRoutes />
-        </main>
-        <Footer />
-      </div>
-    </Router>
+        <Routes>
+          {/* 前台路由 - 有Header和Footer */}
+          <Route path="/*" element={<FrontendLayout />} />
+          
+          {/* 后台路由 - 使用AdminLayout */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="competitions" element={<AdminCompetitions />} />
+            <Route path="enrollments" element={<AdminEnrollments />} />
+            <Route path="works" element={<AdminWorks />} />
+            <Route path="reviews" element={<AdminReviews />} />
+            <Route path="news" element={<AdminNews />} />
+            <Route path="stats" element={<AdminStats />} />
+          </Route>
+        </Routes>
+      </Router>
     </AuthProvider>
   );
 }
