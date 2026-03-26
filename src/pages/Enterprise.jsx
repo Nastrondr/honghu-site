@@ -1,21 +1,17 @@
 import React, { useState } from 'react';
 
-const ApplyCompetition = () => {
-  // TODO: 接入办赛申请接口 - 替换为真实API调用
-  const [applyStatus, setApplyStatus] = useState('draft'); // draft | submitted
+const Enterprise = () => {
+  // TODO: 接入企业申请接口 - 替换为真实API调用
+  const [enterpriseStatus, setEnterpriseStatus] = useState('draft'); // draft | submitted
 
   const [formData, setFormData] = useState({
-    organizationName: '',
+    companyName: '',
     contactName: '',
     phone: '',
     email: '',
-    organizationType: '',
-    region: '',
+    industry: '',
     description: '',
-    applyType: '',
-    expectedScale: '',
-    hasVenue: '',
-    notes: ''
+    hasAiProject: ''
   });
 
   const handleChange = (e) => {
@@ -25,28 +21,24 @@ const ApplyCompetition = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // TODO: 接入办赛申请接口 - 调用提交申请API
-    setApplyStatus('submitted');
+    // TODO: 接入企业申请接口 - 调用提交申请API
+    setEnterpriseStatus('submitted');
   };
 
   const handleReset = () => {
     setFormData({
-      organizationName: '',
+      companyName: '',
       contactName: '',
       phone: '',
       email: '',
-      organizationType: '',
-      region: '',
+      industry: '',
       description: '',
-      applyType: '',
-      expectedScale: '',
-      hasVenue: '',
-      notes: ''
+      hasAiProject: ''
     });
   };
 
   // ========== 已提交状态 ==========
-  if (applyStatus === 'submitted') {
+  if (enterpriseStatus === 'submitted') {
     return (
       <div className="min-h-screen bg-gray-50/50 py-12">
         <div className="container mx-auto px-4 max-w-2xl">
@@ -60,33 +52,41 @@ const ApplyCompetition = () => {
 
             <h2 className="text-2xl font-bold text-gray-800 mb-3">申请已提交</h2>
             <p className="text-gray-500 mb-2">
-              感谢您的申请，我们将在
-              <span className="text-primary font-medium">3-5个工作日</span>
+              感谢您的申请，我们将尽快
+              <span className="text-primary font-medium">1-3个工作日</span>
               内与您联系
             </p>
             <p className="text-sm text-gray-400 mb-8">
-              请保持联系方式畅通，工作人员将向您了解详细合作方案
+              请保持联系方式畅通，工作人员将向您了解详细合作需求
             </p>
 
-            {/* 进度提示 */}
-            <div className="bg-gray-50 rounded-xl p-6 mb-8">
-              <p className="text-sm font-medium text-gray-700 mb-4">申请流程</p>
-              <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-                <span className="w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs">1</span>
-                <span className="w-8 h-0.5 bg-green-400"></span>
-                <span className="w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs">2</span>
-                <span className="w-8 h-0.5 bg-gray-200"></span>
-                <span className="w-6 h-6 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center text-xs">3</span>
-              </div>
-              <div className="flex justify-between text-xs text-gray-400 mt-2 px-2">
-                <span>提交申请</span>
-                <span className="ml-8">审核联系</span>
-                <span>合作启动</span>
+            {/* 合作价值 */}
+            <div className="bg-gray-50 rounded-xl p-6 mb-8 text-left">
+              <p className="text-sm font-medium text-gray-700 mb-3">企业合作支持</p>
+              <div className="space-y-2 text-sm text-gray-500">
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>算力资源支持</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>AI项目评审与认证</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>生态资源对接</span>
+                </div>
               </div>
             </div>
 
             <button
-              onClick={() => setApplyStatus('draft')}
+              onClick={() => setEnterpriseStatus('draft')}
               className="text-gray-500 hover:text-gray-700 text-sm transition-colors"
             >
               查看其他合作方式
@@ -103,29 +103,31 @@ const ApplyCompetition = () => {
       <div className="container mx-auto px-4 max-w-3xl">
         {/* 页面标题 */}
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold text-gray-800 mb-3">申请成为赛事合作单位</h1>
-          <p className="text-gray-500">携手共建AI创新生态，欢迎加入梧桐·鸿鹄大赛</p>
+          <h1 className="text-3xl font-bold text-gray-800 mb-3">企业数字化转型通道</h1>
+          <p className="text-gray-500 max-w-xl mx-auto">
+            企业可通过大赛提交AI应用方案，参与评审与认证，获得算力支持与生态资源
+          </p>
         </div>
 
-        {/* 合作价值说明卡片 */}
+        {/* 合作价值卡片 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
             <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center mb-3">
               <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
               </svg>
             </div>
-            <h3 className="text-sm font-semibold text-gray-800 mb-1">赛事类型</h3>
-            <p className="text-xs text-gray-500">可申请成为区县赛 / 校园赛 / 联合主办方</p>
+            <h3 className="text-sm font-semibold text-gray-800 mb-1">算力支持</h3>
+            <p className="text-xs text-gray-500">获得大赛提供的算力资源支持</p>
           </div>
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
             <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center mb-3">
               <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8C6.48 8 2 12.48 2 18s4.48 10 10 10 10-4.48 10-10S17.52 8 12 8zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
             </div>
-            <h3 className="text-sm font-semibold text-gray-800 mb-1">资源支持</h3>
-            <p className="text-xs text-gray-500">获得赛事资源支持与品牌曝光机会</p>
+            <h3 className="text-sm font-semibold text-gray-800 mb-1">评审认证</h3>
+            <p className="text-xs text-gray-500">参与AI项目评审与认证</p>
           </div>
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
             <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center mb-3">
@@ -133,8 +135,8 @@ const ApplyCompetition = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <h3 className="text-sm font-semibold text-gray-800 mb-1">发展机会</h3>
-            <p className="text-xs text-gray-500">参与人才选拔与项目孵化合作</p>
+            <h3 className="text-sm font-semibold text-gray-800 mb-1">生态资源</h3>
+            <p className="text-xs text-gray-500">对接大赛生态资源与合作机会</p>
           </div>
         </div>
 
@@ -144,27 +146,27 @@ const ApplyCompetition = () => {
           <div className="mb-8">
             <h2 className="text-base font-semibold text-gray-800 mb-4 flex items-center">
               <span className="w-6 h-6 bg-primary/10 text-primary rounded-lg flex items-center justify-center text-xs font-bold mr-2">1</span>
-              基础信息
+              企业信息
             </h2>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    单位名称 <span className="text-red-500">*</span>
+                    企业名称 <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    name="organizationName"
-                    value={formData.organizationName}
+                    name="companyName"
+                    value={formData.companyName}
                     onChange={handleChange}
                     required
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                    placeholder="请输入单位名称"
+                    placeholder="请输入企业名称"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    联系人姓名 <span className="text-red-500">*</span>
+                    联系人 <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -180,7 +182,7 @@ const ApplyCompetition = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    联系电话 <span className="text-red-500">*</span>
+                    联系方式 <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="tel"
@@ -207,123 +209,63 @@ const ApplyCompetition = () => {
                   />
                 </div>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  所属行业 <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="industry"
+                  value={formData.industry}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
+                >
+                  <option value="">请选择所属行业</option>
+                  <option value="金融">金融</option>
+                  <option value="医疗">医疗</option>
+                  <option value="教育">教育</option>
+                  <option value="制造">制造</option>
+                  <option value="零售">零售</option>
+                  <option value="物流">物流</option>
+                  <option value="政务">政务</option>
+                  <option value="其他">其他</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          {/* 机构信息 */}
+          {/* 合作需求 */}
           <div className="mb-8 pt-6 border-t border-gray-100">
             <h2 className="text-base font-semibold text-gray-800 mb-4 flex items-center">
               <span className="w-6 h-6 bg-primary/10 text-primary rounded-lg flex items-center justify-center text-xs font-bold mr-2">2</span>
-              机构信息
+              合作需求
             </h2>
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    单位类型 <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    name="organizationType"
-                    value={formData.organizationType}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                  >
-                    <option value="">请选择单位类型</option>
-                    <option value="高校">高校</option>
-                    <option value="企业">企业</option>
-                    <option value="园区">园区</option>
-                    <option value="政府">政府</option>
-                    <option value="其他">其他</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    所在地区 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="region"
-                    value={formData.region}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                    placeholder="请输入所在地区"
-                  />
-                </div>
-              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  单位简介 <span className="text-red-500">*</span>
+                  需求描述 <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
                   required
-                  rows={3}
+                  rows={4}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all resize-none"
-                  placeholder="请简要介绍单位情况"
+                  placeholder="请简要描述您的AI应用需求或合作意向"
                 />
-              </div>
-            </div>
-          </div>
-
-          {/* 申请内容 */}
-          <div className="mb-8 pt-6 border-t border-gray-100">
-            <h2 className="text-base font-semibold text-gray-800 mb-4 flex items-center">
-              <span className="w-6 h-6 bg-primary/10 text-primary rounded-lg flex items-center justify-center text-xs font-bold mr-2">3</span>
-              申请内容
-            </h2>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    申请类型 <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    name="applyType"
-                    value={formData.applyType}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                  >
-                    <option value="">请选择申请类型</option>
-                    <option value="区县赛">区县赛</option>
-                    <option value="校园赛">校园赛</option>
-                    <option value="联合主办">联合主办</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    预计规模 <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    name="expectedScale"
-                    value={formData.expectedScale}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                  >
-                    <option value="">请选择预计规模</option>
-                    <option value="50人以下">50人以下</option>
-                    <option value="50-100人">50-100人</option>
-                    <option value="100-500人">100-500人</option>
-                    <option value="500人以上">500人以上</option>
-                  </select>
-                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  是否有场地资源 <span className="text-red-500">*</span>
+                  是否已有AI项目 <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-4">
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="radio"
-                      name="hasVenue"
+                      name="hasAiProject"
                       value="是"
-                      checked={formData.hasVenue === '是'}
+                      checked={formData.hasAiProject === '是'}
                       onChange={handleChange}
                       required
                       className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
@@ -333,9 +275,9 @@ const ApplyCompetition = () => {
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="radio"
-                      name="hasVenue"
+                      name="hasAiProject"
                       value="否"
-                      checked={formData.hasVenue === '否'}
+                      checked={formData.hasAiProject === '否'}
                       onChange={handleChange}
                       required
                       className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
@@ -343,19 +285,6 @@ const ApplyCompetition = () => {
                     <span className="ml-2 text-sm text-gray-700">否</span>
                   </label>
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  备注说明
-                </label>
-                <textarea
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleChange}
-                  rows={3}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all resize-none"
-                  placeholder="如有其他合作意向或说明，请在此填写（可选）"
-                />
               </div>
             </div>
           </div>
@@ -387,4 +316,4 @@ const ApplyCompetition = () => {
   );
 };
 
-export default ApplyCompetition;
+export default Enterprise;

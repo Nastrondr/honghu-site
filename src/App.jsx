@@ -22,6 +22,7 @@ import Dashboard from './pages/Dashboard';
 import Experts from './pages/Experts';
 import EcoProducts from './pages/EcoProducts';
 import ApplyCompetition from './pages/ApplyCompetition';
+import Enterprise from './pages/Enterprise';
 import Contact from './pages/Contact';
 import { AuthProvider } from './context/AuthContext';
 
@@ -42,6 +43,7 @@ const AnimatedRoutes = () => {
         <Route path="/experts" element={<Experts />} />
         <Route path="/eco-products" element={<EcoProducts />} />
         <Route path="/apply-competition" element={<ApplyCompetition />} />
+        <Route path="/enterprise" element={<Enterprise />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

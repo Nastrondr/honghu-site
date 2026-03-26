@@ -69,7 +69,17 @@ const Header = () => {
     { path: '/experts', label: '专家查询' },
     { path: '/eco-products', label: '生态产品' },
     { path: '/about', label: '关于大赛' },
-    { path: '/contact', label: '联系我们' },
+    {
+      path: '/contact',
+      label: '联系我们',
+      children: [
+        { path: '/contact', label: '联系方式' },
+        { type: 'divider' },
+        { type: 'header', label: '合作与支持' },
+        { path: '/enterprise', label: '企业通道' },
+        { path: '/apply-competition', label: '申请办赛' },
+      ]
+    },
   ];
 
   const getLinkClass = (isActive) => {
