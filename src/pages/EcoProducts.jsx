@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const products = [
   {
@@ -101,7 +102,64 @@ const EcoProducts = () => {
           </p>
         </div>
 
-        <div className="mt-16 bg-gradient-to-r from-[#7463EC] via-[#5b4cdb] to-[#4338ca] rounded-2xl p-10 text-center shadow-lg shadow-primary/20">
+        {/* 合作与生态 */}
+        <section className="mt-16 py-16 bg-gradient-to-b from-white to-neutral-50/50 rounded-2xl">
+          <div className="container mx-auto px-4 max-w-4xl">
+            <div className="text-center mb-10">
+              <h2 className="text-2xl font-bold text-neutral-800 mb-3">合作与生态</h2>
+              <p className="text-neutral-600">携手共建AI创新生态，欢迎企业、高校和机构加入</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* 企业通道 */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-purple-500/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-neutral-800 mb-2">企业数字化转型通道</h3>
+                <p className="text-neutral-600 text-sm mb-4 leading-relaxed">
+                  企业可通过人工智能应用方案参与大赛评审与认证，获得技术创新支持和商业合作机会
+                </p>
+                <Link
+                  to="/enterprise"
+                  className="inline-flex items-center gap-2 bg-primary/5 text-primary px-4 py-2 rounded-lg font-medium hover:bg-primary/10 transition-colors text-sm"
+                >
+                  申请企业通道
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </Link>
+              </div>
+
+              {/* 办赛申请 */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
+                <div className="w-12 h-12 bg-gradient-to-br from-secondary/20 to-orange-500/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <svg className="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-neutral-800 mb-2">联合举办赛事</h3>
+                <p className="text-neutral-600 text-sm mb-4 leading-relaxed">
+                  高校、园区、机构可申请成为分赛区或合作单位，共同推动AI创新人才培养
+                </p>
+                <Link
+                  to="/apply-competition"
+                  className="inline-flex items-center gap-2 bg-secondary/5 text-secondary px-4 py-2 rounded-lg font-medium hover:bg-secondary/10 transition-colors text-sm"
+                >
+                  申请办赛
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA */}
+        <div className="mt-12 bg-gradient-to-r from-[#7463EC] via-[#5b4cdb] to-[#4338ca] rounded-2xl p-10 text-center shadow-lg shadow-primary/20">
           <h2 className="text-2xl font-bold text-white mb-4">开启AI创新之旅</h2>
           <p className="text-white/80 mb-8 max-w-2xl mx-auto">
             立即报名参赛，解锁全部生态产品，在竞赛中快速成长
