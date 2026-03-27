@@ -33,7 +33,6 @@ const AdminLogin = () => {
 
     // mock 验证
     if (formData.account && formData.password) {
-      // mock 登录成功
       console.log('管理员登录成功:', formData.account);
       navigate('/admin/dashboard');
     } else {
@@ -44,27 +43,26 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center py-12 px-4">
       {/* 登录卡片 */}
       <div className="w-full max-w-[400px]">
         {/* 系统标识 */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-xl mb-4">
-            <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-50 rounded-xl mb-4">
+            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </div>
-          <h1 className="text-lg font-semibold text-gray-800 mb-1">鸿鹄大赛管理后台</h1>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">管理员登录</h2>
-          <p className="text-sm text-gray-500">仅限赛事组委会及授权管理人员使用</p>
+          <p className="text-sm text-gray-500 mb-1">鸿鹄大赛管理后台</p>
+          <h1 className="text-2xl font-bold text-gray-900">管理员登录</h1>
         </div>
 
-        {/* 登录表单卡片 */}
-        <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-gray-100 p-8">
+        {/* 登录表单卡片 - 克制、系统感 */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
           {/* 错误提示 */}
           {error && (
-            <div className="mb-5 p-3 bg-red-50 border border-red-100 rounded-xl flex items-center gap-2">
+            <div className="mb-5 p-3 bg-red-50 border border-red-100 rounded-lg flex items-center gap-2">
               <svg className="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -85,7 +83,7 @@ const AdminLogin = () => {
                 value={formData.account}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
                 placeholder="请输入管理员账号"
               />
             </div>
@@ -102,7 +100,7 @@ const AdminLogin = () => {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
                 placeholder="请输入密码"
               />
             </div>
@@ -112,7 +110,7 @@ const AdminLogin = () => {
               <label className="flex items-center cursor-pointer group">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
+                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
                 />
                 <span className="ml-2 text-sm text-gray-600 group-hover:text-gray-800 transition-colors">
                   记住登录状态
@@ -120,17 +118,17 @@ const AdminLogin = () => {
               </label>
               <Link
                 to="#"
-                className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
               >
                 忘记密码？
               </Link>
             </div>
 
-            {/* 登录按钮 */}
+            {/* 登录按钮 - 纯色蓝色 */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-primary text-white py-3 px-4 rounded-xl font-medium text-sm hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:translate-y-0"
+              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium text-sm hover:bg-blue-700 hover:shadow-md transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-blue-600 disabled:hover:shadow-none"
             >
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -159,7 +157,7 @@ const AdminLogin = () => {
             </Link>
             <Link
               to="/login"
-              className="text-primary hover:text-primary/80 font-medium transition-colors"
+              className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
             >
               返回用户登录
             </Link>
