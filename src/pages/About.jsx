@@ -172,34 +172,6 @@ const About = () => {
           </div>
         </div>
 
-        {/* 企业特别通道模块 */}
-        <div className="bg-gradient-to-r from-violet-50 via-indigo-50 to-cyan-50 rounded-2xl border border-violet-100/60 p-8 mb-16">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-neutral-800 mb-1">企业特别通道</h3>
-                <p className="text-sm text-neutral-600 leading-relaxed">
-                  设立人工智能企业数字化转型评审专项通道，为具有成熟AI应用方案的企业提供快速入选通道
-                </p>
-              </div>
-            </div>
-            <a 
-              href="/partners" 
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition-colors duration-300 flex-shrink-0"
-            >
-              了解详情
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </a>
-          </div>
-        </div>
-
         {/* 页面底部 CTA 模块 */}
         <div className="bg-gradient-to-r from-[#7463EC] via-[#5b4cdb] to-[#4338ca] rounded-2xl p-10 text-center shadow-lg shadow-primary/20">
           <h2 className="text-2xl font-bold text-white mb-4">了解赛事，参与创新实践</h2>
