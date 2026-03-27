@@ -21,6 +21,11 @@ import WorkSubmission from './pages/WorkSubmission';
 import Dashboard from './pages/Dashboard';
 import Experts from './pages/Experts';
 import EcoProducts from './pages/EcoProducts';
+import ComputeAccount from './pages/ComputeAccount';
+import ComputeMarket from './pages/ComputeMarket';
+import TrainingPlatform from './pages/TrainingPlatform';
+import Academy from './pages/Academy';
+import OPCCertification from './pages/OPCCertification';
 import ApplyCompetition from './pages/ApplyCompetition';
 import Enterprise from './pages/Enterprise';
 import Contact from './pages/Contact';
@@ -54,6 +59,11 @@ const FrontendRoutes = () => {
         <Route path="/partners" element={<Partners />} />
         <Route path="/experts" element={<Experts />} />
         <Route path="/eco-products" element={<EcoProducts />} />
+        <Route path="/compute-account" element={<ComputeAccount />} />
+        <Route path="/compute-market" element={<ComputeMarket />} />
+        <Route path="/training-platform" element={<TrainingPlatform />} />
+        <Route path="/academy" element={<Academy />} />
+        <Route path="/opc-certification" element={<OPCCertification />} />
         <Route path="/apply-competition" element={<ApplyCompetition />} />
         <Route path="/enterprise" element={<Enterprise />} />
         <Route path="/contact" element={<Contact />} />

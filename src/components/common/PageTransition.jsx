@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 
@@ -35,6 +35,15 @@ const PageTransition = ({ children }) => {
   const location = useLocation();
   const prefersReducedMotion = typeof window !== 'undefined'
     && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // 路由切换时滚动到顶部
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: prefersReducedMotion ? 'auto' : 'smooth'
+    });
+  }, [location.pathname, prefersReducedMotion]);
 
   const variants = prefersReducedMotion ? reducedMotionVariants : pageVariants;
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;

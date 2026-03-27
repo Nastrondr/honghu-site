@@ -33,17 +33,17 @@ const Header = () => {
         { path: '/apply-competition', label: '申请办赛' },
       ]
     },
-    { 
-      path: '/resources', 
+    {
+      path: '/resources',
       label: '资源支持',
       children: [
-        { type: 'header', label: '学习资源' },
-        { path: '/resources?type=course', label: '在线课程' },
-        { path: '/resources?type=docs', label: '技术文档' },
+        { type: 'header', label: '四大资源类型' },
+        { path: '/resources?type=tech', label: '技术资源' },
+        { path: '/resources?type=data', label: '数据资源' },
+        { path: '/resources?type=mentor', label: '专家与成长' },
+        { path: '/resources?type=reward', label: '结果与激励' },
         { type: 'divider' },
-        { type: 'header', label: '开发资源' },
-        { path: '/resources?type=compute', label: '算力资源' },
-        { path: '/resources?type=dataset', label: '数据集' },
+        { path: '/resources', label: '查看全部资源' },
       ]
     },
     { 
@@ -67,7 +67,19 @@ const Header = () => {
       ]
     },
     { path: '/experts', label: '专家查询' },
-    { path: '/eco-products', label: '生态产品' },
+    {
+      path: '/eco-products',
+      label: '生态产品',
+      children: [
+        { type: 'header', label: '产品分类' },
+        { path: '/eco-products?group=compute', label: '算力与基础设施' },
+        { path: '/eco-products?group=platform', label: '开发平台' },
+        { path: '/eco-products?group=learning', label: '学习与成长' },
+        { path: '/eco-products?group=certification', label: '认证与成果' },
+        { type: 'divider' },
+        { path: '/eco-products', label: '查看全部产品' },
+      ]
+    },
     { path: '/about', label: '关于大赛' },
     {
       path: '/contact',
