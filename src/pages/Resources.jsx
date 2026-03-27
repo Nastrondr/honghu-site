@@ -1,42 +1,54 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { 
+  Zap, 
+  Users, 
+  Database, 
+  Trophy, 
+  Cpu, 
+  Code2, 
+  FileText, 
+  GraduationCap, 
+  Calendar, 
+  MessageCircle, 
+  Award, 
+  Medal, 
+  Rocket,
+  ArrowRight,
+  Check,
+  Lightbulb,
+  Layers,
+  TrendingUp
+} from 'lucide-react';
 
 // 资源分类数据
 const resourceCategories = [
   {
     title: '技术资源',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-      </svg>
-    ),
+    icon: Cpu,
+    color: 'from-violet-500 to-purple-600',
+    bgColor: 'bg-violet-50',
     items: ['高性能 GPU 算力', '开发工具链', '技术文档 / API']
   },
   {
     title: '数据资源',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
-      </svg>
-    ),
+    icon: Database,
+    color: 'from-cyan-500 to-blue-600',
+    bgColor: 'bg-cyan-50',
     items: ['开放数据集', '脱敏行业数据', '训练/测试数据']
   },
   {
     title: '专家与成长',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-    ),
+    icon: GraduationCap,
+    color: 'from-orange-500 to-amber-600',
+    bgColor: 'bg-orange-50',
     items: ['导师辅导', '行业讲座 / 工作坊', '项目答疑支持']
   },
   {
     title: '结果与激励',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-      </svg>
-    ),
+    icon: Trophy,
+    color: 'from-rose-500 to-red-600',
+    bgColor: 'bg-rose-50',
     items: ['奖项奖金', '证书荣誉', '孵化 / 投资机会']
   }
 ];
@@ -73,7 +85,9 @@ const resourceDetails = [
     points: ['V100/A100 GPU集群', '弹性算力调度', '7×24小时稳定服务'],
     action: '了解申请方式',
     link: '#',
-    color: 'violet'
+    featured: true,
+    icon: Zap,
+    color: 'from-violet-500 to-purple-600'
   },
   {
     title: '专业导师团队',
@@ -81,7 +95,8 @@ const resourceDetails = [
     points: ['一对一项目辅导', '定期技术答疑', '行业经验分享'],
     action: '查看导师名单',
     link: '#',
-    color: 'blue'
+    icon: Users,
+    color: 'from-blue-500 to-indigo-600'
   },
   {
     title: '开放数据集',
@@ -89,7 +104,8 @@ const resourceDetails = [
     points: ['计算机视觉数据', 'NLP语料库', '行业脱敏数据'],
     action: '查看数据说明',
     link: '#',
-    color: 'cyan'
+    icon: Database,
+    color: 'from-cyan-500 to-teal-600'
   },
   {
     title: '开发工具支持',
@@ -97,7 +113,8 @@ const resourceDetails = [
     points: ['可视化开发环境', '预置AI模型库', '一键部署上线'],
     action: '进入实训平台',
     link: '#',
-    color: 'indigo'
+    icon: Code2,
+    color: 'from-indigo-500 to-blue-600'
   },
   {
     title: '项目孵化机会',
@@ -105,7 +122,8 @@ const resourceDetails = [
     points: ['办公空间支持', '投融资对接', '商业化落地辅导'],
     action: '了解孵化计划',
     link: '#',
-    color: 'amber'
+    icon: Rocket,
+    color: 'from-amber-500 to-orange-600'
   },
   {
     title: '奖励与荣誉',
@@ -113,7 +131,8 @@ const resourceDetails = [
     points: ['总奖金池100万+', '官方认证证书', '行业曝光机会'],
     action: '查看奖项设置',
     link: '#',
-    color: 'rose'
+    icon: Medal,
+    color: 'from-rose-500 to-pink-600'
   }
 ];
 
@@ -121,53 +140,57 @@ const resourceDetails = [
 const coreHighlights = [
   {
     title: '真实产业场景',
-    desc: '赛题源自企业真实需求，作品可直接落地应用'
+    desc: '赛题源自企业真实需求，作品可直接落地应用',
+    icon: Lightbulb,
+    color: 'from-amber-400 to-orange-500'
   },
   {
     title: '全流程资源支持',
-    desc: '从报名到提交，算力、数据、导师全程陪伴'
+    desc: '从报名到提交，算力、数据、导师全程陪伴',
+    icon: Layers,
+    color: 'from-blue-400 to-indigo-500'
   },
   {
     title: '成果转化机会',
-    desc: '优秀项目对接投资与孵化，加速商业化进程'
+    desc: '优秀项目对接投资与孵化，加速商业化进程',
+    icon: TrendingUp,
+    color: 'from-emerald-400 to-green-500'
   }
 ];
 
-const Resources = () => {
-  const getColorClasses = (color) => {
-    const colors = {
-      violet: 'bg-violet-50 text-violet-600 border-violet-100',
-      blue: 'bg-blue-50 text-blue-600 border-blue-100',
-      cyan: 'bg-cyan-50 text-cyan-600 border-cyan-100',
-      indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100',
-      amber: 'bg-amber-50 text-amber-600 border-amber-100',
-      rose: 'bg-rose-50 text-rose-600 border-rose-100'
-    };
-    return colors[color] || colors.violet;
-  };
+// 快速概览数据
+const quickOverview = [
+  { icon: Zap, text: '免费算力支持', color: 'text-violet-500', bgColor: 'bg-violet-50' },
+  { icon: Users, text: '行业导师指导', color: 'text-blue-500', bgColor: 'bg-blue-50' },
+  { icon: Database, text: '开放数据资源', color: 'text-cyan-500', bgColor: 'bg-cyan-50' },
+  { icon: Trophy, text: '丰厚奖励与孵化', color: 'text-amber-500', bgColor: 'bg-amber-50' }
+];
 
+const Resources = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* 1. Hero 区 */}
-      <section className="pt-16 pb-12">
+      <section className="pt-20 pb-16">
         <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center mb-10">
-            <h1 className="text-3xl md:text-4xl font-bold text-neutral-800 mb-3">资源支持</h1>
-            <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
+          <div className="text-center mb-12 animate-fadeIn">
+            <h1 className="text-4xl md:text-5xl font-bold text-neutral-800 mb-4 tracking-tight">
+              资源支持
+            </h1>
+            <p className="text-lg md:text-xl text-neutral-500 max-w-2xl mx-auto leading-relaxed">
               从算力、数据、导师到开发工具与奖励机制，为参赛团队提供全流程支持
             </p>
           </div>
 
           {/* 4 项快速概览 */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-            {[
-              { icon: '⚡', text: '免费算力支持' },
-              { icon: '👨‍🏫', text: '行业导师指导' },
-              { icon: '📊', text: '开放数据资源' },
-              { icon: '🏆', text: '丰厚奖励与孵化' }
-            ].map((item, index) => (
-              <div key={index} className="bg-neutral-50 rounded-xl p-4 text-center">
-                <span className="text-2xl mb-2 block">{item.icon}</span>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5 max-w-4xl mx-auto">
+            {quickOverview.map((item, index) => (
+              <div 
+                key={index} 
+                className="group bg-white rounded-2xl p-6 text-center shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 border border-neutral-100"
+              >
+                <div className={`w-12 h-12 ${item.bgColor} rounded-xl flex items-center justify-center mb-3 mx-auto group-hover:scale-110 transition-transform duration-300`}>
+                  <item.icon className={`w-6 h-6 ${item.color}`} strokeWidth={1.5} />
+                </div>
                 <span className="text-sm font-medium text-neutral-700">{item.text}</span>
               </div>
             ))}
@@ -176,20 +199,27 @@ const Resources = () => {
       </section>
 
       {/* 2. 资源分类区 */}
-      <section className="py-12">
+      <section className="py-20">
         <div className="container mx-auto px-4 max-w-6xl">
-          <h2 className="text-2xl font-bold text-neutral-800 mb-8 text-center">四大资源类型</h2>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-neutral-800 mb-3">四大资源类型</h2>
+            <p className="text-neutral-500">全方位的资源支持体系，助力你的AI创新之路</p>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {resourceCategories.map((category, index) => (
-              <div key={index} className="bg-white rounded-xl border border-neutral-200 p-6 hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 text-primary">
-                  {category.icon}
+              <div 
+                key={index} 
+                className="group bg-white rounded-2xl p-7 shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 border border-neutral-100"
+              >
+                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${category.color} flex items-center justify-center mb-5 shadow-lg shadow-violet-500/20 group-hover:scale-110 transition-transform duration-300`}>
+                  <category.icon className="w-7 h-7 text-white" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-lg font-semibold text-neutral-800 mb-3">{category.title}</h3>
-                <ul className="space-y-2">
+                <h3 className="text-lg font-bold text-neutral-800 mb-4">{category.title}</h3>
+                <ul className="space-y-3">
                   {category.items.map((item, idx) => (
-                    <li key={idx} className="text-sm text-neutral-600 flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 bg-primary/60 rounded-full"></span>
+                    <li key={idx} className="text-sm text-neutral-600 flex items-center gap-3">
+                      <span className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${category.color}`}></span>
                       {item}
                     </li>
                   ))}
@@ -201,22 +231,26 @@ const Resources = () => {
       </section>
 
       {/* 3. 获取流程区 */}
-      <section className="py-12 bg-neutral-50">
+      <section className="py-20 bg-neutral-50/50">
         <div className="container mx-auto px-4 max-w-6xl">
-          <h2 className="text-2xl font-bold text-neutral-800 mb-8 text-center">资源获取流程</h2>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-neutral-800 mb-3">资源获取流程</h2>
+            <p className="text-neutral-500">简单四步，即可获取全部赛事资源</p>
+          </div>
+          
           <div className="relative">
             {/* 连接线 - 桌面端 */}
-            <div className="hidden md:block absolute top-8 left-0 right-0 h-0.5 bg-neutral-200"></div>
+            <div className="hidden lg:block absolute top-10 left-[12.5%] right-[12.5%] h-0.5 bg-gradient-to-r from-violet-200 via-blue-200 to-emerald-200"></div>
             
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {processSteps.map((step, index) => (
                 <div key={index} className="relative">
-                  <div className="bg-white rounded-xl p-6 border border-neutral-200 relative z-10">
-                    <div className="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center text-xl font-bold mb-4 mx-auto md:mx-0">
+                  <div className="bg-white rounded-2xl p-7 shadow-[0_8px_24px_rgba(0,0,0,0.06)] border border-neutral-100 relative z-10 hover:shadow-[0_12px_32px_rgba(0,0,0,0.1)] transition-all duration-300">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold mb-5 mx-auto shadow-lg shadow-violet-500/30">
                       {step.step}
                     </div>
-                    <h3 className="text-lg font-semibold text-neutral-800 mb-2 text-center md:text-left">{step.title}</h3>
-                    <p className="text-sm text-neutral-600 text-center md:text-left">{step.desc}</p>
+                    <h3 className="text-lg font-bold text-neutral-800 mb-2 text-center">{step.title}</h3>
+                    <p className="text-sm text-neutral-500 text-center leading-relaxed">{step.desc}</p>
                   </div>
                 </div>
               ))}
@@ -226,35 +260,40 @@ const Resources = () => {
       </section>
 
       {/* 4. 重点资源详情区 */}
-      <section className="py-12">
+      <section className="py-20">
         <div className="container mx-auto px-4 max-w-6xl">
-          <h2 className="text-2xl font-bold text-neutral-800 mb-8 text-center">重点资源详情</h2>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-neutral-800 mb-3">重点资源详情</h2>
+            <p className="text-neutral-500">深入了解每一项核心资源的具体内容</p>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {resourceDetails.map((resource, index) => (
-              <div key={index} className="bg-white rounded-xl border border-neutral-200 p-6 flex flex-col h-full hover:shadow-md transition-shadow">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-4 ${getColorClasses(resource.color)}`}>
-                  <span className="text-lg font-bold">{resource.title.charAt(0)}</span>
+              <div 
+                key={index} 
+                className={`group bg-white rounded-2xl p-7 shadow-[0_8px_24px_rgba(0,0,0,0.06)] border border-neutral-100 flex flex-col h-full hover:shadow-[0_12px_32px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 ${resource.featured ? 'lg:scale-[1.02] ring-2 ring-violet-500/20' : ''}`}
+              >
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${resource.color} flex items-center justify-center mb-5 shadow-lg ${resource.featured ? 'shadow-violet-500/30' : ''}`}>
+                  <resource.icon className="w-6 h-6 text-white" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-lg font-semibold text-neutral-800 mb-2">{resource.title}</h3>
-                <p className="text-sm text-neutral-600 mb-4">{resource.summary}</p>
-                <ul className="space-y-2 mb-6 flex-1">
+                <h3 className="text-lg font-bold text-neutral-800 mb-2">{resource.title}</h3>
+                <p className="text-sm text-neutral-500 mb-5 leading-relaxed">{resource.summary}</p>
+                <ul className="space-y-3 mb-6 flex-1">
                   {resource.points.map((point, idx) => (
-                    <li key={idx} className="text-sm text-neutral-600 flex items-start gap-2">
-                      <svg className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
+                    <li key={idx} className="text-sm text-neutral-600 flex items-start gap-3">
+                      <div className={`w-5 h-5 rounded-full bg-gradient-to-br ${resource.color} flex items-center justify-center flex-shrink-0 mt-0.5`}>
+                        <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                      </div>
                       {point}
                     </li>
                   ))}
                 </ul>
                 <Link 
                   to={resource.link}
-                  className="text-sm font-medium text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-1"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-violet-600 hover:text-violet-700 transition-colors group/link"
                 >
                   {resource.action}
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                  <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
                 </Link>
               </div>
             ))}
@@ -263,17 +302,24 @@ const Resources = () => {
       </section>
 
       {/* 5. 核心支持亮点区 */}
-      <section className="py-12 bg-neutral-50">
+      <section className="py-20 bg-neutral-50/50">
         <div className="container mx-auto px-4 max-w-6xl">
-          <h2 className="text-2xl font-bold text-neutral-800 mb-8 text-center">核心支持亮点</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-neutral-800 mb-3">核心支持亮点</h2>
+            <p className="text-neutral-500">三大核心价值，让你的参赛之旅更有保障</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {coreHighlights.map((highlight, index) => (
-              <div key={index} className="text-center">
-                <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-4 mx-auto">
-                  <span className="text-2xl font-bold text-primary">{index + 1}</span>
+              <div 
+                key={index} 
+                className="group text-center"
+              >
+                <div className={`w-20 h-20 rounded-full bg-gradient-to-br ${highlight.color} flex items-center justify-center mb-6 mx-auto shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-300`}>
+                  <span className="text-3xl font-bold text-white">{index + 1}</span>
                 </div>
-                <h3 className="text-lg font-semibold text-neutral-800 mb-2">{highlight.title}</h3>
-                <p className="text-sm text-neutral-600">{highlight.desc}</p>
+                <h3 className="text-xl font-bold text-neutral-800 mb-3">{highlight.title}</h3>
+                <p className="text-neutral-500 leading-relaxed">{highlight.desc}</p>
               </div>
             ))}
           </div>
@@ -281,26 +327,35 @@ const Resources = () => {
       </section>
 
       {/* 6. CTA 区 */}
-      <section className="py-12">
+      <section className="py-20">
         <div className="container mx-auto px-4 max-w-6xl">
-          <div className="bg-gradient-to-r from-[#7463EC] via-[#5b4cdb] to-[#4338ca] rounded-2xl p-8 md:p-10 text-center shadow-lg shadow-primary/20">
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">加入大赛，开启你的 AI 创新实践</h2>
-            <p className="text-white/80 mb-6 max-w-xl mx-auto">
-              报名后可获取赛事资源、导师支持与作品孵化机会
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link
-                to="/register-competition"
-                className="bg-white text-[#7463EC] px-8 py-3 rounded-xl font-semibold hover:bg-neutral-50 transition-all duration-300 shadow-md"
-              >
-                立即报名
-              </Link>
-              <Link
-                to="/competition-center"
-                className="border-2 border-white text-white px-8 py-3 rounded-xl font-semibold hover:bg-white/10 transition-all duration-300"
-              >
-                查看赛事中心
-              </Link>
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 p-10 md:p-14 text-center shadow-2xl shadow-violet-500/20">
+            {/* 背景光效 */}
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-white/5 rounded-full blur-2xl"></div>
+            
+            <div className="relative z-10">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                加入大赛，开启你的 AI 创新实践
+              </h2>
+              <p className="text-white/80 mb-10 max-w-xl mx-auto text-lg">
+                报名后可获取赛事资源、导师支持与作品孵化机会
+              </p>
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <Link
+                  to="/register-competition"
+                  className="group bg-white text-violet-600 px-10 py-4 rounded-xl font-bold text-base hover:bg-neutral-50 hover:shadow-lg hover:shadow-white/20 hover:-translate-y-0.5 transition-all duration-300"
+                >
+                  立即报名
+                  <ArrowRight className="w-5 h-5 inline-block ml-2 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link
+                  to="/competition-center"
+                  className="group px-10 py-4 rounded-xl font-bold text-base border-2 border-white/30 text-white hover:bg-white/10 hover:border-white/50 transition-all duration-300 backdrop-blur-sm"
+                >
+                  查看赛事中心
+                </Link>
+              </div>
             </div>
           </div>
         </div>
