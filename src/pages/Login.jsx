@@ -44,27 +44,6 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-primary/5 flex flex-col">
-      {/* 极简头部 */}
-      <header className="px-6 py-4">
-        <div className="max-w-[480px] mx-auto flex items-center justify-between">
-          {/* Logo / 赛事名称 */}
-          <Link to="/" className="flex items-center gap-2 text-gray-800 hover:text-primary transition-colors">
-            <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            <span className="font-semibold text-sm">梧桐·鸿鹄大赛</span>
-          </Link>
-          
-          {/* 返回首页 */}
-          <Link 
-            to="/" 
-            className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            返回首页
-          </Link>
-        </div>
-      </header>
-
       {/* 登录区域 - 垂直居中 */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-8">
         {/* 登录卡片 */}
