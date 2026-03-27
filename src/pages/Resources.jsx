@@ -271,7 +271,7 @@ const Resources = () => {
             {resourceDetails.map((resource, index) => (
               <div 
                 key={index} 
-                className={`group bg-white rounded-2xl p-7 shadow-[0_8px_24px_rgba(0,0,0,0.06)] border border-neutral-100 flex flex-col h-full hover:shadow-[0_12px_32px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 ${resource.featured ? 'lg:scale-[1.02] ring-2 ring-violet-500/20' : ''}`}
+                className={`group bg-white rounded-2xl p-7 shadow-[0_8px_24px_rgba(0,0,0,0.06)] border border-neutral-100 flex flex-col h-full hover:shadow-[0_12px_32px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 ${resource.featured ? 'lg:scale-[1.02]' : ''}`}
               >
                 <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${resource.color} flex items-center justify-center mb-5 shadow-lg ${resource.featured ? 'shadow-violet-500/30' : ''}`}>
                   <resource.icon className="w-6 h-6 text-white" strokeWidth={1.5} />
