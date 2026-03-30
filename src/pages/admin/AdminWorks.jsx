@@ -21,6 +21,45 @@ const StatusTag = ({ status }) => {
   );
 };
 
+// 评分进度组件
+const ScoreProgress = ({ scores, assignedReviewers }) => {
+  const completedCount = scores?.length || 0;
+  const totalCount = assignedReviewers?.length || 0;
+  
+  // 计算平均分
+  const averageScore = useMemo(() => {
+    if (!scores || scores.length === 0) return null;
+    const avg = scores.reduce((sum, s) => sum + (s.total || 0), 0) / scores.length;
+    return avg.toFixed(1);
+  }, [scores]);
+
+  if (totalCount === 0) {
+    return <span className="text-xs text-gray-400">未分配评委</span>;
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-gray-500">
+          {completedCount}/{totalCount} 已评
+        </span>
+        {averageScore && (
+          <span className="text-xs font-medium text-primary">
+            平均分：{averageScore}
+          </span>
+        )}
+      </div>
+      {/* 进度条 */}
+      <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div 
+          className="h-full bg-primary rounded-full transition-all"
+          style={{ width: `${(completedCount / totalCount) * 100}%` }}
+        />
+      </div>
+    </div>
+  );
+};
+
 // 状态管理下拉菜单
 const StatusDropdown = ({ work, onStatusChange }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -80,9 +119,171 @@ const StatusDropdown = ({ work, onStatusChange }) => {
   );
 };
 
+// 评分详情弹窗
+const ScoreDetailModal = ({ work, isOpen, onClose, onLockScores }) => {
+  if (!isOpen || !work) return null;
+
+  const averageScore = useMemo(() => {
+    if (!work.scores || work.scores.length === 0) return null;
+    const avg = work.scores.reduce((sum, s) => sum + s.total, 0) / work.scores.length;
+    return avg.toFixed(1);
+  }, [work.scores]);
+
+  // 检查是否所有评分都已锁定
+  const allScoresLocked = work.scores?.length > 0 && work.scores.every(s => s.status === 'locked');
+  
+  // 检查是否有可锁定的评分（已提交但未锁定）
+  const hasLockableScores = work.scores?.some(s => s.status === 'submitted');
+
+  const handleLock = () => {
+    if (confirm('确定要锁定所有评分吗？锁定后评委将无法修改评分。')) {
+      onLockScores(work.id);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
+        {/* 头部 */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800">评分详情</h3>
+            <p className="text-sm text-gray-500">{work.name}</p>
+          </div>
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* 内容 */}
+        <div className="p-6 overflow-y-auto max-h-[60vh]">
+          {/* 统计概览 */}
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="bg-gray-50 rounded-lg p-4 text-center">
+              <p className="text-xs text-gray-500 mb-1">分配评委</p>
+              <p className="text-xl font-bold text-gray-800">{work.assignedReviewers?.length || 0}</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-4 text-center">
+              <p className="text-xs text-gray-500 mb-1">已评分</p>
+              <p className="text-xl font-bold text-primary">{work.scores?.length || 0}</p>
+            </div>
+            <div className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-lg p-4 text-center border border-violet-100">
+              <p className="text-xs text-gray-500 mb-1">当前平均分</p>
+              <p className="text-xl font-bold text-primary">{averageScore || '-'}</p>
+            </div>
+          </div>
+
+          {/* 锁定状态提示 */}
+          {allScoresLocked && (
+            <div className="mb-4 p-3 bg-gray-100 rounded-lg flex items-center gap-2 text-gray-600">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <span className="text-sm font-medium">所有评分已锁定</span>
+            </div>
+          )}
+
+          {/* 评委评分列表 */}
+          <h4 className="text-sm font-semibold text-gray-700 mb-3">评委评分</h4>
+          {work.scores && work.scores.length > 0 ? (
+            <div className="space-y-3">
+              {work.scores.map((score, index) => (
+                <div key={index} className={`border rounded-lg p-4 ${
+                  score.status === 'locked' ? 'border-gray-200 bg-gray-50/50' : 'border-gray-100'
+                }`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-gray-800">{score.reviewerName}</span>
+                      {score.round && (
+                        <span className="px-2 py-0.5 text-xs bg-violet-100 text-violet-600 rounded">
+                          {score.round}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {score.status === 'locked' && (
+                        <span className="text-xs text-gray-400 flex items-center gap-0.5">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                          已锁定
+                        </span>
+                      )}
+                      <span className="text-lg font-bold text-primary">{score.total}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs text-gray-500 mb-2">
+                    <span>创新性：{score.innovation}</span>
+                    <span>技术实现：{score.technical}</span>
+                    <span>应用价值：{score.value}</span>
+                  </div>
+                  <p className="text-sm text-gray-600 bg-gray-50 rounded p-2">{score.comment}</p>
+                  <p className="text-xs text-gray-400 mt-2">{score.submittedAt}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-400">
+              <p>暂无评分记录</p>
+            </div>
+          )}
+
+          {/* 未评分评委 */}
+          {work.assignedReviewers && work.assignedReviewers.length > (work.scores?.length || 0) && (
+            <div className="mt-4">
+              <h4 className="text-sm font-semibold text-gray-700 mb-3">待评分评委</h4>
+              <div className="flex flex-wrap gap-2">
+                {work.assignedReviewers
+                  .filter(id => !work.scores?.some(s => s.reviewerId === id))
+                  .map((id, index) => (
+                    <span key={index} className="px-3 py-1 bg-amber-50 text-amber-600 text-xs rounded-full">
+                      {id === 'reviewer_001' ? '我' : id === 'reviewer_002' ? '李教授' : '王专家'}
+                    </span>
+                  ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 底部 */}
+        <div className="border-t border-gray-100 px-6 py-4 bg-gray-50 flex justify-between">
+          {hasLockableScores && !allScoresLocked && (
+            <button
+              onClick={handleLock}
+              className="px-4 py-2 text-sm text-gray-600 bg-white border border-gray-200 hover:border-gray-400 rounded-lg transition-colors flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              锁定评分
+            </button>
+          )}
+          <div className="flex-1"></div>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors"
+          >
+            关闭
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // 详情抽屉组件
 const DetailDrawer = ({ work, isOpen, onClose, onStatusChange }) => {
   if (!isOpen || !work) return null;
+
+  // 计算平均分
+  const averageScore = useMemo(() => {
+    if (!work.scores || work.scores.length === 0) return null;
+    const avg = work.scores.reduce((sum, s) => sum + s.total, 0) / work.scores.length;
+    return avg.toFixed(1);
+  }, [work.scores]);
 
   return (
     <>
@@ -132,6 +333,32 @@ const DetailDrawer = ({ work, isOpen, onClose, onStatusChange }) => {
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">当前版本</span>
                 <span className="text-sm font-medium text-primary">{work.currentVersion}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 评分统计 */}
+          <div className="mb-6">
+            <h4 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+              评分统计
+            </h4>
+            <div className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-lg p-4 border border-violet-100">
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">分配评委</p>
+                  <p className="text-xl font-bold text-gray-800">{work.assignedReviewers?.length || 0}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">已评分</p>
+                  <p className="text-xl font-bold text-primary">{work.scores?.length || 0}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">平均分</p>
+                  <p className="text-xl font-bold text-primary">{averageScore || '-'}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -276,9 +503,10 @@ const AdminWorks = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [trackFilter, setTrackFilter] = useState('all');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isScoreModalOpen, setIsScoreModalOpen] = useState(false);
   const [selectedWork, setSelectedWork] = useState(null);
 
-  // Mock 数据 - 作品列表
+  // Mock 数据 - 作品列表（带评分数据）
   const [works, setWorks] = useState([
     {
       id: 1,
@@ -301,6 +529,31 @@ const AdminWorks = () => {
         { version: 'V1.2', submitTime: '2024-11-15 14:30', isCurrent: true, changelog: '优化了响应速度，增加了多语言支持' },
         { version: 'V1.1', submitTime: '2024-11-10 09:20', isCurrent: false, changelog: '修复了若干bug' },
         { version: 'V1.0', submitTime: '2024-11-01 16:45', isCurrent: false, changelog: '初始版本' }
+      ],
+      // 新增：分配的评委
+      assignedReviewers: ['reviewer_001', 'reviewer_002', 'reviewer_003'],
+      // 新增：评分记录
+      scores: [
+        {
+          reviewerId: 'reviewer_001',
+          reviewerName: '张教授',
+          innovation: 8,
+          technical: 9,
+          value: 8,
+          total: 8.3,
+          comment: '技术实现较为成熟，创新性较好。',
+          submittedAt: '2024-11-16 10:30'
+        },
+        {
+          reviewerId: 'reviewer_002',
+          reviewerName: '李专家',
+          innovation: 9,
+          technical: 8,
+          value: 9,
+          total: 8.7,
+          comment: '应用场景明确，商业价值高。',
+          submittedAt: '2024-11-16 14:20'
+        }
       ]
     },
     {
@@ -323,6 +576,19 @@ const AdminWorks = () => {
       versions: [
         { version: 'V2.0', submitTime: '2024-11-14 10:15', isCurrent: true, changelog: '增加了3D影像支持' },
         { version: 'V1.0', submitTime: '2024-10-20 14:30', isCurrent: false, changelog: '初始版本' }
+      ],
+      assignedReviewers: ['reviewer_001', 'reviewer_002', 'reviewer_003'],
+      scores: [
+        {
+          reviewerId: 'reviewer_001',
+          reviewerName: '张教授',
+          innovation: 7,
+          technical: 9,
+          value: 9,
+          total: 8.3,
+          comment: '技术深度很好，医疗应用价值高。',
+          submittedAt: '2024-11-15 09:00'
+        }
       ]
     },
     {
@@ -344,6 +610,29 @@ const AdminWorks = () => {
       versions: [
         { version: 'V1.5', submitTime: '2024-11-13 16:00', isCurrent: true, changelog: '增加了5个新教学案例' },
         { version: 'V1.0', submitTime: '2024-11-05 11:20', isCurrent: false, changelog: '初始版本' }
+      ],
+      assignedReviewers: ['reviewer_002', 'reviewer_003'],
+      scores: [
+        {
+          reviewerId: 'reviewer_002',
+          reviewerName: '李专家',
+          innovation: 8,
+          technical: 7,
+          value: 8,
+          total: 7.7,
+          comment: '教育意义显著，技术实现中规中矩。',
+          submittedAt: '2024-11-14 11:30'
+        },
+        {
+          reviewerId: 'reviewer_003',
+          reviewerName: '王教授',
+          innovation: 9,
+          technical: 8,
+          value: 9,
+          total: 8.7,
+          comment: '创新性强，对教育行业有启发意义。',
+          submittedAt: '2024-11-15 16:00'
+        }
       ]
     },
     {
@@ -365,6 +654,39 @@ const AdminWorks = () => {
       gpuInfo: { model: 'NVIDIA A100', duration: '150小时' },
       versions: [
         { version: 'V1.0', submitTime: '2024-11-12 09:30', isCurrent: true, changelog: '初始版本' }
+      ],
+      assignedReviewers: ['reviewer_001', 'reviewer_002', 'reviewer_003'],
+      scores: [
+        {
+          reviewerId: 'reviewer_001',
+          reviewerName: '张教授',
+          innovation: 9,
+          technical: 9,
+          value: 9,
+          total: 9.0,
+          comment: '技术前沿，应用价值极高。',
+          submittedAt: '2024-11-13 10:00'
+        },
+        {
+          reviewerId: 'reviewer_002',
+          reviewerName: '李专家',
+          innovation: 8,
+          technical: 9,
+          value: 9,
+          total: 8.7,
+          comment: '算法创新，实用性强。',
+          submittedAt: '2024-11-13 14:30'
+        },
+        {
+          reviewerId: 'reviewer_003',
+          reviewerName: '王教授',
+          innovation: 9,
+          technical: 8,
+          value: 9,
+          total: 8.7,
+          comment: '数据规模大，工程实现优秀。',
+          submittedAt: '2024-11-14 09:00'
+        }
       ]
     },
     {
@@ -384,7 +706,9 @@ const AdminWorks = () => {
       gpuInfo: { model: 'NVIDIA RTX 4090', duration: '60小时' },
       versions: [
         { version: 'V0.9', submitTime: '2024-11-11 20:00', isCurrent: true, changelog: 'Beta版本' }
-      ]
+      ],
+      assignedReviewers: [],
+      scores: []
     }
   ]);
 
@@ -411,10 +735,42 @@ const AdminWorks = () => {
     setIsDrawerOpen(true);
   };
 
+  const handleViewScores = (work) => {
+    setSelectedWork(work);
+    setIsScoreModalOpen(true);
+  };
+
   const handleStatusChange = (id, newStatus) => {
     setWorks(prev => prev.map(w => 
       w.id === id ? { ...w, status: newStatus } : w
     ));
+  };
+
+  // 锁定评分
+  const handleLockScores = (workId) => {
+    setWorks(prev => prev.map(w => {
+      if (w.id === workId) {
+        return {
+          ...w,
+          scores: w.scores.map(s => 
+            s.status === 'submitted' ? { ...s, status: 'locked' } : s
+          )
+        };
+      }
+      return w;
+    }));
+    // 更新选中的作品
+    setSelectedWork(prev => {
+      if (prev && prev.id === workId) {
+        return {
+          ...prev,
+          scores: prev.scores.map(s => 
+            s.status === 'submitted' ? { ...s, status: 'locked' } : s
+          )
+        };
+      }
+      return prev;
+    });
   };
 
   return (
@@ -422,7 +778,7 @@ const AdminWorks = () => {
       {/* 页面标题区 */}
       <div>
         <h2 className="text-2xl font-bold text-gray-800">作品管理</h2>
-        <p className="text-sm text-gray-500 mt-2">管理参赛作品、查看提交内容与版本记录</p>
+        <p className="text-sm text-gray-500 mt-2">管理参赛作品、查看提交内容与评分情况</p>
       </div>
 
       {/* 顶部筛选区 */}
@@ -504,6 +860,7 @@ const AdminWorks = () => {
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">版本</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">提交时间</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">状态</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">评分进度</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">操作</th>
               </tr>
             </thead>
@@ -531,20 +888,28 @@ const AdminWorks = () => {
                     <StatusTag status={work.status} />
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
+                    <ScoreProgress 
+                      scores={work.scores} 
+                      assignedReviewers={work.assignedReviewers} 
+                    />
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleViewDetail(work)}
                         className="px-3 py-1.5 text-sm font-medium text-primary bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors"
                       >
                         查看详情
                       </button>
+                      {work.scores && work.scores.length > 0 && (
+                        <button
+                          onClick={() => handleViewScores(work)}
+                          className="px-3 py-1.5 text-sm font-medium text-violet-600 bg-violet-50 hover:bg-violet-100 rounded-lg transition-colors"
+                        >
+                          查看评分
+                        </button>
+                      )}
                       <StatusDropdown work={work} onStatusChange={handleStatusChange} />
-                      <button
-                        onClick={() => alert('分配评审功能开发中...')}
-                        className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-                      >
-                        分配评审
-                      </button>
                     </div>
                   </td>
                 </tr>
@@ -571,6 +936,14 @@ const AdminWorks = () => {
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         onStatusChange={handleStatusChange}
+      />
+
+      {/* 评分详情弹窗 */}
+      <ScoreDetailModal
+        work={selectedWork}
+        isOpen={isScoreModalOpen}
+        onClose={() => setIsScoreModalOpen(false)}
+        onLockScores={handleLockScores}
       />
     </div>
   );

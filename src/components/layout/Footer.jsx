@@ -82,6 +82,49 @@ const Footer = () => {
                 <li><Link to="/eco-products" className="hover:text-white transition-colors">生态产品</Link></li>
               </ul>
             </div>
+
+            {/* 系统入口 - 轻量级辅助入口组 */}
+            <div className="mt-6">
+              <h4 className="text-sm font-medium mb-3 text-white/50">系统入口</h4>
+              <div className="flex gap-3">
+                {/* 专家评审入口 */}
+                <Link 
+                  to="/reviewer-login" 
+                  title="进入评审系统"
+                  className="group flex items-center gap-2.5 w-[160px] h-14 bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] rounded-xl px-4 hover:bg-white/[0.1] hover:-translate-y-px transition-all duration-200 cursor-pointer"
+                >
+                  {/* Icon with subtle glow */}
+                  <div className="relative flex-shrink-0">
+                    <div className="absolute inset-0 bg-violet-500/20 rounded-lg blur-sm opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="relative w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center group-hover:from-violet-500/30 group-hover:to-purple-500/30 transition-all">
+                      <svg className="w-4 h-4 text-violet-400 group-hover:text-violet-300 transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <span className="text-sm text-white/70 group-hover:text-white/90 transition-colors">专家评审</span>
+                </Link>
+
+                {/* 管理后台入口 */}
+                <Link 
+                  to="/admin/login" 
+                  title="进入管理后台"
+                  className="group flex items-center gap-2.5 w-[160px] h-14 bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] rounded-xl px-4 hover:bg-white/[0.1] hover:-translate-y-px transition-all duration-200 cursor-pointer"
+                >
+                  {/* Icon */}
+                  <div className="relative flex-shrink-0">
+                    <div className="absolute inset-0 bg-blue-500/20 rounded-lg blur-sm opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="relative w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-all">
+                      <svg className="w-4 h-4 text-blue-400 group-hover:text-blue-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <span className="text-sm text-white/70 group-hover:text-white/90 transition-colors">管理后台</span>
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
         

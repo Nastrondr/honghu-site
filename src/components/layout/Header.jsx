@@ -24,6 +24,7 @@ const Header = () => {
   }, [isHomePage]);
 
   const navItems = [
+    { path: '/about', label: '关于大赛' },
     { 
       path: '/competition-center', 
       label: '赛事中心',
@@ -80,7 +81,6 @@ const Header = () => {
         { path: '/eco-products', label: '查看全部产品' },
       ]
     },
-    { path: '/about', label: '关于大赛' },
     {
       path: '/contact',
       label: '联系我们',
@@ -195,6 +195,22 @@ const Header = () => {
             {navItems.map((item, index) => renderNavLink(item, index))}
             
             <div className={`flex items-center space-x-3 ml-3 pl-4 ${isHomePage ? 'border-l border-white/10' : 'border-l border-slate-200/50'}`}>
+              {/* 专家评审入口 */}
+              <Link 
+                to="/reviewer-login" 
+                className={`flex items-center gap-1 text-[12px] transition-all duration-300 ${
+                  isHomePage 
+                    ? 'text-white/50 hover:text-white' 
+                    : 'text-neutral-400 hover:text-primary'
+                }`}
+                title="专家评审入口"
+              >
+                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                专家评审
+              </Link>
+
               {isAuthenticated ? (
                 <Dropdown
                   trigger={

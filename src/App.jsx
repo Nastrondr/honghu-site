@@ -15,6 +15,7 @@ import Partners from './pages/Partners';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import RegisterCompetition from './pages/RegisterCompetition';
+import ReviewerLogin from './pages/ReviewerLogin';
 import TeamHall from './pages/TeamHall';
 import CompetitionData from './pages/CompetitionData';
 import WorkSubmission from './pages/WorkSubmission';
@@ -41,6 +42,11 @@ import AdminWorks from './pages/admin/AdminWorks';
 import AdminReviews from './pages/admin/AdminReviews';
 import AdminNews from './pages/admin/AdminNews';
 import AdminStats from './pages/admin/AdminStats';
+
+// 评审端相关组件
+import ReviewerLayout from './components/layout/ReviewerLayout';
+import ReviewerDashboard from './pages/reviewer/ReviewerDashboard';
+import WorkReview from './pages/reviewer/WorkReview';
 
 // 前台路由组件
 const FrontendRoutes = () => {
@@ -104,6 +110,9 @@ function App() {
           {/* 后台登录页 - 独立布局 */}
           <Route path="/admin/login" element={<AdminLogin />} />
 
+          {/* 评审专家登录页 - 独立布局 */}
+          <Route path="/reviewer-login" element={<ReviewerLogin />} />
+
           {/* 后台路由 - 使用AdminLayout */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
@@ -114,6 +123,13 @@ function App() {
             <Route path="reviews" element={<AdminReviews />} />
             <Route path="news" element={<AdminNews />} />
             <Route path="stats" element={<AdminStats />} />
+          </Route>
+
+          {/* 评审端路由 - 使用ReviewerLayout */}
+          <Route path="/reviewer" element={<ReviewerLayout />}>
+            <Route index element={<ReviewerDashboard />} />
+            <Route path="dashboard" element={<ReviewerDashboard />} />
+            <Route path="review/:id" element={<WorkReview />} />
           </Route>
         </Routes>
       </Router>
