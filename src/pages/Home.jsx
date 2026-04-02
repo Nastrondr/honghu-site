@@ -145,10 +145,41 @@ const Home = () => {
           <ScrollReveal type="title">
             <h2 className="text-lg md:text-3xl font-bold text-neutral-800 mb-4 md:mb-12 text-center">五大专项赛道</h2>
           </ScrollReveal>
-          {/* 自动轮播容器 */}
+          {/* 自动轮播容器 - 移动端横向滚动 */}
           <div 
             ref={carouselRef}
-            className="flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide pb-2 -mx-4 px-4"
+            className="hidden lg:block"
+          >
+            <div className="grid grid-cols-5 gap-4">
+              {tracks.map((track, index) => (
+                <div key={track.title} className={`
+                  relative rounded-2xl overflow-hidden cursor-pointer
+                  ${index === 2 ? 'col-span-1 row-span-2' : 'col-span-1 row-span-1'}
+                `}>
+                  {!false ? (
+                    <img
+                      src={track.imageUrl}
+                      alt={track.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className={`absolute inset-0 bg-gradient-to-br from-violet-600/30 via-violet-900/50 to-slate-900/80`} />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <div className="absolute inset-0 flex flex-col justify-end p-4">
+                    <h3 className="text-sm font-semibold text-white line-clamp-1">
+                      {track.title}
+                    </h3>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* 移动端横向滚动轮播 */}
+          <div 
+            ref={carouselRef}
+            className="lg:hidden flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide pb-2 -mx-4 px-4"
             onScrollStart={handleScrollStart}
             onScrollEnd={handleScrollEnd}
           >
@@ -156,8 +187,9 @@ const Home = () => {
               <TrackCard key={track.title} track={track} isScrolling={isUserScrolling} />
             ))}
           </div>
-          {/* 指示器 */}
-          <div className="flex justify-center gap-1.5 mt-3 md:hidden">
+          
+          {/* 移动端指示器 */}
+          <div className="lg:hidden flex justify-center gap-1.5 mt-3">
             {tracks.map((_, index) => (
               <div key={index} className="w-1.5 h-1.5 rounded-full bg-neutral-300" />
             ))}
