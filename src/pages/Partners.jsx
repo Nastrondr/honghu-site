@@ -126,43 +126,37 @@ const Partners = () => {
         </div>
       </section>
 
-      {/* 主办单位 - 手机端紧凑 */}
-      <section className="py-6 md:py-16">
+      {/* 主办单位 - 手机端3列小卡片 */}
+      <section className="py-4 md:py-16">
         <div className="container mx-auto px-4 max-w-7xl">
-          <h2 className="text-xl md:text-2xl font-semibold text-neutral-800 mb-6 md:mb-10 text-center">主办单位</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-            <div className="glass-card rounded-xl md:rounded-2xl p-4 md:p-8 group">
-              <div className="text-center">
-                <div className="w-14 h-14 md:w-24 md:h-24 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg md:rounded-xl flex items-center justify-center mx-auto mb-3 md:mb-4">
-                  <svg className="w-7 h-7 md:w-12 md:h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                </div>
-                <h3 className="text-sm md:text-lg font-semibold text-neutral-800 mb-1 md:mb-2 group-hover:text-primary transition-colors">工信部国际经济技术合作中心</h3>
-                <p className="text-xs md:text-sm text-neutral-500 line-clamp-2 md:line-clamp-none">推动国际经济技术合作，促进人工智能产业发展的重要机构</p>
+          <h2 className="text-lg md:text-2xl font-semibold text-neutral-800 mb-4 md:mb-10 text-center">主办单位</h2>
+          <div className="grid grid-cols-3 md:grid-cols-3 gap-3 md:gap-8">
+            {/* 工信部 */}
+            <div className="glass-card rounded-lg md:rounded-2xl p-3 md:p-6 flex flex-col items-center group">
+              <div className="w-full aspect-square md:w-24 md:h-24 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg md:rounded-xl flex items-center justify-center mb-2 md:mb-3">
+                <svg className="w-8 h-8 md:w-12 md:h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
               </div>
+              <h3 className="text-xs md:text-base font-medium text-neutral-800 text-center group-hover:text-primary transition-colors leading-tight">工信部国际经济技术合作中心</h3>
             </div>
-            <div className="glass-card rounded-xl md:rounded-2xl p-4 md:p-8 group">
-              <div className="text-center">
-                <div className="w-14 h-14 md:w-24 md:h-24 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg md:rounded-xl flex items-center justify-center mx-auto mb-3 md:mb-4">
-                  <svg className="w-7 h-7 md:w-12 md:h-12 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                </div>
-                <h3 className="text-sm md:text-lg font-semibold text-neutral-800 mb-1 md:mb-2 group-hover:text-primary transition-colors">中科北龙</h3>
-                <p className="text-xs md:text-sm text-neutral-500 line-clamp-2 md:line-clamp-none">专注于人工智能技术研发与创新的前沿科技企业</p>
+            {/* 中科北龙 */}
+            <div className="glass-card rounded-lg md:rounded-2xl p-3 md:p-6 flex flex-col items-center group">
+              <div className="w-full aspect-square md:w-24 md:h-24 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg md:rounded-xl flex items-center justify-center mb-2 md:mb-3">
+                <svg className="w-8 h-8 md:w-12 md:h-12 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
               </div>
+              <h3 className="text-xs md:text-base font-medium text-neutral-800 text-center group-hover:text-primary transition-colors leading-tight">中科北龙</h3>
             </div>
-            <div className="glass-card rounded-xl md:rounded-2xl p-4 md:p-8 group">
-              <div className="text-center">
-                <div className="w-14 h-14 md:w-24 md:h-24 bg-gradient-to-br from-green-50 to-green-100 rounded-lg md:rounded-xl flex items-center justify-center mx-auto mb-3 md:mb-4">
-                  <svg className="w-7 h-7 md:w-12 md:h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <h3 className="text-sm md:text-lg font-semibold text-neutral-800 mb-1 md:mb-2 group-hover:text-primary transition-colors">中国移动</h3>
-                <p className="text-xs md:text-sm text-neutral-500 line-clamp-2 md:line-clamp-none">全球领先的通信运营商，提供5G网络与算力支持</p>
+            {/* 中国移动 */}
+            <div className="glass-card rounded-lg md:rounded-2xl p-3 md:p-6 flex flex-col items-center group">
+              <div className="w-full aspect-square md:w-24 md:h-24 bg-gradient-to-br from-green-50 to-green-100 rounded-lg md:rounded-xl flex items-center justify-center mb-2 md:mb-3">
+                <svg className="w-8 h-8 md:w-12 md:h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
               </div>
+              <h3 className="text-xs md:text-base font-medium text-neutral-800 text-center group-hover:text-primary transition-colors leading-tight">中国移动</h3>
             </div>
           </div>
         </div>
@@ -199,11 +193,11 @@ const Partners = () => {
           
           {/* 技术支持单位 - 默认展开 */}
           <AccordionSection title="技术支持单位" defaultOpen={true}>
-            <div className="grid grid-cols-3 md:grid-cols-5 gap-3 md:gap-6 pb-4 md:pb-0">
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-2 md:gap-6 pb-3 md:pb-0">
               {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="bg-white rounded-lg md:rounded-xl shadow-sm p-3 md:p-6 border border-neutral-100 flex items-center justify-center hover:shadow-md transition-shadow">
-                  <div className="w-10 h-10 md:w-20 md:h-20 bg-neutral-100 rounded-lg flex items-center justify-center">
-                    <span className="text-neutral-500 text-xs">平台{i}</span>
+                <div key={i} className="bg-white rounded-lg md:rounded-xl shadow-sm p-2 md:p-4 border border-neutral-100 flex items-center justify-center">
+                  <div className="w-full aspect-square bg-neutral-100 rounded-lg flex items-center justify-center">
+                    <span className="text-neutral-500 text-[10px] md:text-xs">平台{i}</span>
                   </div>
                 </div>
               ))}
@@ -212,14 +206,14 @@ const Partners = () => {
           
           {/* 产业合作单位 - 默认展开 */}
           <AccordionSection title="产业合作单位" defaultOpen={true}>
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-2 md:gap-10 pb-4 md:pb-0">
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-2 md:gap-10 pb-3 md:pb-0">
               {companies.slice(0, 12).map((company, index) => (
                 <div 
                   key={index} 
-                  className="bg-white rounded-lg md:rounded-xl shadow-sm p-2 md:p-6 border border-neutral-100 flex items-center justify-center hover:shadow-md transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(116,99,236,0.2)] opacity-70 hover:opacity-100"
+                  className="bg-white rounded-lg md:rounded-xl shadow-sm p-2 md:p-4 border border-neutral-100 flex items-center justify-center md:hover:shadow-md md:hover:scale-105 md:opacity-70 md:hover:opacity-100 transition-all duration-300"
                 >
-                  <div className="w-10 h-10 md:w-20 md:h-20 bg-neutral-100 rounded-lg flex items-center justify-center">
-                    <span className="text-neutral-500 text-[10px] md:text-sm text-center">{company.name}</span>
+                  <div className="w-full aspect-square bg-neutral-100 rounded-lg flex items-center justify-center p-1">
+                    <span className="text-neutral-500 text-[9px] md:text-sm text-center leading-tight">{company.name}</span>
                   </div>
                 </div>
               ))}
@@ -228,14 +222,14 @@ const Partners = () => {
           
           {/* 教育合作单位 */}
           <AccordionSection title="教育合作单位">
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-2 md:gap-8 pb-4 md:pb-0">
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-2 md:gap-8 pb-3 md:pb-0">
               {universities.slice(0, 18).map((university, index) => (
                 <div 
                   key={index} 
-                  className="bg-white rounded-lg md:rounded-xl shadow-sm p-2 md:p-6 border border-neutral-100 flex items-center justify-center hover:shadow-md transition-all duration-300 hover:scale-105 grayscale-[80%] hover:grayscale-0"
+                  className="bg-white rounded-lg md:rounded-xl shadow-sm p-2 md:p-4 border border-neutral-100 flex items-center justify-center md:hover:shadow-md md:hover:scale-105 md:grayscale-[80%] md:hover:grayscale-0 transition-all duration-300"
                 >
-                  <div className="w-10 h-10 md:w-20 md:h-20 bg-neutral-100 rounded-lg flex items-center justify-center">
-                    <span className="text-neutral-500 text-[10px] md:text-sm text-center">{university.name}</span>
+                  <div className="w-full aspect-square bg-neutral-100 rounded-lg flex items-center justify-center p-1">
+                    <span className="text-neutral-500 text-[9px] md:text-sm text-center leading-tight">{university.name}</span>
                   </div>
                 </div>
               ))}
@@ -244,29 +238,29 @@ const Partners = () => {
           
           {/* 联合主办/指导单位 */}
           <AccordionSection title="联合主办 / 指导单位">
-            <div className="grid grid-cols-3 md:grid-cols-3 gap-3 md:gap-8 pb-4 md:pb-0">
-              <div className="bg-white rounded-lg md:rounded-2xl shadow-sm p-4 md:p-8 border border-neutral-100 flex items-center justify-center hover:shadow-md transition-shadow">
+            <div className="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-8 pb-3 md:pb-0">
+              <div className="bg-white rounded-lg md:rounded-xl shadow-sm p-2 md:p-4 border border-neutral-100 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-12 h-12 md:w-24 md:h-24 bg-neutral-100 rounded-lg md:rounded-xl flex items-center justify-center mx-auto mb-2 md:mb-4">
-                    <span className="text-neutral-500 text-xs md:text-base font-medium">重点大学</span>
+                  <div className="w-full aspect-square bg-neutral-100 rounded-lg flex items-center justify-center mb-1">
+                    <span className="text-neutral-500 text-[10px] md:text-xs font-medium">重点大学</span>
                   </div>
-                  <h3 className="text-xs md:text-lg font-semibold text-neutral-800">重点大学</h3>
+                  <h3 className="text-[10px] md:text-sm font-medium text-neutral-800">重点大学</h3>
                 </div>
               </div>
-              <div className="bg-white rounded-lg md:rounded-2xl shadow-sm p-4 md:p-8 border border-neutral-100 flex items-center justify-center hover:shadow-md transition-shadow">
+              <div className="bg-white rounded-lg md:rounded-xl shadow-sm p-2 md:p-4 border border-neutral-100 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-12 h-12 md:w-24 md:h-24 bg-neutral-100 rounded-lg md:rounded-xl flex items-center justify-center mx-auto mb-2 md:mb-4">
-                    <span className="text-neutral-500 text-xs md:text-base font-medium">科研机构</span>
+                  <div className="w-full aspect-square bg-neutral-100 rounded-lg flex items-center justify-center mb-1">
+                    <span className="text-neutral-500 text-[10px] md:text-xs font-medium">科研机构</span>
                   </div>
-                  <h3 className="text-xs md:text-lg font-semibold text-neutral-800">科研机构</h3>
+                  <h3 className="text-[10px] md:text-sm font-medium text-neutral-800">科研机构</h3>
                 </div>
               </div>
-              <div className="bg-white rounded-lg md:rounded-2xl shadow-sm p-4 md:p-8 border border-neutral-100 flex items-center justify-center hover:shadow-md transition-shadow">
+              <div className="bg-white rounded-lg md:rounded-xl shadow-sm p-2 md:p-4 border border-neutral-100 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-12 h-12 md:w-24 md:h-24 bg-neutral-100 rounded-lg md:rounded-xl flex items-center justify-center mx-auto mb-2 md:mb-4">
-                    <span className="text-neutral-500 text-xs md:text-base font-medium">行业协会</span>
+                  <div className="w-full aspect-square bg-neutral-100 rounded-lg flex items-center justify-center mb-1">
+                    <span className="text-neutral-500 text-[10px] md:text-xs font-medium">行业协会</span>
                   </div>
-                  <h3 className="text-xs md:text-lg font-semibold text-neutral-800">行业协会</h3>
+                  <h3 className="text-[10px] md:text-sm font-medium text-neutral-800">行业协会</h3>
                 </div>
               </div>
             </div>
@@ -274,10 +268,10 @@ const Partners = () => {
           
           {/* 支持机构 */}
           <AccordionSection title="支持机构">
-            <div className="grid grid-cols-3 md:grid-cols-4 gap-3 md:gap-6 pb-4 md:pb-0">
+            <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-6 pb-3 md:pb-0">
               {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <div key={i} className="bg-white rounded-lg md:rounded-xl shadow-sm p-3 md:p-6 border border-neutral-100 flex items-center justify-center hover:shadow-md transition-shadow">
-                  <div className="w-10 h-10 md:w-16 md:h-16 bg-neutral-100 rounded-lg flex items-center justify-center">
+                <div key={i} className="bg-white rounded-lg md:rounded-xl shadow-sm p-2 md:p-4 border border-neutral-100 flex items-center justify-center">
+                  <div className="w-full aspect-square bg-neutral-100 rounded-lg flex items-center justify-center">
                     <span className="text-neutral-500 text-[10px] md:text-xs">机构{i}</span>
                   </div>
                 </div>
