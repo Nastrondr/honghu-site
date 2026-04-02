@@ -267,38 +267,36 @@ const Header = () => {
           </div>
         </div>
         
-        {/* 移动端菜单 - 全新结构 */}
+        {/* 移动端菜单 */}
         {isMenuOpen && (
-          <div className="md:hidden fixed inset-0 top-14 z-40 overflow-y-auto">
-            {/* 菜单背景 */}
-            <div className="min-h-full py-4 px-4 space-y-1">
+          <div className="md:hidden absolute top-full left-0 right-0 z-50 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-700 shadow-lg">
+            <div className="py-2 max-h-[calc(100vh-4rem)] overflow-y-auto">
               {/* 首页 */}
               <Link
                 to="/"
-                className={`block px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 ${
+                className={`block px-4 py-3 text-sm font-medium transition-colors ${
                   location.pathname === '/' 
-                    ? (isHomePage ? 'text-white bg-white/10' : 'text-primary bg-primary/10')
-                    : (isHomePage ? 'text-white/80 hover:text-white hover:bg-white/10' : 'text-neutral-700 hover:bg-neutral-100')
+                    ? 'text-primary bg-primary/5' 
+                    : 'text-neutral-700 hover:bg-neutral-50 dark:text-neutral-200 dark:hover:bg-neutral-800'
                 }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 首页
               </Link>
               
-              {/* 一级菜单项 */}
+              {/* 导航项 */}
               {navItems.map((item, index) => {
                 const hasChildren = item.children && item.children.length > 0;
                 
                 if (!hasChildren) {
-                  // 无子菜单：直接跳转
                   return (
                     <Link
                       key={index}
                       to={item.path}
-                      className={`block px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 ${
+                      className={`block px-4 py-3 text-sm font-medium transition-colors ${
                         location.pathname === item.path
-                          ? (isHomePage ? 'text-white bg-white/10' : 'text-primary bg-primary/10')
-                          : (isHomePage ? 'text-white/80 hover:text-white hover:bg-white/10' : 'text-neutral-700 hover:bg-neutral-100')
+                          ? 'text-primary bg-primary/5' 
+                          : 'text-neutral-700 hover:bg-neutral-50 dark:text-neutral-200 dark:hover:bg-neutral-800'
                       }`}
                       onClick={() => setIsMenuOpen(false)}
                     >
@@ -307,22 +305,22 @@ const Header = () => {
                   );
                 }
                 
-                // 有子菜单：展开/收起 + 子菜单列表
                 const isExpanded = openDropdown === index;
                 
                 return (
                   <div key={index}>
-                    {/* 一级菜单按钮 - 只负责展开/收起 */}
                     <button
                       type="button"
-                      className={`w-full flex items-center justify-between px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 ${
-                        isHomePage ? 'text-white/80 hover:bg-white/10' : 'text-neutral-700 hover:bg-neutral-100'
+                      className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors ${
+                        isExpanded 
+                          ? 'text-primary bg-primary/5' 
+                          : 'text-neutral-700 hover:bg-neutral-50 dark:text-neutral-200 dark:hover:bg-neutral-800'
                       }`}
                       onClick={() => setOpenDropdown(isExpanded ? null : index)}
                     >
                       <span>{item.label}</span>
                       <svg 
-                        className={`w-5 h-5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -331,28 +329,24 @@ const Header = () => {
                       </svg>
                     </button>
                     
-                    {/* 子菜单列表 */}
                     {isExpanded && (
-                      <div className="mt-1 ml-2 space-y-1">
+                      <div className="bg-neutral-50 dark:bg-neutral-800">
                         {item.children.map((child, childIndex) => {
                           if (child.type === 'header') {
                             return (
-                              <div key={childIndex} className="px-4 py-2 text-xs font-semibold text-neutral-500 uppercase">
+                              <div key={childIndex} className="px-4 py-2 text-xs font-semibold text-neutral-400 uppercase">
                                 {child.label}
                               </div>
                             );
                           }
                           if (child.type === 'divider') {
-                            return <div key={childIndex} className="my-2 border-t border-neutral-200/30" />;
+                            return <div key={childIndex} className="my-1 border-t border-neutral-200 dark:border-neutral-700" />;
                           }
-                          // 子菜单项 - 使用Link直接跳转
                           return (
                             <Link
                               key={childIndex}
                               to={child.path}
-                              className={`block px-6 py-3 text-base rounded-lg transition-all duration-200 ${
-                                isHomePage ? 'text-white/60 hover:text-white hover:bg-white/10' : 'text-neutral-600 hover:text-primary hover:bg-primary/5'
-                              }`}
+                              className="block px-6 py-2.5 text-sm text-neutral-600 hover:text-primary hover:bg-primary/5 dark:text-neutral-300 dark:hover:text-primary"
                               onClick={() => setIsMenuOpen(false)}
                             >
                               {child.label}
@@ -366,14 +360,12 @@ const Header = () => {
               })}
               
               {/* 用户区域 */}
-              <div className={`pt-4 mt-4 border-t ${isHomePage ? 'border-white/20' : 'border-neutral-200'}`}>
+              <div className="border-t border-neutral-200 dark:border-neutral-700 mt-2 pt-2">
                 {isAuthenticated ? (
-                  <div className="space-y-1">
+                  <>
                     <Link
                       to="/dashboard"
-                      className={`block px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 ${
-                        isHomePage ? 'text-white/80 hover:bg-white/10' : 'text-neutral-700 hover:bg-neutral-100'
-                      }`}
+                      className="block px-4 py-3 text-sm text-neutral-700 hover:bg-neutral-50 dark:text-neutral-200 dark:hover:bg-neutral-800"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       个人中心
@@ -383,27 +375,23 @@ const Header = () => {
                         handleLogout();
                         setIsMenuOpen(false);
                       }}
-                      className="block w-full text-left px-4 py-3 text-base text-red-500 rounded-lg hover:bg-red-50"
+                      className="block w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
                     >
                       退出登录
                     </button>
-                  </div>
+                  </>
                 ) : (
-                  <div className="flex gap-3 px-4">
+                  <div className="flex gap-2 px-4">
                     <Link 
                       to="/login" 
-                      className={`flex-1 text-center py-3 text-base font-medium rounded-lg transition-all duration-200 ${
-                        isHomePage ? 'text-white/80 hover:bg-white/10 border border-white/30' : 'text-neutral-700 hover:bg-neutral-100 border border-neutral-300'
-                      }`}
+                      className="flex-1 text-center py-2.5 text-sm font-medium text-neutral-700 border border-neutral-300 rounded-lg hover:bg-neutral-50 dark:text-neutral-200 dark:border-neutral-600 dark:hover:bg-neutral-800"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       登录
                     </Link>
                     <Link 
                       to="/register" 
-                      className={`flex-1 text-center py-3 text-base font-medium rounded-lg transition-all duration-200 ${
-                        isHomePage ? 'bg-primary text-white hover:bg-primary/90' : 'bg-primary text-white hover:bg-primary/90'
-                      }`}
+                      className="flex-1 text-center py-2.5 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       注册
