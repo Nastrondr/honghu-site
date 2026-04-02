@@ -99,7 +99,7 @@ const CompetitionCenter = () => {
       title: '数字法务',
       subtitle: '智能法律服务',
       accentColor: 'purple',
-      imageUrl: '/assets/image/matchcategory card/legal AI.jpg'
+      imageUrl: '/assets/image/matchcategory card/legal tech interface.jpg'
     }
   ];
 
