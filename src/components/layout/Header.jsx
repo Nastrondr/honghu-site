@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Dropdown from '../common/Dropdown';
 
@@ -8,7 +8,6 @@ const Header = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
 
   const isHomePage = location.pathname === '/';
@@ -287,7 +286,11 @@ const Header = () => {
                       type="button"
                       className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium ${isHomePage ? 'text-white/70 hover:bg-white/10' : 'text-neutral-700 hover:bg-neutral-50'}`}
                       onClick={(e) => {
-                        e.stopPropagation();
+                        e.preventDefault();
+                        setOpenDropdown(openDropdown === index ? null : index);
+                      }}
+                      onTouchEnd={(e) => {
+                        e.preventDefault();
                         setOpenDropdown(openDropdown === index ? null : index);
                       }}
                     >
@@ -312,19 +315,14 @@ const Header = () => {
                           ) : child.type === 'divider' ? (
                             <div key={childIndex} className="my-2 border-t border-neutral-200/50" />
                           ) : (
-                            <div
+                            <Link
                               key={childIndex}
-                              className={`block px-3 py-2 text-sm rounded-lg transition-all duration-300 cursor-pointer ${isHomePage ? 'text-white/60 hover:text-white hover:bg-white/10' : 'text-neutral-600 hover:text-primary hover:bg-primary/5'}`}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setIsMenuOpen(false);
-                                setOpenDropdown(null);
-                                setTimeout(() => navigate(child.path), 50);
-                              }}
+                              to={child.path}
+                              className={`block px-3 py-2 text-sm rounded-lg transition-all duration-300 ${isHomePage ? 'text-white/60 hover:text-white hover:bg-white/10' : 'text-neutral-600 hover:text-primary hover:bg-primary/5'}`}
+                              onClick={() => setIsMenuOpen(false)}
                             >
                               {child.label}
-                            </div>
+                            </Link>
                           )
                         ))}
                       </div>
