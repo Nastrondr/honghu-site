@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Dropdown from '../common/Dropdown';
 
@@ -8,6 +8,7 @@ const Header = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
 
   const isHomePage = location.pathname === '/';
@@ -311,19 +312,19 @@ const Header = () => {
                           ) : child.type === 'divider' ? (
                             <div key={childIndex} className="my-2 border-t border-neutral-200/50" />
                           ) : (
-                            <Link
+                            <div
                               key={childIndex}
-                              to={child.path}
-                              type="button"
-                              className={`block px-3 py-2 text-sm rounded-lg transition-all duration-300 ${isHomePage ? 'text-white/60 hover:text-white hover:bg-white/10' : 'text-neutral-600 hover:text-primary hover:bg-primary/5'}`}
+                              className={`block px-3 py-2 text-sm rounded-lg transition-all duration-300 cursor-pointer ${isHomePage ? 'text-white/60 hover:text-white hover:bg-white/10' : 'text-neutral-600 hover:text-primary hover:bg-primary/5'}`}
                               onClick={(e) => {
+                                e.preventDefault();
                                 e.stopPropagation();
                                 setIsMenuOpen(false);
                                 setOpenDropdown(null);
+                                setTimeout(() => navigate(child.path), 50);
                               }}
                             >
                               {child.label}
-                            </Link>
+                            </div>
                           )
                         ))}
                       </div>
