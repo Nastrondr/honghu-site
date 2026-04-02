@@ -70,6 +70,39 @@ const CompetitionCenter = () => {
   const times = ['全部', '2024年', '2025年', '2026年'];
   const statuses = ['全部', '进行中', '即将开始', '已结束'];
 
+  const tracksData = [
+    {
+      title: '数字金融',
+      subtitle: '智能金融创新',
+      accentColor: 'violet',
+      imageUrl: '/assets/image/matchcategory card/finance.jpg'
+    },
+    {
+      title: '数字教育',
+      subtitle: '智慧教育未来',
+      accentColor: 'blue',
+      imageUrl: '/assets/image/matchcategory card/AI education technology.jpg'
+    },
+    {
+      title: '数字健康',
+      subtitle: 'AI医疗健康',
+      accentColor: 'cyan',
+      imageUrl: '/assets/image/matchcategory card/smart healthcare.jpg'
+    },
+    {
+      title: '数字文旅',
+      subtitle: '智慧文旅体验',
+      accentColor: 'indigo',
+      imageUrl: '/assets/image/matchcategory card/digital culture immersive.jpg'
+    },
+    {
+      title: '数字法务',
+      subtitle: '智能法律服务',
+      accentColor: 'purple',
+      imageUrl: '/assets/image/matchcategory card/legal AI.jpg'
+    }
+  ];
+
   const filteredCompetitions = competitions.filter(competition => {
     const matchesSearch = searchTerm === '' || 
       competition.title.includes(searchTerm) || 
@@ -352,25 +385,65 @@ const CompetitionCenter = () => {
       {tab === 'info' && (
       <>
         {/* 赛道设置 */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-semibold text-neutral-800 mb-6">赛道设置</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="glass-card rounded-2xl p-6">
-              <h3 className="text-lg font-semibold text-neutral-800 mb-3">综合赛道</h3>
-              <p className="text-neutral-600 text-sm mb-4">涵盖多个领域的创新应用，包括智慧城市、智能制造、智慧金融、智慧医疗、智慧教育等</p>
-              <div className="flex flex-wrap gap-2">
-                <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs">智慧城市</span>
-                <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs">智能制造</span>
-                <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs">智慧金融</span>
-              </div>
+        <section className="mb-8 md:mb-16">
+          <h2 className="text-xl md:text-2xl font-semibold text-neutral-800 mb-4 md:mb-6">赛道设置</h2>
+          
+          {/* 移动端：横向滑动卡片 */}
+          <div className="md:hidden overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4">
+            <div className="flex gap-3" style={{ width: 'max-content' }}>
+              {tracksData.map((track, index) => (
+                <div 
+                  key={index}
+                  className="relative w-[70vw] h-[70vw] max-w-[280px] max-h-[280px] rounded-2xl overflow-hidden flex-shrink-0 shadow-lg"
+                >
+                  <img 
+                    src={track.imageUrl} 
+                    alt={track.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <p className="text-xs text-white/80 mb-1">{track.subtitle}</p>
+                    <h3 className="text-lg font-semibold text-white line-clamp-1">{track.title}</h3>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="glass-card rounded-2xl p-6">
-              <h3 className="text-lg font-semibold text-neutral-800 mb-3">算法赛道</h3>
-              <p className="text-neutral-600 text-sm mb-4">专注于人工智能核心算法的优化与创新，包括机器学习、深度学习，自然语言处理等方向</p>
-              <div className="flex flex-wrap gap-2">
-                <span className="px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-xs">机器学习</span>
-                <span className="px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-xs">深度学习</span>
-                <span className="px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-xs">NLP</span>
+          </div>
+
+          {/* 桌面端：原有布局 */}
+          <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {tracksData.slice(0, 4).map((track, index) => (
+              <div 
+                key={index}
+                className="relative rounded-2xl overflow-hidden h-64 shadow-lg group"
+              >
+                <img 
+                  src={track.imageUrl} 
+                  alt={track.title}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <p className="text-sm text-white/80 mb-2">{track.subtitle}</p>
+                  <h3 className="text-2xl font-bold text-white">{track.title}</h3>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* 桌面端：第五个赛道单独显示 */}
+          <div className="hidden md:block mt-6">
+            <div className="relative rounded-2xl overflow-hidden h-48 max-w-xl mx-auto shadow-lg group">
+              <img 
+                src={tracksData[4].imageUrl} 
+                alt={tracksData[4].title}
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+              <div className="absolute bottom-0 left-0 right-0 p-6">
+                <p className="text-sm text-white/80 mb-2">{tracksData[4].subtitle}</p>
+                <h3 className="text-2xl font-bold text-white">{tracksData[4].title}</h3>
               </div>
             </div>
           </div>
