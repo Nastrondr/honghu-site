@@ -329,7 +329,7 @@ const Header = () => {
                     className={`block px-4 py-3 text-sm font-medium transition-all duration-300 ${location.pathname === item.path ? (isHomePage ? 'text-white bg-white/10' : 'text-primary bg-primary/5') : (isHomePage ? 'text-white/70 hover:text-white hover:bg-white/10' : 'text-neutral-700 hover:text-primary hover:bg-neutral-50')}`}
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    {item.path}
+                    {item.label}
                   </Link>
                 )}
               </div>
