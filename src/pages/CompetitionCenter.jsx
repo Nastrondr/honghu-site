@@ -450,9 +450,38 @@ const CompetitionCenter = () => {
         </section>
 
         {/* 参赛形式 */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-semibold text-neutral-800 mb-6">参赛形式</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section className="mb-8 md:mb-16">
+          <h2 className="text-xl md:text-2xl font-semibold text-neutral-800 mb-4 md:mb-6">参赛形式</h2>
+          
+          {/* 移动端：横向滑动卡片 */}
+          <div className="md:hidden overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4">
+            <div className="flex gap-3" style={{ width: 'max-content' }}>
+              {/* 个人赛 */}
+              <div className="w-[70vw] max-w-[280px] aspect-square bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-4 flex flex-col justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center mb-3">
+                  <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-semibold text-neutral-800 mb-1">个人赛</h3>
+                <p className="text-xs text-neutral-500 line-clamp-1">个人创意型</p>
+              </div>
+              
+              {/* 团队赛 */}
+              <div className="w-[70vw] max-w-[280px] aspect-square bg-gradient-to-br from-secondary/5 to-secondary/10 rounded-2xl p-4 flex flex-col justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-gradient-to-br from-secondary/20 to-secondary/5 rounded-xl flex items-center justify-center mb-3">
+                  <svg className="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-semibold text-neutral-800 mb-1">团队赛</h3>
+                <p className="text-xs text-neutral-500 line-clamp-1">协作项目型 2-5人</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 桌面端：原有布局 */}
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* 个人赛 */}
             <div className="glass-card rounded-2xl p-5 h-[320px]">
               <div className="flex h-full">
@@ -524,55 +553,128 @@ const CompetitionCenter = () => {
         </section>
 
         {/* 赛事流程 - 轻量时间线 */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-semibold text-neutral-800 mb-8">赛事流程</h2>
-          <div className="relative">
-            {/* 主线 */}
-            <div className="hidden md:block absolute top-5 left-0 right-0 h-[2px] bg-neutral-100"></div>
-            <div className="hidden md:block absolute top-5 left-0 w-[60%] h-[2px] bg-gradient-to-r from-primary to-purple-400"></div>
+        <section className="mb-8 md:mb-16">
+          <h2 className="text-xl md:text-2xl font-semibold text-neutral-800 mb-4 md:mb-8">赛事流程</h2>
+          
+          {/* 移动端：纵向timeline */}
+          <div className="md:hidden relative pl-4">
+            {/* 竖线 */}
+            <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-neutral-200"></div>
             
-            <div className="grid grid-cols-5 gap-2">
+            <div className="space-y-4">
               {[
                 { step: '查看赛事', description: '了解赛事规则和奖励' },
                 { step: '报名参赛', description: '填写个人或团队信息' },
-                { step: '组队协作', description: '团队赛组建团队，个人赛无需组队' },
+                { step: '组队协作', description: '团队赛需组队' },
                 { step: '提交作品', description: '按要求上传参赛作品' },
-                { step: '查看结果', description: '关注比赛结果和后续通知' }
+                { step: '查看结果', description: '关注比赛结果' }
               ].map((item, index) => (
-                <div key={index} className="relative text-center flex flex-col items-center">
-                  {/* 节点 */}
-                  <div className={`relative z-10 w-3 h-3 rounded-full mb-6 transition-all ${
-                    index <= 1 
-                      ? 'bg-gradient-to-r from-primary to-purple-400 shadow-lg shadow-primary/30' 
-                      : 'bg-neutral-200'
-                  }`}>
-                    {index === 2 && (
-                      <div className="absolute -inset-1 rounded-full border border-primary/30 animate-pulse"></div>
-                    )}
-                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-medium text-neutral-400">
-                      {index + 1}
-                    </div>
-                  </div>
-                  
-                  {/* 标题和描述 */}
-                  <div className="flex flex-col items-center">
-                    <h3 className={`text-sm font-medium mb-1 ${index <= 1 ? 'text-primary' : 'text-neutral-600'}`}>
+                <div key={index} className="relative flex items-start gap-3">
+                  {/* 圆点 */}
+                  <div className={`relative z-10 w-3 h-3 rounded-full flex-shrink-0 mt-0.5 ${
+                    index <= 1 ? 'bg-primary' : 'bg-neutral-300'
+                  }`}></div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className={`text-sm font-medium ${index <= 1 ? 'text-primary' : 'text-neutral-600'}`}>
                       {item.step}
                     </h3>
-                    <p className="text-xs text-neutral-400 leading-relaxed max-w-[100px]">
-                      {item.description}
-                    </p>
+                    <p className="text-xs text-neutral-400 line-clamp-1">{item.description}</p>
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* 桌面端：原有横向布局 */}
+          <div className="hidden md:block">
+            <div className="relative">
+              <div className="hidden md:block absolute top-5 left-0 right-0 h-[2px] bg-neutral-100"></div>
+              <div className="hidden md:block absolute top-5 left-0 w-[60%] h-[2px] bg-gradient-to-r from-primary to-purple-400"></div>
+              
+              <div className="grid grid-cols-5 gap-2">
+                {[
+                  { step: '查看赛事', description: '了解赛事规则和奖励' },
+                  { step: '报名参赛', description: '填写个人或团队信息' },
+                  { step: '组队协作', description: '团队赛组建团队，个人赛无需组队' },
+                  { step: '提交作品', description: '按要求上传参赛作品' },
+                  { step: '查看结果', description: '关注比赛结果和后续通知' }
+                ].map((item, index) => (
+                  <div key={index} className="relative text-center flex flex-col items-center">
+                    <div className={`relative z-10 w-3 h-3 rounded-full mb-6 transition-all ${
+                      index <= 1 
+                        ? 'bg-gradient-to-r from-primary to-purple-400 shadow-lg shadow-primary/30' 
+                        : 'bg-neutral-200'
+                    }`}>
+                      {index === 2 && (
+                        <div className="absolute -inset-1 rounded-full border border-primary/30 animate-pulse"></div>
+                      )}
+                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-medium text-neutral-400">
+                        {index + 1}
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <h3 className={`text-sm font-medium mb-1 ${index <= 1 ? 'text-primary' : 'text-neutral-600'}`}>
+                        {item.step}
+                      </h3>
+                      <p className="text-xs text-neutral-400 leading-relaxed max-w-[100px]">
+                        {item.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
         {/* 关键信息 */}
         <section>
-          <h2 className="text-2xl font-semibold text-neutral-800 mb-6">关键信息</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <h2 className="text-xl md:text-2xl font-semibold text-neutral-800 mb-4 md:mb-6">关键信息</h2>
+          
+          {/* 移动端：紧凑列表 */}
+          <div className="md:hidden space-y-0">
+            {/* 参赛资格 */}
+            <div className="flex items-center gap-3 py-3 px-3 border-b border-neutral-100">
+              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold text-neutral-800">参赛资格</h3>
+                <p className="text-xs text-neutral-500 line-clamp-1">高校学生、科研机构、企业团队</p>
+              </div>
+            </div>
+            
+            {/* 奖金激励 */}
+            <div className="flex items-center gap-3 py-3 px-3 border-b border-neutral-100">
+              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold text-neutral-800">奖金激励</h3>
+                <p className="text-xs text-neutral-500 line-clamp-1">金奖、银奖、铜奖及创新奖</p>
+              </div>
+            </div>
+            
+            {/* 资源支持 */}
+            <div className="flex items-center gap-3 py-3 px-3">
+              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold text-neutral-800">资源支持</h3>
+                <p className="text-xs text-neutral-500 line-clamp-1">算力、培训、专家指导</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 桌面端：原有布局 */}
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="glass-card rounded-2xl p-6">
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
                 <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
