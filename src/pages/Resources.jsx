@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Zap, 
@@ -167,39 +167,41 @@ const quickOverview = [
 ];
 
 const Resources = () => {
+  const [expandedResource, setExpandedResource] = useState(0);
+
   return (
     <div className="min-h-screen bg-white">
       {/* 1. Hero 区 */}
-      <section className="pt-20 pb-16">
+      <section className="pt-12 md:pt-20 pb-8 md:pb-16">
         <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center mb-12 animate-fadeIn">
-            <h1 className="text-4xl md:text-5xl font-bold text-neutral-800 mb-4 tracking-tight">
+          <div className="text-center mb-6 md:mb-12 animate-fadeIn">
+            <h1 className="text-3xl md:text-5xl font-bold text-neutral-800 mb-2 md:mb-4 tracking-tight">
               资源支持
             </h1>
-            <p className="text-lg md:text-xl text-neutral-500 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base md:text-xl text-neutral-500 max-w-2xl mx-auto leading-relaxed line-clamp-2 md:line-clamp-none">
               从算力、数据、导师到开发工具与奖励机制，为参赛团队提供全流程支持
             </p>
           </div>
 
           {/* 4 项快速概览 */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-5 max-w-4xl mx-auto">
             {quickOverview.map((item, index) => (
               <div 
                 key={index} 
-                className="group bg-white rounded-2xl p-6 text-center shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 border border-neutral-100"
+                className="group bg-white rounded-xl md:rounded-2xl p-3 md:p-6 text-center shadow-[0_4px_12px_rgba(0,0,0,0.04)] md:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] md:hover:shadow-[0_12px_32px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 md:hover:-translate-y-1 transition-all duration-300 border border-neutral-100"
               >
-                <div className={`w-12 h-12 ${item.bgColor} rounded-xl flex items-center justify-center mb-3 mx-auto group-hover:scale-110 transition-transform duration-300`}>
-                  <item.icon className={`w-6 h-6 ${item.color}`} strokeWidth={1.5} />
+                <div className={`w-9 h-9 md:w-12 md:h-12 ${item.bgColor} rounded-lg md:rounded-xl flex items-center justify-center mb-2 md:mb-3 mx-auto group-hover:scale-110 transition-transform duration-300`}>
+                  <item.icon className={`w-4 h-4 md:w-6 md:h-6 ${item.color}`} strokeWidth={1.5} />
                 </div>
-                <span className="text-sm font-medium text-neutral-700">{item.text}</span>
+                <span className="text-xs md:text-sm font-medium text-neutral-700 line-clamp-1">{item.text}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 2. 资源分类区 */}
-      <section className="py-20">
+      {/* 2. 资源分类区 - 仅桌面端显示 */}
+      <section className="hidden md:py-20">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-neutral-800 mb-3">四大资源类型</h2>
@@ -231,15 +233,30 @@ const Resources = () => {
       </section>
 
       {/* 3. 获取流程区 */}
-      <section className="py-20 bg-neutral-50/50">
+      <section className="py-10 md:py-20 bg-neutral-50/50">
         <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-neutral-800 mb-3">资源获取流程</h2>
-            <p className="text-neutral-500">简单四步，即可获取全部赛事资源</p>
+          <div className="text-center mb-6 md:mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-neutral-800 mb-2 md:mb-3">资源获取流程</h2>
+            <p className="text-neutral-500 text-sm md:text-base">简单四步，即可获取全部赛事资源</p>
           </div>
           
-          <div className="relative">
-            {/* 连接线 - 桌面端 */}
+          {/* 移动端：紧凑时间线列表 */}
+          <div className="md:hidden space-y-3">
+            {processSteps.map((step, index) => (
+              <div key={index} className="flex items-start gap-3 bg-white rounded-xl p-3 shadow-sm border border-neutral-100">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                  {step.step}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-semibold text-neutral-800 mb-0.5">{step.title}</h3>
+                  <p className="text-xs text-neutral-500 line-clamp-1">{step.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* 桌面端：原有卡片布局 */}
+          <div className="hidden md:relative">
             <div className="hidden lg:block absolute top-10 left-[12.5%] right-[12.5%] h-0.5 bg-gradient-to-r from-violet-200 via-blue-200 to-emerald-200"></div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -260,14 +277,65 @@ const Resources = () => {
       </section>
 
       {/* 4. 重点资源详情区 */}
-      <section className="py-20">
+      <section className="py-10 md:py-20">
         <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-neutral-800 mb-3">重点资源详情</h2>
-            <p className="text-neutral-500">深入了解每一项核心资源的具体内容</p>
+          <div className="text-center mb-6 md:mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-neutral-800 mb-2 md:mb-3">重点资源详情</h2>
+            <p className="text-neutral-500 text-sm md:text-base">深入了解每一项核心资源的具体内容</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* 移动端：折叠面板 */}
+          <div className="md:hidden space-y-2">
+            {resourceDetails.map((resource, index) => (
+              <div 
+                key={index}
+                className="bg-white rounded-xl border border-neutral-200 overflow-hidden"
+              >
+                <button
+                  onClick={() => setExpandedResource(expandedResource === index ? -1 : index)}
+                  className="w-full flex items-center gap-3 p-3 text-left"
+                >
+                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${resource.color} flex items-center justify-center flex-shrink-0`}>
+                    <resource.icon className="w-4 h-4 text-white" strokeWidth={1.5} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-neutral-800">{resource.title}</h3>
+                    <p className="text-xs text-neutral-500 line-clamp-1">{resource.summary}</p>
+                  </div>
+                  <svg 
+                    className={`w-5 h-5 text-neutral-400 transition-transform ${expandedResource === index ? 'rotate-180' : ''}`} 
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {expandedResource === index && (
+                  <div className="px-3 pb-3 border-t border-neutral-100">
+                    <ul className="pt-3 space-y-2">
+                      {resource.points.map((point, idx) => (
+                        <li key={idx} className="text-xs text-neutral-600 flex items-start gap-2">
+                          <div className={`w-4 h-4 rounded-full bg-gradient-to-br ${resource.color} flex items-center justify-center flex-shrink-0 mt-0.5`}>
+                            <Check className="w-2 h-2 text-white" strokeWidth={3} />
+                          </div>
+                          {point}
+                        </li>
+                      ))}
+                    </ul>
+                    <Link 
+                      to={resource.link}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-violet-600 mt-2"
+                    >
+                      {resource.action}
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* 桌面端：原有卡片布局 */}
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {resourceDetails.map((resource, index) => (
               <div 
                 key={index} 
@@ -302,14 +370,33 @@ const Resources = () => {
       </section>
 
       {/* 5. 核心支持亮点区 */}
-      <section className="py-20 bg-neutral-50/50">
+      <section className="py-10 md:py-20 bg-neutral-50/50">
         <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-neutral-800 mb-3">核心支持亮点</h2>
-            <p className="text-neutral-500">三大核心价值，让你的参赛之旅更有保障</p>
+          <div className="text-center mb-6 md:mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-neutral-800 mb-2 md:mb-3">核心支持亮点</h2>
+            <p className="text-neutral-500 text-sm md:text-base">三大核心价值，让你的参赛之旅更有保障</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* 移动端：紧凑横向排列 */}
+          <div className="md:hidden space-y-3">
+            {coreHighlights.map((highlight, index) => (
+              <div 
+                key={index} 
+                className="flex items-start gap-3 bg-white rounded-xl p-3 shadow-sm"
+              >
+                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${highlight.color} flex items-center justify-center flex-shrink-0`}>
+                  <highlight.icon className="w-4 h-4 text-white" strokeWidth={1.5} />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-neutral-800 mb-0.5">{highlight.title}</h3>
+                  <p className="text-xs text-neutral-500 line-clamp-2">{highlight.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* 桌面端：原有大圆布局 */}
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-8">
             {coreHighlights.map((highlight, index) => (
               <div 
                 key={index} 
@@ -327,31 +414,31 @@ const Resources = () => {
       </section>
 
       {/* 6. CTA 区 */}
-      <section className="py-20">
+      <section className="py-10 md:py-20">
         <div className="container mx-auto px-4 max-w-6xl">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 p-10 md:p-14 text-center shadow-2xl shadow-violet-500/20">
+          <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 p-6 md:p-14 text-center shadow-2xl shadow-violet-500/20">
             {/* 背景光效 */}
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-white/5 rounded-full blur-2xl"></div>
+            <div className="absolute top-0 left-1/4 w-48 md:w-96 h-48 md:h-96 bg-white/10 rounded-full blur-2xl md:blur-3xl"></div>
+            <div className="absolute bottom-0 right-1/4 w-32 md:w-64 h-32 md:h-64 bg-white/5 rounded-full blur-xl md:blur-2xl"></div>
             
             <div className="relative z-10">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              <h2 className="text-xl md:text-4xl font-bold text-white mb-2 md:mb-4 line-clamp-2">
                 加入大赛，开启你的 AI 创新实践
               </h2>
-              <p className="text-white/80 mb-10 max-w-xl mx-auto text-lg">
+              <p className="text-white/80 mb-6 md:mb-10 max-w-xl mx-auto text-sm md:text-base line-clamp-2">
                 报名后可获取赛事资源、导师支持与作品孵化机会
               </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <div className="flex flex-col sm:flex-row justify-center gap-2 md:gap-4">
                 <Link
                   to="/register-competition"
-                  className="group bg-white text-violet-600 px-10 py-4 rounded-xl font-bold text-base hover:bg-neutral-50 hover:shadow-lg hover:shadow-white/20 hover:-translate-y-0.5 transition-all duration-300"
+                  className="group bg-white text-violet-600 px-6 md:px-10 py-2.5 md:py-4 rounded-lg md:rounded-xl font-bold text-sm md:text-base hover:bg-neutral-50 hover:shadow-lg hover:shadow-white/20 hover:-translate-y-0.5 transition-all duration-300"
                 >
                   立即报名
-                  <ArrowRight className="w-5 h-5 inline-block ml-2 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-4 h-4 md:w-5 md:h-5 inline-block ml-1.5 md:ml-2 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link
                   to="/competition-center"
-                  className="group px-10 py-4 rounded-xl font-bold text-base border-2 border-white/30 text-white hover:bg-white/10 hover:border-white/50 transition-all duration-300 backdrop-blur-sm"
+                  className="group px-6 md:px-10 py-2.5 md:py-4 rounded-lg md:rounded-xl font-bold text-sm md:text-base border-2 border-white/30 text-white hover:bg-white/10 hover:border-white/50 transition-all duration-300 backdrop-blur-sm"
                 >
                   查看赛事中心
                 </Link>
