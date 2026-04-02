@@ -283,8 +283,12 @@ const Header = () => {
                 {item.children ? (
                   <div>
                     <button
+                      type="button"
                       className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium ${isHomePage ? 'text-white/70 hover:bg-white/10' : 'text-neutral-700 hover:bg-neutral-50'}`}
-                      onClick={() => setOpenDropdown(openDropdown === index ? null : index)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenDropdown(openDropdown === index ? null : index);
+                      }}
                     >
                       <span>{item.label}</span>
                       <svg 
@@ -310,8 +314,10 @@ const Header = () => {
                             <Link
                               key={childIndex}
                               to={child.path}
+                              type="button"
                               className={`block px-3 py-2 text-sm rounded-lg transition-all duration-300 ${isHomePage ? 'text-white/60 hover:text-white hover:bg-white/10' : 'text-neutral-600 hover:text-primary hover:bg-primary/5'}`}
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 setIsMenuOpen(false);
                                 setOpenDropdown(null);
                               }}
