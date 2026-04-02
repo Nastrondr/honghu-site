@@ -11,6 +11,32 @@ const CompetitionCenter = () => {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTrack, setSelectedTrack] = useState('全部');
+  const [competitionForm, setCompetitionForm] = useState('personal');
+
+  const competitionForms = {
+    personal: {
+      title: '个人赛',
+      subtitle: '个人创意型',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      ),
+      description: '面向个人AI应用创意与实践，提交视频作品，展示个人创新能力和技术实力',
+      tags: ['适合独立开发者', '评审周期短', '更高奖金']
+    },
+    team: {
+      title: '团队赛',
+      subtitle: '协作项目型 2-5人',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      ),
+      description: '2-5人团队协作完成AI应用项目，展示团队协作能力和项目整体实力',
+      tags: ['适合团队协作', '综合实力比拼', '资源共享']
+    }
+  };
   const [selectedTime, setSelectedTime] = useState('全部');
   const [selectedStatus, setSelectedStatus] = useState('全部');
   const { isAuthenticated } = useAuth();
@@ -453,29 +479,63 @@ const CompetitionCenter = () => {
         <section className="mb-8 md:mb-16">
           <h2 className="text-xl md:text-2xl font-semibold text-neutral-800 mb-4 md:mb-6">参赛形式</h2>
           
-          {/* 移动端：横向滑动卡片 */}
-          <div className="md:hidden overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4">
-            <div className="flex gap-3" style={{ width: 'max-content' }}>
-              {/* 个人赛 */}
-              <div className="w-[70vw] max-w-[280px] aspect-square bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-4 flex flex-col justify-center flex-shrink-0">
-                <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center mb-3">
-                  <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <h3 className="text-base font-semibold text-neutral-800 mb-1">个人赛</h3>
-                <p className="text-xs text-neutral-500 line-clamp-1">个人创意型</p>
-              </div>
-              
-              {/* 团队赛 */}
-              <div className="w-[70vw] max-w-[280px] aspect-square bg-gradient-to-br from-secondary/5 to-secondary/10 rounded-2xl p-4 flex flex-col justify-center flex-shrink-0">
-                <div className="w-12 h-12 bg-gradient-to-br from-secondary/20 to-secondary/5 rounded-xl flex items-center justify-center mb-3">
-                  <svg className="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-base font-semibold text-neutral-800 mb-1">团队赛</h3>
-                <p className="text-xs text-neutral-500 line-clamp-1">协作项目型 2-5人</p>
+          {/* 移动端：Tab 选择器 + 详情区 */}
+          <div className="md:hidden">
+            {/* 选择区：双 Tab 切换 */}
+            <div className="flex gap-2 mb-4">
+              <button
+                onClick={() => setCompetitionForm('personal')}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 transition-all ${
+                  competitionForm === 'personal'
+                    ? 'border-primary bg-primary/5'
+                    : 'border-neutral-200 bg-white'
+                }`}
+              >
+                <svg className={`w-5 h-5 ${competitionForm === 'personal' ? 'text-primary' : 'text-neutral-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span className={`text-sm font-medium ${competitionForm === 'personal' ? 'text-primary' : 'text-neutral-600'}`}>
+                  个人赛
+                </span>
+              </button>
+              <button
+                onClick={() => setCompetitionForm('team')}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 transition-all ${
+                  competitionForm === 'team'
+                    ? 'border-secondary bg-secondary/5'
+                    : 'border-neutral-200 bg-white'
+                }`}
+              >
+                <svg className={`w-5 h-5 ${competitionForm === 'team' ? 'text-secondary' : 'text-neutral-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span className={`text-sm font-medium ${competitionForm === 'team' ? 'text-secondary' : 'text-neutral-600'}`}>
+                  团队赛
+                </span>
+              </button>
+            </div>
+            
+            {/* 详情区 */}
+            <div className="bg-white rounded-xl border border-neutral-200 p-4">
+              <h3 className="text-base font-semibold text-neutral-800 mb-2">
+                {competitionForms[competitionForm].title}
+              </h3>
+              <p className="text-sm text-neutral-600 mb-4 leading-relaxed">
+                {competitionForms[competitionForm].description}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {competitionForms[competitionForm].tags.map((tag, index) => (
+                  <span 
+                    key={index}
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      competitionForm === 'personal'
+                        ? 'bg-primary/10 text-primary'
+                        : 'bg-secondary/10 text-secondary'
+                    }`}
+                  >
+                    {tag}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
