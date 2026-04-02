@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import EcoProductsDesktop from './eco-products/EcoProductsDesktop';
-import EcoProductsMobile from './eco-products/EcoProductsMobile';
+import PartnersDesktop from './PartnersDesktop';
+import PartnersMobile from './PartnersMobile';
 
-const EcoProducts = () => {
+const Partners = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -16,7 +16,7 @@ const EcoProducts = () => {
     return () => window.removeEventListener('resize', checkDevice);
   }, []);
 
-  return isMobile ? <EcoProductsMobile /> : <EcoProductsDesktop />;
+  return isMobile ? <PartnersMobile /> : <PartnersDesktop />;
 };
 
-export default EcoProducts;
+export default Partners;

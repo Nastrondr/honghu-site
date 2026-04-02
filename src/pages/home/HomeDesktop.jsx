@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import HomeHero from '../components/common/HomeHero';
-import ScrollReveal, { ScrollRevealStagger } from '../components/common/ScrollReveal';
+import HomeHero from '../common/HomeHero';
+import ScrollReveal, { ScrollRevealStagger } from '../common/ScrollReveal';
 
 const TrackCard = ({ track }) => {
   const [imageError, setImageError] = useState(false);
@@ -49,7 +49,7 @@ const TrackCard = ({ track }) => {
   );
 };
 
-const Home = () => {
+const HomeDesktop = () => {
   return (
     <div className="min-h-screen">
       {/* Hero 首屏 */}
@@ -503,9 +503,8 @@ const Home = () => {
           </ScrollReveal>
         </div>
       </section>
-
     </div>
   );
 };
 
-export default Home;
+export default HomeDesktop;

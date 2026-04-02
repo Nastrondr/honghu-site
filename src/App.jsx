@@ -4,7 +4,7 @@ import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import PageTransition from './components/common/PageTransition';
 import CustomCursor from './components/common/CustomCursor';
-import Home from './pages/Home';
+import Home from './pages/home';
 import CompetitionCenter from './pages/CompetitionCenter';
 import CompetitionDetail from './pages/CompetitionDetail';
 import About from './pages/About';
