@@ -267,109 +267,150 @@ const Header = () => {
           </div>
         </div>
         
-        {/* 移动端菜单 */}
+        {/* 移动端菜单 - 全新结构 */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 space-y-2">
-            <Link
-              to="/"
-              className={`block px-4 py-3 text-sm font-medium transition-all duration-300 ${location.pathname === '/' ? (isHomePage ? 'text-white bg-white/10' : 'text-primary bg-primary/5') : (isHomePage ? 'text-white/70 hover:text-white hover:bg-white/10' : 'text-neutral-700 hover:text-primary hover:bg-neutral-50')}`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              首页
-            </Link>
-            
-            {navItems.map((item, index) => (
-              <div key={index}>
-                {item.children ? (
-                  <div>
+          <div className="md:hidden fixed inset-0 top-14 z-40 overflow-y-auto">
+            {/* 菜单背景 */}
+            <div className="min-h-full py-4 px-4 space-y-1">
+              {/* 首页 */}
+              <Link
+                to="/"
+                className={`block px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 ${
+                  location.pathname === '/' 
+                    ? (isHomePage ? 'text-white bg-white/10' : 'text-primary bg-primary/10')
+                    : (isHomePage ? 'text-white/80 hover:text-white hover:bg-white/10' : 'text-neutral-700 hover:bg-neutral-100')
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                首页
+              </Link>
+              
+              {/* 一级菜单项 */}
+              {navItems.map((item, index) => {
+                const hasChildren = item.children && item.children.length > 0;
+                
+                if (!hasChildren) {
+                  // 无子菜单：直接跳转
+                  return (
+                    <Link
+                      key={index}
+                      to={item.path}
+                      className={`block px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 ${
+                        location.pathname === item.path
+                          ? (isHomePage ? 'text-white bg-white/10' : 'text-primary bg-primary/10')
+                          : (isHomePage ? 'text-white/80 hover:text-white hover:bg-white/10' : 'text-neutral-700 hover:bg-neutral-100')
+                      }`}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                }
+                
+                // 有子菜单：展开/收起 + 子菜单列表
+                const isExpanded = openDropdown === index;
+                
+                return (
+                  <div key={index}>
+                    {/* 一级菜单按钮 - 只负责展开/收起 */}
                     <button
                       type="button"
-                      className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium ${isHomePage ? 'text-white/70 hover:bg-white/10' : 'text-neutral-700 hover:bg-neutral-50'}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenDropdown(openDropdown === index ? null : index);
-                      }}
-                      onTouchEnd={(e) => {
-                        e.stopPropagation();
-                        setOpenDropdown(openDropdown === index ? null : index);
-                      }}
+                      className={`w-full flex items-center justify-between px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 ${
+                        isHomePage ? 'text-white/80 hover:bg-white/10' : 'text-neutral-700 hover:bg-neutral-100'
+                      }`}
+                      onClick={() => setOpenDropdown(isExpanded ? null : index)}
                     >
                       <span>{item.label}</span>
                       <svg 
-                        className={`w-4 h-4 transition-transform ${openDropdown === index ? 'rotate-180' : ''}`} 
-                        fill="none" 
-                        stroke="currentColor" 
+                        className={`w-5 h-5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </button>
                     
-                    {openDropdown === index && (
-                      <div className={`ml-4 mt-1 space-y-1 rounded-xl p-3 ${isHomePage ? 'bg-black/30' : 'bg-white/50'}`}>
-                        {item.children.map((child, childIndex) => (
-                          child.type === 'header' ? (
-                            <div key={childIndex} className="px-3 py-2 text-xs font-semibold text-neutral-400 uppercase">
-                              {child.label}
-                            </div>
-                          ) : child.type === 'divider' ? (
-                            <div key={childIndex} className="my-2 border-t border-neutral-200/50" />
-                          ) : (
+                    {/* 子菜单列表 */}
+                    {isExpanded && (
+                      <div className="mt-1 ml-2 space-y-1">
+                        {item.children.map((child, childIndex) => {
+                          if (child.type === 'header') {
+                            return (
+                              <div key={childIndex} className="px-4 py-2 text-xs font-semibold text-neutral-500 uppercase">
+                                {child.label}
+                              </div>
+                            );
+                          }
+                          if (child.type === 'divider') {
+                            return <div key={childIndex} className="my-2 border-t border-neutral-200/30" />;
+                          }
+                          // 子菜单项 - 使用Link直接跳转
+                          return (
                             <Link
                               key={childIndex}
                               to={child.path}
-                              className={`block px-3 py-2 text-sm rounded-lg transition-all duration-300 ${isHomePage ? 'text-white/60 hover:text-white hover:bg-white/10' : 'text-neutral-600 hover:text-primary hover:bg-primary/5'}`}
+                              className={`block px-6 py-3 text-base rounded-lg transition-all duration-200 ${
+                                isHomePage ? 'text-white/60 hover:text-white hover:bg-white/10' : 'text-neutral-600 hover:text-primary hover:bg-primary/5'
+                              }`}
                               onClick={() => setIsMenuOpen(false)}
                             >
                               {child.label}
                             </Link>
-                          )
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
+                );
+              })}
+              
+              {/* 用户区域 */}
+              <div className={`pt-4 mt-4 border-t ${isHomePage ? 'border-white/20' : 'border-neutral-200'}`}>
+                {isAuthenticated ? (
+                  <div className="space-y-1">
+                    <Link
+                      to="/dashboard"
+                      className={`block px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 ${
+                        isHomePage ? 'text-white/80 hover:bg-white/10' : 'text-neutral-700 hover:bg-neutral-100'
+                      }`}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      个人中心
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-4 py-3 text-base text-red-500 rounded-lg hover:bg-red-50"
+                    >
+                      退出登录
+                    </button>
+                  </div>
                 ) : (
-                  <Link
-                    to={item.path}
-                    className={`block px-4 py-3 text-sm font-medium transition-all duration-300 ${location.pathname === item.path ? (isHomePage ? 'text-white bg-white/10' : 'text-primary bg-primary/5') : (isHomePage ? 'text-white/70 hover:text-white hover:bg-white/10' : 'text-neutral-700 hover:text-primary hover:bg-neutral-50')}`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
+                  <div className="flex gap-3 px-4">
+                    <Link 
+                      to="/login" 
+                      className={`flex-1 text-center py-3 text-base font-medium rounded-lg transition-all duration-200 ${
+                        isHomePage ? 'text-white/80 hover:bg-white/10 border border-white/30' : 'text-neutral-700 hover:bg-neutral-100 border border-neutral-300'
+                      }`}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      登录
+                    </Link>
+                    <Link 
+                      to="/register" 
+                      className={`flex-1 text-center py-3 text-base font-medium rounded-lg transition-all duration-200 ${
+                        isHomePage ? 'bg-primary text-white hover:bg-primary/90' : 'bg-primary text-white hover:bg-primary/90'
+                      }`}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      注册
+                    </Link>
+                  </div>
                 )}
               </div>
-            ))}
-            
-            <div className={`pt-4 border-t ${isHomePage ? 'border-white/10' : 'border-neutral-200'}`}>
-              {isAuthenticated ? (
-                <div className="space-y-2">
-                  <Link
-                    to="/dashboard"
-                    className={`block px-4 py-2 text-sm ${isHomePage ? 'text-white/70 hover:bg-white/10' : 'text-neutral-700 hover:bg-neutral-50'}`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    个人中心
-                  </Link>
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setIsMenuOpen(false);
-                    }}
-                    className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
-                  >
-                    退出登录
-                  </button>
-                </div>
-              ) : (
-                <div className="flex space-x-4 px-4">
-                  <Link to="/login" className={`text-sm font-medium ${isHomePage ? 'text-white/70 hover:text-white' : 'text-neutral-700 hover:text-primary'}`}>
-                    登录
-                  </Link>
-                  <Link to="/register" className={`text-sm font-medium ${isHomePage ? 'text-white hover:text-white' : 'text-primary hover:text-primary/80'}`}>
-                    注册
-                  </Link>
-                </div>
-              )}
             </div>
           </div>
         )}
