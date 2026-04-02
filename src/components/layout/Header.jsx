@@ -267,7 +267,7 @@ const Header = () => {
           </div>
         </div>
         
-        {/* 移动端菜单 */}
+        {/* 移动端菜单 - 简化版：只显示一级入口 */}
         {isMenuOpen && (
           <div className="md:hidden absolute top-full left-0 right-0 z-50 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-700 shadow-lg">
             <div className="py-2 max-h-[calc(100vh-4rem)] overflow-y-auto">
@@ -284,80 +284,30 @@ const Header = () => {
                 首页
               </Link>
               
-              {/* 导航项 */}
-              {navItems.map((item, index) => {
-                const hasChildren = item.children && item.children.length > 0;
-                
-                if (!hasChildren) {
-                  return (
-                    <Link
-                      key={index}
-                      to={item.path}
-                      className={`block px-4 py-3 text-sm font-medium transition-colors ${
-                        location.pathname === item.path
-                          ? 'text-primary bg-primary/5' 
-                          : 'text-neutral-700 hover:bg-neutral-50 dark:text-neutral-200 dark:hover:bg-neutral-800'
-                      }`}
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {item.label}
-                    </Link>
-                  );
-                }
-                
-                const isExpanded = openDropdown === index;
-                
-                return (
-                  <div key={index}>
-                    <button
-                      type="button"
-                      className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors ${
-                        isExpanded 
-                          ? 'text-primary bg-primary/5' 
-                          : 'text-neutral-700 hover:bg-neutral-50 dark:text-neutral-200 dark:hover:bg-neutral-800'
-                      }`}
-                      onClick={() => setOpenDropdown(isExpanded ? null : index)}
-                    >
-                      <span>{item.label}</span>
-                      <svg 
-                        className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    
-                    {isExpanded && (
-                      <div className="bg-neutral-50 dark:bg-neutral-800">
-                        {item.children.map((child, childIndex) => {
-                          if (child.type === 'header') {
-                            return (
-                              <div key={childIndex} className="px-4 py-2 text-xs font-semibold text-neutral-400 uppercase">
-                                {child.label}
-                              </div>
-                            );
-                          }
-                          if (child.type === 'divider') {
-                            return <div key={childIndex} className="my-1 border-t border-neutral-200 dark:border-neutral-700" />;
-                          }
-                          return (
-                            <Link
-                              key={childIndex}
-                              to={child.path}
-                              className="block px-6 py-2.5 text-sm text-neutral-600 hover:text-primary hover:bg-primary/5 dark:text-neutral-300 dark:hover:text-primary"
-                              onClick={() => setIsMenuOpen(false)}
-                            >
-                              {child.label}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+              {/* 一级菜单项 - 全部直接跳转，不展开二级 */}
+              {navItems.map((item, index) => (
+                <Link
+                  key={index}
+                  to={item.path}
+                  className={`block px-4 py-3 text-sm font-medium transition-colors ${
+                    location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path))
+                      ? 'text-primary bg-primary/5' 
+                      : 'text-neutral-700 hover:bg-neutral-50 dark:text-neutral-200 dark:hover:bg-neutral-800'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              ))}
+              
+              {/* 专家评审入口 */}
+              <Link
+                to="/reviewer-login"
+                className="block px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                专家评审
+              </Link>
               
               {/* 用户区域 */}
               <div className="border-t border-neutral-200 dark:border-neutral-700 mt-2 pt-2">
