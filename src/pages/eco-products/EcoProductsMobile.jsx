@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Award, Cpu, Code2, GraduationCap } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { ecosystemNodes, productGroups, usageSteps } from './ecoProductsData';
 
 const EcoProductsMobile = () => {
