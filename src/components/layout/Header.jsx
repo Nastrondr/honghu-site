@@ -319,13 +319,7 @@ const Header = () => {
                               key={childIndex}
                               to={child.path}
                               className={`block px-3 py-2 text-sm rounded-lg transition-all duration-300 ${isHomePage ? 'text-white/60 hover:text-white hover:bg-white/10' : 'text-neutral-600 hover:text-primary hover:bg-primary/5'}`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setIsMenuOpen(false);
-                              }}
-                              onTouchEnd={(e) => {
-                                e.stopPropagation();
-                              }}
+                              onClick={() => setIsMenuOpen(false)}
                             >
                               {child.label}
                             </Link>
