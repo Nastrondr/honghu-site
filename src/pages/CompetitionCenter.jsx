@@ -481,35 +481,35 @@ const CompetitionCenter = () => {
           
           {/* 移动端：Tab 选择器 + 详情区 */}
           <div className="md:hidden">
-            {/* 选择区：双 Tab 切换 */}
+            {/* 选择区：Segmented Control */}
             <div className="flex gap-2 mb-4">
               <button
                 onClick={() => setCompetitionForm('personal')}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 transition-all ${
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-full border transition-all duration-150 ${
                   competitionForm === 'personal'
-                    ? 'border-primary bg-primary/5'
-                    : 'border-neutral-200 bg-white'
+                    ? 'border-[#7A7BFF] bg-[rgba(122,123,255,0.08)]'
+                    : 'border-[rgba(0,0,0,0.08)] bg-[#F6F7FB]'
                 }`}
               >
-                <svg className={`w-5 h-5 ${competitionForm === 'personal' ? 'text-primary' : 'text-neutral-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={`w-4 h-4 ${competitionForm === 'personal' ? 'text-[#7A7BFF]' : 'text-[#666]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                <span className={`text-sm font-medium ${competitionForm === 'personal' ? 'text-primary' : 'text-neutral-600'}`}>
+                <span className={`text-sm font-medium ${competitionForm === 'personal' ? 'text-[#7A7BFF]' : 'text-[#666]'}`}>
                   个人赛
                 </span>
               </button>
               <button
                 onClick={() => setCompetitionForm('team')}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 transition-all ${
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-full border transition-all duration-150 ${
                   competitionForm === 'team'
-                    ? 'border-secondary bg-secondary/5'
-                    : 'border-neutral-200 bg-white'
+                    ? 'border-[#7A7BFF] bg-[rgba(122,123,255,0.08)]'
+                    : 'border-[rgba(0,0,0,0.08)] bg-[#F6F7FB]'
                 }`}
               >
-                <svg className={`w-5 h-5 ${competitionForm === 'team' ? 'text-secondary' : 'text-neutral-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={`w-4 h-4 ${competitionForm === 'team' ? 'text-[#7A7BFF]' : 'text-[#666]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                <span className={`text-sm font-medium ${competitionForm === 'team' ? 'text-secondary' : 'text-neutral-600'}`}>
+                <span className={`text-sm font-medium ${competitionForm === 'team' ? 'text-[#7A7BFF]' : 'text-[#666]'}`}>
                   团队赛
                 </span>
               </button>
