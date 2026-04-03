@@ -1,5 +1,5 @@
 import React from 'react';
-import { STATUS_CONFIG, STATUS_COLORS } from '../data/statusConfig';
+import { STATUS_CONFIG, STATUS_COLORS } from '../../data/statusConfig';
 
 const StatusTag = ({ status, className = '', size = 'md', ...props }) => {
   const config = STATUS_CONFIG[status] || { color: 'gray', hasDot: false, label: status };

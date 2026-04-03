@@ -716,43 +716,57 @@ const CompetitionCenter = () => {
             </div>
           </div>
 
-          {/* 桌面端：原有横向布局 */}
-          <div className="hidden md:block">
-            <div className="relative">
-              <div className="hidden md:block absolute top-5 left-0 right-0 h-[2px] bg-neutral-100"></div>
-              <div className="hidden md:block absolute top-5 left-0 w-[60%] h-[2px] bg-gradient-to-r from-primary to-purple-400"></div>
+          {/* 桌面端：单轨居中式时间轴 */}
+          <div className="hidden lg:block">
+            <div className="relative py-8">
+              {/* 主横线 */}
+              <div className="absolute left-[10%] right-[10%] top-1/2 -translate-y-1/2 h-px bg-neutral-200"></div>
+              {/* 进度横线 */}
+              <div className="absolute left-[10%] top-1/2 -translate-y-1/2 h-px bg-purple-500" style={{ width: 'calc(80% * 0.6)' }}></div>
               
-              <div className="grid grid-cols-5 gap-2">
+              {/* 节点容器 */}
+              <div className="grid grid-cols-5" style={{ padding: '0 10%' }}>
                 {[
                   { step: '查看赛事', description: '了解赛事规则和奖励' },
                   { step: '报名参赛', description: '填写个人或团队信息' },
-                  { step: '组队协作', description: '团队赛组建团队，个人赛无需组队' },
+                  { step: '组队协作', description: '团队赛需组队，个人赛无需' },
                   { step: '提交作品', description: '按要求上传参赛作品' },
                   { step: '查看结果', description: '关注比赛结果和后续通知' }
-                ].map((item, index) => (
-                  <div key={index} className="relative text-center flex flex-col items-center">
-                    <div className={`relative z-10 w-3 h-3 rounded-full mb-6 transition-all ${
-                      index <= 1 
-                        ? 'bg-gradient-to-r from-primary to-purple-400 shadow-lg shadow-primary/30' 
-                        : 'bg-neutral-200'
-                    }`}>
-                      {index === 2 && (
-                        <div className="absolute -inset-1 rounded-full border border-primary/30 animate-pulse"></div>
-                      )}
-                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-medium text-neutral-400">
-                        {index + 1}
+                ].map((item, index) => {
+                  const isCompleted = index < 2;
+                  const isCurrent = index === 2;
+                  
+                  return (
+                    <div key={index} className="relative flex flex-col items-center">
+                      {/* 节点 - 位于横线中心 */}
+                      <div className="relative z-10 w-4 h-4 -mb-2">
+                        {isCompleted ? (
+                          <div className="w-4 h-4 rounded-full bg-purple-500 shadow-sm shadow-purple-500/40"></div>
+                        ) : isCurrent ? (
+                          <div className="w-4 h-4 rounded-full border-2 border-purple-500 bg-white flex items-center justify-center">
+                            <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+                          </div>
+                        ) : (
+                          <div className="w-4 h-4 rounded-full bg-neutral-200"></div>
+                        )}
+                      </div>
+                      
+                      {/* 文字内容 */}
+                      <div className="text-center mt-2">
+                        <h3 className={`text-sm font-medium mb-1 ${
+                          isCompleted || isCurrent ? 'text-purple-600' : 'text-neutral-400'
+                        }`}>
+                          {item.step}
+                        </h3>
+                        <p className={`text-xs leading-relaxed max-w-[120px] mx-auto ${
+                          isCompleted || isCurrent ? 'text-neutral-600' : 'text-neutral-400'
+                        }`}>
+                          {item.description}
+                        </p>
                       </div>
                     </div>
-                    <div className="flex flex-col items-center">
-                      <h3 className={`text-sm font-medium mb-1 ${index <= 1 ? 'text-primary' : 'text-neutral-600'}`}>
-                        {item.step}
-                      </h3>
-                      <p className="text-xs text-neutral-400 leading-relaxed max-w-[100px]">
-                        {item.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
