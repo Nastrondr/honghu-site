@@ -12,6 +12,15 @@ const CompetitionCenter = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTrack, setSelectedTrack] = useState('全部');
   const [competitionForm, setCompetitionForm] = useState('personal');
+  const [selectedTrackTab, setSelectedTrackTab] = useState(0);
+
+  const trackDescriptions = [
+    { title: '数字金融', description: '聚焦 AI 在金融风控、投顾与反欺诈中的创新应用', tags: ['场景应用', '算法创新'] },
+    { title: '数字教育', description: '聚焦 AI 在个性化学习、教学辅助与教育服务中的应用', tags: ['智能辅导', '教育公平'] },
+    { title: '数字健康', description: '聚焦 AI 在医疗辅助诊断、健康管理与药研中的应用', tags: ['智慧医疗', '健康管理'] },
+    { title: '数字文旅', description: '聚焦 AI 在文化传播、文旅服务与沉浸体验中的应用', tags: ['数字文创', '智慧旅游'] },
+    { title: '数字法务', description: '聚焦 AI 在法律服务、合规审查与司法辅助中的应用', tags: ['智能法务', '合规审查'] }
+  ];
 
   const competitionForms = {
     personal: {
@@ -414,26 +423,45 @@ const CompetitionCenter = () => {
         <section className="mb-8 md:mb-16">
           <h2 className="text-xl md:text-2xl font-semibold text-neutral-800 mb-4 md:mb-6">赛道设置</h2>
           
-          {/* 移动端：横向滑动卡片 */}
-          <div className="md:hidden overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4">
-            <div className="flex gap-3" style={{ width: 'max-content' }}>
-              {tracksData.map((track, index) => (
-                <div 
+          {/* 移动端：选项卡 + 说明区 */}
+          <div className="md:hidden">
+            {/* 上层：赛道选项卡 (2列grid) */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              {trackDescriptions.map((track, index) => (
+                <button
                   key={index}
-                  className="relative w-[70vw] h-[70vw] max-w-[280px] max-h-[280px] rounded-2xl overflow-hidden flex-shrink-0 shadow-lg"
+                  onClick={() => setSelectedTrackTab(index)}
+                  className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border transition-all duration-150 ${
+                    selectedTrackTab === index
+                      ? 'border-[#7A7BFF] bg-[rgba(122,123,255,0.08)]'
+                      : 'border-[rgba(0,0,0,0.08)] bg-white'
+                  }`}
                 >
-                  <img 
-                    src={track.imageUrl} 
-                    alt={track.title}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <p className="text-xs text-white/80 mb-1">{track.subtitle}</p>
-                    <h3 className="text-lg font-semibold text-white line-clamp-1">{track.title}</h3>
-                  </div>
-                </div>
+                  <span className={`text-sm font-medium ${selectedTrackTab === index ? 'text-[#7A7BFF]' : 'text-[#666]'}`}>
+                    {track.title}
+                  </span>
+                </button>
               ))}
+            </div>
+            
+            {/* 下层：当前选中赛道说明区 */}
+            <div className="bg-white rounded-xl border border-neutral-200 p-4">
+              <h3 className="text-base font-semibold text-neutral-800 mb-2">
+                {trackDescriptions[selectedTrackTab].title}
+              </h3>
+              <p className="text-sm text-neutral-600 mb-3 leading-relaxed">
+                {trackDescriptions[selectedTrackTab].description}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {trackDescriptions[selectedTrackTab].tags.map((tag, index) => (
+                  <span 
+                    key={index}
+                    className="px-3 py-1 rounded-full text-xs font-medium bg-[rgba(122,123,255,0.1)] text-[#7A7BFF]"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
