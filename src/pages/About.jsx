@@ -26,7 +26,7 @@ const About = () => {
 
         {/* 定位与愿景模块 */}
         <div className="bg-neutral-50/50 rounded-2xl border border-neutral-200/60 p-4 md:p-8 mb-8 md:mb-16">
-          <div className="mb-4 md:mb-8">
+          <div className="mb-4 md:mb-8 hidden md:block">
             <h2 className="text-xl md:text-2xl font-semibold text-neutral-800 mb-1 md:mb-2">定位与愿景</h2>
             <p className="text-neutral-500 text-sm">面向未来的AI应用创新与人才孵化平台</p>
           </div>

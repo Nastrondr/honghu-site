@@ -416,11 +416,11 @@ const Resources = () => {
       {/* 6. CTA 区 */}
       <section className="py-10 md:py-20">
         <div className="container mx-auto px-4 max-w-6xl">
-          <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 p-6 md:p-14 text-center shadow-2xl shadow-violet-500/20">
+          <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-r from-[#7463EC] via-[#5b4cdb] to-[#4338ca] p-6 md:p-14 text-center shadow-2xl shadow-primary/20">
             {/* 背景光效 */}
             <div className="absolute top-0 left-1/4 w-48 md:w-96 h-48 md:h-96 bg-white/10 rounded-full blur-2xl md:blur-3xl"></div>
             <div className="absolute bottom-0 right-1/4 w-32 md:w-64 h-32 md:h-64 bg-white/5 rounded-full blur-xl md:blur-2xl"></div>
-            
+
             <div className="relative z-10">
               <h2 className="text-xl md:text-4xl font-bold text-white mb-2 md:mb-4 line-clamp-2">
                 加入大赛，开启你的 AI 创新实践
@@ -431,7 +431,7 @@ const Resources = () => {
               <div className="flex flex-col sm:flex-row justify-center gap-2 md:gap-4">
                 <Link
                   to="/register-competition"
-                  className="group bg-white text-violet-600 px-6 md:px-10 py-2.5 md:py-4 rounded-lg md:rounded-xl font-bold text-sm md:text-base hover:bg-neutral-50 hover:shadow-lg hover:shadow-white/20 hover:-translate-y-0.5 transition-all duration-300"
+                  className="group bg-white text-[#7463EC] px-6 md:px-10 py-2.5 md:py-4 rounded-lg md:rounded-xl font-bold text-sm md:text-base hover:bg-neutral-50 hover:shadow-lg hover:shadow-white/20 hover:-translate-y-0.5 transition-all duration-300"
                 >
                   立即报名
                   <ArrowRight className="w-4 h-4 md:w-5 md:h-5 inline-block ml-1.5 md:ml-2 group-hover:translate-x-1 transition-transform" />
