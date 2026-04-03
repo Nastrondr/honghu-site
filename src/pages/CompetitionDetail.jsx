@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import StatusTag from '../components/common/StatusTag';
 
 const CompetitionDetail = () => {
   const { id } = useParams();
@@ -220,9 +221,7 @@ const CompetitionDetail = () => {
             <div className="mb-6 md:mb-8">
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-3 mb-4">
                 <h1 className="text-xl md:text-[26px] font-semibold text-neutral-800 leading-tight">{competition.title}</h1>
-                <span className={`self-start md:self-auto px-3 py-1 rounded-full text-xs font-medium ${competition.status === '进行中' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                  {competition.status}
-                </span>
+                <StatusTag status={competition.status} className="text-xs" />
               </div>
               
               {/* 紧凑信息行 */}

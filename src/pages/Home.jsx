@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import HomeHero from '../components/common/HomeHero';
 import ScrollReveal, { ScrollRevealStagger } from '../components/common/ScrollReveal';
+import StatusTag from '../components/common/StatusTag';
 
 const TrackCard = ({ track }) => {
   const [imageError, setImageError] = useState(false);
@@ -197,7 +198,7 @@ const Home = () => {
             <Link to="/competition/1" className="glass-card rounded-2xl p-6 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col h-full cursor-pointer">
               <div className="flex justify-between items-start gap-3 mb-4">
                 <h3 className="text-lg font-semibold text-neutral-800 flex-1 min-w-0">2025年梧桐·鸿鹄人工智能应用创新大赛</h3>
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 flex-shrink-0">进行中</span>
+                <StatusTag status="进行中" className="text-xs flex-shrink-0" />
               </div>
               <div className="text-neutral-600 text-sm mb-4">
                 <div className="flex items-center mb-2">
@@ -257,7 +258,7 @@ const Home = () => {
             <Link to="/competition/3" className="glass-card rounded-2xl p-6 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col h-full cursor-pointer">
               <div className="flex justify-between items-start gap-3 mb-4">
                 <h3 className="text-lg font-semibold text-neutral-800 flex-1 min-w-0">2025年梧桐·鸿鹄区县AI应用创新大赛</h3>
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 flex-shrink-0">进行中</span>
+                <StatusTag status="进行中" className="text-xs flex-shrink-0" />
               </div>
               <div className="text-neutral-600 text-sm mb-4">
                 <div className="flex items-center mb-2">
