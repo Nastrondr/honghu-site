@@ -144,22 +144,6 @@ const PartnersDesktop = () => {
         </div>
       </section>
 
-      {/* 支持机构 */}
-      <section className="py-16">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <h2 className="text-2xl font-semibold text-neutral-800 mb-10 text-center">支持机构</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <div key={i} className="bg-white rounded-xl shadow-sm p-6 border border-neutral-100 flex items-center justify-center hover:shadow-md transition-shadow">
-                <div className="w-16 h-16 bg-neutral-100 rounded-lg flex items-center justify-center">
-                  <span className="text-neutral-500 text-xs">支持机构{i}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* 合作说明 */}
       <section className="py-16 bg-slate-50/50">
         <div className="container mx-auto px-4 max-w-7xl">

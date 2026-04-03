@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import HomeHero from '../common/HomeHero';
 import ScrollReveal, { ScrollRevealStagger } from '../common/ScrollReveal';
 
-const TrackCard = ({ track }) => {
+const TrackCard = ({ track, isActive = false }) => {
   const [imageError, setImageError] = useState(false);
 
   const themeGradients = {
@@ -23,7 +23,7 @@ const TrackCard = ({ track }) => {
   };
 
   return (
-    <div className="group relative h-72 md:h-64 rounded-2xl overflow-hidden cursor-pointer">
+    <div className={`group relative h-72 md:h-64 rounded-2xl overflow-hidden cursor-pointer transition-all duration-500 ease-out ${isActive ? 'ring-2 ring-primary/50 scale-[1.02]' : 'hover:scale-[1.02]'}`}>
       {!imageError && (
         <img
           src={track.imageUrl}
@@ -44,6 +44,112 @@ const TrackCard = ({ track }) => {
         <p className="text-xs md:text-sm text-white/85 leading-relaxed line-clamp-2 opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out">
           {track.description}
         </p>
+      </div>
+    </div>
+  );
+};
+
+const TrackCarousel = ({ tracks, isDesktop = true }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const containerRef = useRef(null);
+  const cardWidth = 380;
+  const gap = 24;
+  const totalCards = tracks.length;
+
+  const goToSlide = useCallback((index) => {
+    setCurrentIndex(index);
+  }, []);
+
+  const nextSlide = useCallback(() => {
+    setCurrentIndex(prev => (prev + 1) % totalCards);
+  }, [totalCards]);
+
+  const prevSlide = useCallback(() => {
+    setCurrentIndex(prev => (prev - 1 + totalCards) % totalCards);
+  }, [totalCards]);
+
+  useEffect(() => {
+    if (isPaused || !isDesktop) return;
+    const interval = setInterval(() => {
+      nextSlide();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [isPaused, nextSlide, isDesktop]);
+
+  if (!isDesktop) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {tracks.map((track, index) => (
+          <ScrollReveal key={index} delay={index * 0.08}>
+            <TrackCard track={track} />
+          </ScrollReveal>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className="relative"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      {/* 轮播容器 */}
+      <div className="overflow-hidden mx-12">
+        <div 
+          ref={containerRef}
+          className="flex transition-transform duration-700 ease-out"
+          style={{ 
+            transform: `translateX(-${currentIndex * (cardWidth + gap)}px)` 
+          }}
+        >
+          {tracks.map((track, index) => (
+            <div 
+              key={index} 
+              className="flex-shrink-0 mx-3"
+              style={{ width: cardWidth }}
+            >
+              <TrackCard 
+                track={track} 
+                isActive={index === currentIndex}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 左右箭头按钮 */}
+      <button
+        onClick={prevSlide}
+        className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm shadow-lg flex items-center justify-center text-gray-600 hover:text-primary hover:bg-white hover:shadow-xl transition-all duration-300 z-10"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      <button
+        onClick={nextSlide}
+        className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm shadow-lg flex items-center justify-center text-gray-600 hover:text-primary hover:bg-white hover:shadow-xl transition-all duration-300 z-10"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+
+      {/* 底部指示器 */}
+      <div className="flex justify-center gap-2 mt-8">
+        {tracks.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => goToSlide(index)}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              index === currentIndex 
+                ? 'bg-primary w-6' 
+                : 'bg-gray-300 hover:bg-gray-400'
+            }`}
+          />
+        ))}
       </div>
     </div>
   );
@@ -136,12 +242,13 @@ const HomeDesktop = () => {
           <ScrollReveal type="title">
             <h2 className="text-3xl font-bold text-neutral-800 mb-16 text-center">五大专项赛道</h2>
           </ScrollReveal>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
+          
+          {/* 赛道轮播组件 */}
+          <TrackCarousel tracks={[
               {
                 title: '数字金融',
                 subtitle: '智能金融创新',
-                description: '探索AI在金融风险控制、智能投顾、反欺诈等领域的创新应用',
+                description: '探索AI在金融风险控制、智能投顾，反欺诈等领域的创新应用',
                 accentColor: 'violet',
                 imageUrl: '/assets/image/matchcategory card/finance.jpg'
               },
@@ -173,12 +280,7 @@ const HomeDesktop = () => {
                 accentColor: 'purple',
                 imageUrl: '/assets/image/matchcategory card/legal tech interface.jpg'
               }
-            ].map((track, index) => (
-              <ScrollReveal key={track.title} delay={index * 0.08}>
-                <TrackCard track={track} />
-              </ScrollReveal>
-            ))}
-          </div>
+            ]} />
         </div>
       </section>
 
@@ -400,20 +502,6 @@ const HomeDesktop = () => {
                 <div key={i} className="glass-card rounded-2xl p-6 flex items-center justify-center h-28 group hover:bg-white/80 transition-all duration-300">
                   <div className="text-center group-hover:text-primary transition-colors duration-300">
                     <p className="text-neutral-500 group-hover:text-primary font-medium">战略合作{i}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* 支持单位 */}
-          <div>
-            <h3 className="text-xl font-semibold text-neutral-800 mb-8 text-center">支持单位</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-6">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <div key={i} className="glass-card rounded-xl p-4 flex items-center justify-center h-20 group hover:bg-white/80 transition-all duration-300">
-                  <div className="text-center group-hover:text-primary transition-colors duration-300">
-                    <p className="text-neutral-400 group-hover:text-primary text-sm">支持单位{i}</p>
                   </div>
                 </div>
               ))}

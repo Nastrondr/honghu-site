@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import HomeHero from '../components/common/HomeHero';
 import ScrollReveal, { ScrollRevealStagger } from '../components/common/ScrollReveal';
 import StatusTag from '../components/common/StatusTag';
 
-const TrackCard = ({ track }) => {
+const TrackCard = ({ track, isActive = false }) => {
   const [imageError, setImageError] = useState(false);
 
   const themeGradients = {
@@ -24,7 +24,7 @@ const TrackCard = ({ track }) => {
   };
 
   return (
-    <div className="group relative h-72 md:h-64 rounded-2xl overflow-hidden cursor-pointer">
+    <div className={`group relative h-72 md:h-64 rounded-2xl overflow-hidden cursor-pointer transition-all duration-500 ease-out ${isActive ? 'ring-2 ring-primary/50 scale-[1.02]' : 'hover:scale-[1.02]'}`}>
       {!imageError && (
         <img
           src={track.imageUrl}
@@ -137,8 +137,9 @@ const Home = () => {
           <ScrollReveal type="title">
             <h2 className="text-3xl font-bold text-neutral-800 mb-16 text-center">五大专项赛道</h2>
           </ScrollReveal>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
+          
+          {/* 赛道轮播组件 */}
+          <TrackCarousel tracks={[
               {
                 title: '数字金融',
                 subtitle: '智能金融创新',
@@ -174,12 +175,7 @@ const Home = () => {
                 accentColor: 'purple',
                 imageUrl: '/assets/image/matchcategory card/legal tech interface.jpg'
               }
-            ].map((track, index) => (
-              <ScrollReveal key={track.title} delay={index * 0.08}>
-                <TrackCard track={track} />
-              </ScrollReveal>
-            ))}
-          </div>
+            ]} />
         </div>
       </section>
 
@@ -505,6 +501,100 @@ const Home = () => {
         </div>
       </section>
 
+    </div>
+  );
+};
+
+const TrackCarousel = ({ tracks }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const containerRef = useRef(null);
+  const cardWidth = 380;
+  const gap = 24;
+  const totalCards = tracks.length;
+
+  const goToSlide = useCallback((index) => {
+    setCurrentIndex(index);
+  }, []);
+
+  const nextSlide = useCallback(() => {
+    setCurrentIndex(prev => (prev + 1) % totalCards);
+  }, [totalCards]);
+
+  const prevSlide = useCallback(() => {
+    setCurrentIndex(prev => (prev - 1 + totalCards) % totalCards);
+  }, [totalCards]);
+
+  useEffect(() => {
+    if (isPaused) return;
+    const interval = setInterval(() => {
+      nextSlide();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [isPaused, nextSlide]);
+
+  return (
+    <div 
+      className="relative"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      {/* 轮播容器 */}
+      <div className="overflow-hidden mx-12">
+        <div 
+          ref={containerRef}
+          className="flex transition-transform duration-700 ease-out"
+          style={{ 
+            transform: `translateX(-${currentIndex * (cardWidth + gap)}px)` 
+          }}
+        >
+          {tracks.map((track, index) => (
+            <div 
+              key={index} 
+              className="flex-shrink-0 mx-3"
+              style={{ width: cardWidth }}
+            >
+              <TrackCard 
+                track={track} 
+                isActive={index === currentIndex}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 左右箭头按钮 */}
+      <button
+        onClick={prevSlide}
+        className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm shadow-lg flex items-center justify-center text-gray-600 hover:text-primary hover:bg-white hover:shadow-xl transition-all duration-300 z-10"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      <button
+        onClick={nextSlide}
+        className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm shadow-lg flex items-center justify-center text-gray-600 hover:text-primary hover:bg-white hover:shadow-xl transition-all duration-300 z-10"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+
+      {/* 底部指示器 */}
+      <div className="flex justify-center gap-2 mt-8">
+        {tracks.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => goToSlide(index)}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              index === currentIndex 
+                ? 'bg-primary w-6' 
+                : 'bg-gray-300 hover:bg-gray-400'
+            }`}
+          />
+        ))}
+      </div>
     </div>
   );
 };

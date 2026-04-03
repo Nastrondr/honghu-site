@@ -43,30 +43,35 @@ const AdminLogin = () => {
     setIsLoading(false);
   };
 
-  // 统一颜色配置 - 管理员登录：蓝色主题（冷静、系统化）
+  // 统一颜色配置 - 管理员登录：蓝色主题
   const theme = {
-    primary: '#2563EB',
+    primary: '#3B82F6',
     primaryLight: '#EFF6FF',
-    primaryBorder: '#2563EB',
-    gradient: 'from-[#1E40AF] via-[#2563EB] to-[#3B82F6]',
-    iconBg: 'bg-blue-100',
-    iconColor: 'text-blue-600',
-    focusRing: 'focus:ring-blue-500/10',
-    focusBorder: 'focus:border-blue-500',
-    buttonHover: 'hover:shadow-lg hover:shadow-blue-500/25 hover:-translate-y-0.5',
-    currentBg: 'bg-blue-50',
-    currentBorder: 'border-2 border-blue-500',
+    primaryBorder: '#3B82F6',
+    gradient: 'from-[#3B82F6] to-[#2563EB]',
+    gradientEnd: '#2563EB',
+    iconBg: 'bg-[#3B82F6]/10',
+    iconColor: 'text-[#3B82F6]',
+    iconGradient: 'from-[#3B82F6] to-[#2563EB]',
+    focusRing: 'focus:ring-[#3B82F6]/10',
+    focusBorder: 'focus:border-[#3B82F6]',
+    buttonHover: 'hover:shadow-lg hover:shadow-[#3B82F6]/25 hover:-translate-y-0.5',
+    buttonShadow: 'shadow-[#3B82F6]/20',
+    currentBg: 'bg-[#3B82F6]/5',
+    currentBorder: 'border-2 border-[#3B82F6]',
+    textLink: 'text-[#3B82F6]',
+    textLinkHover: 'hover:text-[#2563EB]',
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-[#3B82F6]/5 flex flex-col">
       {/* 登录区域 - 垂直居中 */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-8">
         <div className="w-full max-w-[420px]">
           {/* 顶部区：Icon + 标题 + 副标题 */}
           <div className="text-center mb-8">
             {/* 圆形Icon背景 - 齿轮/管理图标 */}
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-[#1E40AF] to-[#3B82F6] flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <div className={`w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br ${theme.iconGradient} flex items-center justify-center shadow-lg ${theme.buttonShadow}`}>
               <Settings className="w-8 h-8 text-white" strokeWidth={2} />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">管理员登录</h1>
@@ -137,7 +142,7 @@ const AdminLogin = () => {
                 <label className="flex items-center cursor-pointer group">
                   <input
                     type="checkbox"
-                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
+                    className={`w-4 h-4 rounded border-gray-300 ${theme.textLink} focus:ring-[#3B82F6] focus:ring-offset-0 cursor-pointer`}
                   />
                   <span className="ml-2 text-sm text-gray-600 group-hover:text-gray-800 transition-colors">
                     记住登录状态
@@ -145,7 +150,7 @@ const AdminLogin = () => {
                 </label>
                 <Link
                   to="#"
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                  className={`text-sm ${theme.textLink} ${theme.textLinkHover} font-medium transition-colors`}
                 >
                   忘记密码？
                 </Link>

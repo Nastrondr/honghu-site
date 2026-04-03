@@ -57,16 +57,7 @@ const Header = () => {
         { path: '/news?category=result', label: '获奖名单', badge: '新' },
       ]
     },
-    { 
-      path: '/partners', 
-      label: '合作单位',
-      children: [
-        { type: 'header', label: '合作伙伴' },
-        { path: '/partners?type=enterprise', label: '企业合作' },
-        { path: '/partners?type=university', label: '高校合作' },
-        { path: '/partners?type=investor', label: '投资机构' },
-      ]
-    },
+    { path: '/partners', label: '合作单位' },
     { path: '/experts', label: '专家查询' },
     {
       path: '/eco-products',

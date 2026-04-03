@@ -151,7 +151,7 @@ const CompetitionCenter = () => {
 
   const tabs = [
     { key: 'list', label: '赛事列表', path: '/competition-center' },
-    { key: 'info', label: '关键信息', path: '/competition-center?tab=info' },
+    { key: 'info', label: '参赛指南', path: '/competition-center?tab=info' },
   ];
 
   const [activeTab, setActiveTab] = useState(tab);
@@ -198,63 +198,50 @@ const CompetitionCenter = () => {
           这里展示了梧桐·鸿鹄人工智能应用创新大赛的相关赛事信息
         </motion.p>
 
-      {/* 分段切换控件 */}
-      <div className="flex items-center justify-center mb-8">
-        <div className="relative bg-slate-100/60 backdrop-blur-sm rounded-full p-1 inline-flex">
-          {tabs.map((t, index) => {
-            const isActive = activeTab === t.key;
-            return (
-              <button
-                key={t.key}
-                onClick={() => handleTabChange(t.key)}
-                className={`relative z-10 px-8 py-2 text-sm font-medium transition-all duration-300 rounded-full ${isActive ? 'text-white' : 'text-slate-500 hover:text-slate-700'}`}
-              >
-                {t.label}
-              </button>
-            );
-          })}
-          {/* 滑动底板 */}
-          <div 
-            className="absolute top-1 bottom-1 rounded-full bg-gradient-to-r from-[#7463EC] to-[#8B5CF6] shadow-md shadow-primary/25 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
-            style={{
-              width: `calc(50% - 4px)`,
-              transform: `translateX(${activeTab === 'list' ? '0%' : '100%'})`,
-              left: '4px'
-            }}
-          />
-        </div>
+        {/* 分段切换控件 */}
+        <div className="flex items-center justify-center mb-6 md:mb-8">
+          <div className="relative bg-slate-100/60 backdrop-blur-sm rounded-full p-1 inline-flex">
+            {tabs.map((t, index) => {
+              const isActive = activeTab === t.key;
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => handleTabChange(t.key)}
+                  className={`relative z-10 px-8 py-2 text-sm font-medium transition-all duration-300 rounded-full ${isActive ? 'text-white' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+            {/* 滑动底板 */}
+            <div 
+              className="absolute top-1 bottom-1 rounded-full bg-gradient-to-r from-[#7463EC] to-[#8B5CF6] shadow-md shadow-primary/25 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              style={{
+                width: `calc(50% - 4px)`,
+                transform: `translateX(${activeTab === 'list' ? '0%' : '100%'})`,
+                left: '4px'
+              }}
+            />
+          </div>
         </div>
 
-        {/* 合作申请入口提示卡片 */}
-      <div className="glass-card rounded-2xl p-6 mb-8 bg-gradient-to-r from-primary/5 to-purple-500/5 border border-primary/10">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-neutral-800">希望成为合作单位或举办分赛区？</h3>
-              <p className="text-xs text-neutral-500">我们欢迎高校、园区、机构申请成为分赛区或合作单位</p>
-            </div>
-          </div>
+        {/* 申请办赛轻量入口 - 移动端 */}
+        <div className="md:hidden mb-6">
           <Link
             to="/apply-competition"
-            className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg font-medium hover:bg-primary/90 transition-colors text-sm flex-shrink-0"
+            className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-dashed border-neutral-300 text-neutral-600 hover:border-primary hover:text-primary transition-colors"
           >
-            申请办赛
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
+            <span className="text-sm font-medium">申请成为合作单位</span>
           </Link>
         </div>
-      </div>
 
-      {tab === 'list' && (
-      <>
-      {/* 搜索和筛选 */}
-      <div className="md:glass-card rounded-xl md:rounded-2xl p-3 md:p-6 mb-4 md:mb-8">
+        {tab === 'list' && (
+          <>
+            {/* 搜索和筛选 */}
+            <div className="md:glass-card rounded-xl md:rounded-2xl p-3 md:p-6 mb-4 md:mb-8">
         <div className="mb-3 md:mb-4">
           <div>
             <input
@@ -772,9 +759,139 @@ const CompetitionCenter = () => {
           </div>
         </section>
 
-        {/* 关键信息 */}
+        {/* 作品提交要求 */}
+        <section className="mb-8 md:mb-16">
+          <h2 className="text-xl md:text-2xl font-semibold text-neutral-800 mb-4 md:mb-6">作品提交要求</h2>
+          
+          <div className="md:hidden space-y-3">
+            <div className="flex items-start gap-3 py-2">
+              <div className="w-5 h-5 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-[10px] text-purple-600 font-bold">1</span>
+              </div>
+              <p className="text-sm text-neutral-600">作品必须为原创，不得抄袭或侵犯他人知识产权</p>
+            </div>
+            <div className="flex items-start gap-3 py-2">
+              <div className="w-5 h-5 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-[10px] text-purple-600 font-bold">2</span>
+              </div>
+              <p className="text-sm text-neutral-600">提交格式：视频（MP4）或作品文档（PDF），大小不超过500MB</p>
+            </div>
+            <div className="flex items-start gap-3 py-2">
+              <div className="w-5 h-5 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-[10px] text-purple-600 font-bold">3</span>
+              </div>
+              <p className="text-sm text-neutral-600">需提交作品说明文档，包含技术实现、创新点、应用场景等</p>
+            </div>
+            <div className="flex items-start gap-3 py-2">
+              <div className="w-5 h-5 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-[10px] text-purple-600 font-bold">4</span>
+              </div>
+              <p className="text-sm text-neutral-600">截止日期前可多次修改，以最后一次提交为准</p>
+            </div>
+          </div>
+
+          <div className="hidden md:grid grid-cols-2 gap-4">
+            <div className="glass-card rounded-xl p-5">
+              <h3 className="text-base font-semibold text-neutral-800 mb-3">格式要求</h3>
+              <ul className="space-y-2 text-sm text-neutral-600">
+                <li className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                  视频格式：MP4，不超过500MB
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                  文档格式：PDF，不超过50MB
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                  视频时长：3-5分钟
+                </li>
+              </ul>
+            </div>
+            <div className="glass-card rounded-xl p-5">
+              <h3 className="text-base font-semibold text-neutral-800 mb-3">内容要求</h3>
+              <ul className="space-y-2 text-sm text-neutral-600">
+                <li className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                  作品必须为原创
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                  包含技术实现说明
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                  阐明创新点与应用场景
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* 评审标准 */}
+        <section className="mb-8 md:mb-16">
+          <h2 className="text-xl md:text-2xl font-semibold text-neutral-800 mb-4 md:mb-6">评审标准</h2>
+          
+          <div className="md:hidden space-y-3">
+            <div className="flex items-start gap-3 py-2">
+              <div className="w-5 h-5 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-[10px] text-amber-600 font-bold">创</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-neutral-800">创新性 30%</p>
+                <p className="text-xs text-neutral-500">作品的原创程度和独特见解</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 py-2">
+              <div className="w-5 h-5 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-[10px] text-amber-600 font-bold">技</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-neutral-800">技术实现 25%</p>
+                <p className="text-xs text-neutral-500">技术难度和实现质量</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 py-2">
+              <div className="w-5 h-5 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-[10px] text-amber-600 font-bold">应</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-neutral-800">应用价值 25%</p>
+                <p className="text-xs text-neutral-500">实际应用前景和商业价值</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 py-2">
+              <div className="w-5 h-5 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-[10px] text-amber-600 font-bold">展</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-neutral-800">展示效果 20%</p>
+                <p className="text-xs text-neutral-500">作品演示和文档呈现</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="hidden md:grid grid-cols-4 gap-4">
+            {[
+              { title: '创新性', weight: '30%', desc: '作品的原创程度和独特见解' },
+              { title: '技术实现', weight: '25%', desc: '技术难度和实现质量' },
+              { title: '应用价值', weight: '25%', desc: '实际应用前景和商业价值' },
+              { title: '展示效果', weight: '20%', desc: '作品演示和文档呈现' }
+            ].map((item, index) => (
+              <div key={index} className="glass-card rounded-xl p-5 text-center">
+                <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <span className="text-lg font-bold text-amber-600">{item.weight}</span>
+                </div>
+                <h3 className="text-base font-semibold text-neutral-800 mb-1">{item.title}</h3>
+                <p className="text-xs text-neutral-500">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 参赛权益与支持 */}
         <section>
-          <h2 className="text-xl md:text-2xl font-semibold text-neutral-800 mb-4 md:mb-6">关键信息</h2>
+          <h2 className="text-xl md:text-2xl font-semibold text-neutral-800 mb-4 md:mb-6">参赛权益与支持</h2>
           
           {/* 移动端：紧凑列表 */}
           <div className="md:hidden space-y-0">

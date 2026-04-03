@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const ApplyCompetition = () => {
+  const navigate = useNavigate();
+  
   // TODO: 接入办赛申请接口 - 替换为真实API调用
   const [applyStatus, setApplyStatus] = useState('draft'); // draft | submitted
 
@@ -102,7 +105,17 @@ const ApplyCompetition = () => {
     <div className="min-h-screen bg-gray-50/50 pb-20 md:py-12">
       <div className="container mx-auto px-4 max-w-3xl">
         {/* 页面标题 */}
-        <div className="text-center mb-6 md:mb-10">
+        <div className="relative text-center mb-6 md:mb-10">
+          {/* 返回按钮 - 移动端 */}
+          <button
+            onClick={() => navigate('/competition-center')}
+            className="md:hidden absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-700"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          
           <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2 md:mb-3">申请成为赛事合作单位</h1>
           <p className="text-sm md:text-base text-gray-500 hidden md:block">携手共建AI创新生态，欢迎加入梧桐·鸿鹄大赛</p>
         </div>
@@ -353,9 +366,24 @@ const ApplyCompetition = () => {
 
           {/* 提交按钮 */}
           <div className="pt-4 border-t border-gray-100">
+            <div className="hidden md:flex gap-3">
+              <button
+                type="button"
+                onClick={handleReset}
+                className="flex-1 py-3.5 border border-gray-200 text-gray-600 rounded-xl font-medium hover:bg-gray-50 transition-all"
+              >
+                重置
+              </button>
+              <button
+                type="submit"
+                className="flex-[2] py-3.5 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all"
+              >
+                提交申请
+              </button>
+            </div>
             <button
               type="submit"
-              className="w-full md:w-auto md:flex-1 py-3 md:py-3.5 bg-primary text-white rounded-xl md:rounded-xl font-medium hover:bg-primary/90 transition-all"
+              className="md:hidden w-full py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-all"
             >
               提交申请
             </button>

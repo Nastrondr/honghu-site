@@ -43,45 +43,44 @@ const ReviewerLogin = () => {
     setIsLoading(false);
   };
 
-  // 统一颜色配置 - 专家评审登录：紫蓝渐变主题（更高级，带glow）
+  // 统一颜色配置 - 专家评审登录：柔和橙色主题（高级克制）
   const theme = {
-    primary: '#8B5CF6',
-    primaryLight: '#F5F3FF',
-    primaryBorder: '#8B5CF6',
-    gradient: 'from-[#7C3AED] via-[#8B5CF6] to-[#EC4899]',
-    iconBg: 'bg-violet-100',
-    iconColor: 'text-violet-600',
-    focusRing: 'focus:ring-violet-500/10',
-    focusBorder: 'focus:border-violet-500',
-    buttonHover: 'hover:shadow-lg hover:shadow-violet-500/25 hover:-translate-y-0.5',
-    currentBg: 'bg-violet-50',
-    currentBorder: 'border-2 border-violet-500',
+    primary: '#F97316',
+    primaryLight: '#FFF7ED',
+    primaryBorder: '#F97316',
+    gradient: 'from-[#FB923C] to-[#F97316]',
+    gradientEnd: '#F97316',
+    iconBg: 'bg-[#F97316]/10',
+    iconColor: 'text-[#F97316]',
+    iconGradient: 'from-[#FB923C] to-[#F97316]',
+    focusRing: 'focus:ring-[#F97316]/10',
+    focusBorder: 'focus:border-[#F97316]',
+    buttonHover: 'hover:shadow-[0_6px_18px_rgba(249,115,22,0.25)] hover:-translate-y-0.5',
+    buttonShadow: 'shadow-[0_6px_18px_rgba(249,115,22,0.25)]',
+    currentBg: 'bg-[#F97316]/5',
+    currentBorder: 'border-2 border-[#F97316]',
+    textLink: 'text-[#F97316]',
+    textLinkHover: 'hover:text-[#EA580C]',
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-100 flex flex-col relative overflow-hidden">
-      {/* 背景 Glow 效果 - 专家评审页面特有 */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-gradient-to-r from-violet-400/20 via-purple-400/20 to-pink-400/20 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-gradient-to-tl from-violet-300/15 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50/30 flex flex-col">
       
       {/* 登录区域 - 垂直居中 */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 relative z-10">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-8">
         <div className="w-full max-w-[420px]">
           {/* 顶部区：Icon + 标题 + 副标题 */}
           <div className="text-center mb-8">
-            {/* 圆形Icon背景 - 星标图标，带glow */}
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-[#7C3AED] via-[#8B5CF6] to-[#EC4899] flex items-center justify-center shadow-lg shadow-violet-500/30 relative">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#EC4899] blur-md opacity-50"></div>
-              <Star className="w-8 h-8 text-white relative z-10 fill-white" strokeWidth={2} />
+            {/* 圆形Icon背景 */}
+            <div className={`w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br ${theme.iconGradient} flex items-center justify-center ${theme.buttonShadow}`}>
+              <Star className="w-8 h-8 text-white" strokeWidth={2} />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">专家评审登录</h1>
             <p className="text-sm text-gray-500">专家评委专用入口，参与作品评审工作</p>
           </div>
 
-          {/* 登录卡片 - 统一规格，带轻微glow */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-[0_4px_24px_rgba(139,92,246,0.1)] border border-violet-100 p-8 relative">
-            {/* 卡片顶部装饰线 */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-1 bg-gradient-to-r from-transparent via-violet-400 to-transparent rounded-full"></div>
+          {/* 登录卡片 - 玻璃拟态设计 */}
+          <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.06)] border border-orange-100/50 p-8">
             
             {/* 错误提示 */}
             {error && (
@@ -145,7 +144,7 @@ const ReviewerLogin = () => {
                 <label className="flex items-center cursor-pointer group">
                   <input
                     type="checkbox"
-                    className="w-4 h-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500 focus:ring-offset-0 cursor-pointer"
+                    className={`w-4 h-4 rounded border-gray-300 ${theme.textLink} focus:ring-[#F97316] focus:ring-offset-0 cursor-pointer`}
                   />
                   <span className="ml-2 text-sm text-gray-600 group-hover:text-gray-800 transition-colors">
                     记住登录状态
@@ -153,7 +152,7 @@ const ReviewerLogin = () => {
                 </label>
                 <Link
                   to="#"
-                  className="text-sm text-violet-600 hover:text-violet-700 font-medium transition-colors"
+                  className={`text-sm ${theme.textLink} ${theme.textLinkHover} font-medium transition-colors`}
                 >
                   忘记密码？
                 </Link>
@@ -163,7 +162,7 @@ const ReviewerLogin = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`w-full h-12 bg-gradient-to-r ${theme.gradient} text-white rounded-full font-medium text-sm ${theme.buttonHover} active:translate-y-0 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:translate-y-0 shadow-lg shadow-violet-500/20`}
+                className={`w-full h-12 bg-gradient-to-r ${theme.gradient} text-white rounded-full font-medium text-sm ${theme.buttonHover} active:translate-y-0 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:translate-y-0 shadow-lg ${theme.buttonShadow}`}
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -227,7 +226,7 @@ const ReviewerLogin = () => {
                 {/* 专家评审 - 当前高亮 */}
                 <div className={`flex flex-col items-center p-3 rounded-xl ${theme.currentBg} ${theme.currentBorder}`}>
                   <div className={`w-10 h-10 rounded-full ${theme.iconBg} flex items-center justify-center mb-2`}>
-                    <Star className={`w-5 h-5 ${theme.iconColor} fill-violet-600`} />
+                    <Star className={`w-5 h-5 ${theme.iconColor} fill-[#FB923C]`} />
                   </div>
                   <span className={`text-xs font-medium ${theme.iconColor}`}>专家评审</span>
                 </div>
