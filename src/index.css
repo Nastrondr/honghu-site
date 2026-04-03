@@ -517,16 +517,17 @@ body {
   .competition-card {
     flex-direction: column;
     align-items: flex-start;
-    padding: 16px;
+    padding: 12px;
+    border-radius: 12px;
   }
   
   .competition-card__side {
     margin-left: 0;
-    margin-top: 16px;
+    margin-top: 12px;
     padding-left: 0;
     border-left: none;
     border-top: 1px solid #e5e7eb;
-    padding-top: 16px;
+    padding-top: 12px;
     width: 100%;
     justify-content: flex-start;
   }
@@ -535,6 +536,47 @@ body {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .competition-card__title {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .competition-card__status {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  
+  .competition-card__meta {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .meta-item {
+    font-size: 12px;
+    gap: 4px;
+  }
+  
+  .competition-card__tags {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  
+  .tag-chip {
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+  
+  .competition-card__desc {
+    font-size: 13px;
+    line-height: 1.4;
   }
 }
 

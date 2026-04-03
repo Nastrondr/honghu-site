@@ -254,19 +254,62 @@ const CompetitionCenter = () => {
       {tab === 'list' && (
       <>
       {/* 搜索和筛选 */}
-      <div className="glass-card rounded-2xl p-6 mb-8">
-        <div className="flex flex-col md:flex-row gap-4 mb-4">
-          <div className="flex-1">
+      <div className="md:glass-card rounded-xl md:rounded-2xl p-3 md:p-6 mb-4 md:mb-8">
+        <div className="mb-3 md:mb-4">
+          <div>
             <input
               type="text"
               placeholder="搜索赛事名称、描述..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              className="w-full px-4 py-2.5 md:py-3 rounded-full md:rounded-xl border border-neutral-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
             />
           </div>
         </div>
-        <div className="flex flex-wrap gap-4">
+        
+        {/* 移动端：两行布局 */}
+        <div className="md:hidden space-y-2">
+          {/* 第一行：赛道 + 时间 */}
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <select
+                value={selectedTrack}
+                onChange={(e) => setSelectedTrack(e.target.value)}
+                className="w-full px-3 py-2 rounded-2xl border border-neutral-200 text-xs focus:border-primary focus:outline-none bg-white"
+              >
+                {tracks.map(track => (
+                  <option key={track} value={track}>{track}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex-1">
+              <select
+                value={selectedTime}
+                onChange={(e) => setSelectedTime(e.target.value)}
+                className="w-full px-3 py-2 rounded-2xl border border-neutral-200 text-xs focus:border-primary focus:outline-none bg-white"
+              >
+                {times.map(time => (
+                  <option key={time} value={time}>{time}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {/* 第二行：状态 */}
+          <div>
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="w-full px-3 py-2 rounded-2xl border border-neutral-200 text-xs focus:border-primary focus:outline-none bg-white"
+            >
+              {statuses.map(status => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* 桌面端：原有横向布局 */}
+        <div className="hidden md:flex flex-wrap gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-neutral-600">赛道:</span>
             <select
@@ -307,10 +350,10 @@ const CompetitionCenter = () => {
       </div>
 
       {/* 赛事列表 */}
-      <section className="mb-16">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-semibold text-neutral-800">赛事列表</h2>
-          <span className="text-sm text-neutral-500">共 {filteredCompetitions.length} 个赛事</span>
+      <section className="mb-8 md:mb-16">
+        <div className="flex items-center justify-between mb-4 md:mb-6">
+          <h2 className="text-lg md:text-2xl font-semibold text-neutral-800">赛事列表</h2>
+          <span className="text-xs md:text-sm text-neutral-500">共 {filteredCompetitions.length} 个</span>
         </div>
         
         {/* 平台功能入口 - 仅登录后可见 */}
