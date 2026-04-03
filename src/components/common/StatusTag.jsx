@@ -6,8 +6,8 @@ const StatusTag = ({ status, className = '', ...props }) => {
       case '进行中':
         return (
           <span className="inline-flex items-center gap-1.5">
-            <span className="relative w-2 h-2">
-              <span className="absolute inset-0 rounded-full bg-green-500"></span>
+            <span className="relative w-2 h-2 flex-shrink-0">
+              <span className="absolute inset-0 rounded-full bg-green-500 z-10"></span>
               <span className="absolute inset-0 rounded-full bg-green-500 status-dot-pulse"></span>
             </span>
             <span>进行中</span>
@@ -16,7 +16,7 @@ const StatusTag = ({ status, className = '', ...props }) => {
       case '已结束':
         return (
           <span className="inline-flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+            <span className="w-2 h-2 rounded-full bg-gray-400 flex-shrink-0"></span>
             <span>已结束</span>
           </span>
         );
