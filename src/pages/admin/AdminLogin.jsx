@@ -35,6 +35,20 @@ const AdminLogin = () => {
     // mock 验证
     if (formData.account && formData.password) {
       console.log('管理员登录成功:', formData.account);
+      
+      // 存储管理员登录状态和角色信息
+      const adminInfo = {
+        name: formData.account,
+        role: 'admin',
+        email: formData.account + '@honghu-ai.com'
+      };
+      localStorage.setItem('admin_token', 'mock_token_' + Date.now());
+      localStorage.setItem('admin_info', JSON.stringify(adminInfo));
+      
+      // 同时设置到 AuthContext 使用的格式，以便弹窗组件能识别
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('user', JSON.stringify(adminInfo));
+      
       navigate('/admin/dashboard');
     } else {
       setError('请输入管理员账号和密码');

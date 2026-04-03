@@ -35,6 +35,20 @@ const ReviewerLogin = () => {
     // mock 验证
     if (formData.account && formData.password) {
       console.log('评审专家登录成功:', formData.account);
+      
+      // 存储评审专家登录状态和角色信息
+      const reviewerInfo = {
+        name: formData.account,
+        role: 'reviewer',
+        email: formData.account + '@honghu-ai.com'
+      };
+      localStorage.setItem('reviewer_token', 'mock_token_' + Date.now());
+      localStorage.setItem('reviewer_info', JSON.stringify(reviewerInfo));
+      
+      // 同时设置到 AuthContext 使用的格式，以便弹窗组件能识别
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('user', JSON.stringify(reviewerInfo));
+      
       navigate('/reviewer/dashboard');
     } else {
       setError('请输入评审账号和密码');
