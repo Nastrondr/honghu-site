@@ -308,7 +308,7 @@ const CompetitionDetail = () => {
             <div className="mb-6 md:mb-8">
               <h2 className="text-lg md:text-xl font-semibold text-neutral-800 mb-3 md:mb-4">作品提交要求</h2>
               <div className="md:hidden space-y-2">
-                {competition.submissionRequirements.slice(0, 3).map((req, index) => (
+                {competition.submissionRequirements.map((req, index) => (
                   <div key={index} className="flex items-start gap-2">
                     <div className="w-5 h-5 bg-primary/10 rounded-full flex items-center justify-center text-primary text-xs font-semibold flex-shrink-0 mt-0.5">
                       {index + 1}
@@ -344,7 +344,12 @@ const CompetitionDetail = () => {
               
               {/* 移动端：折叠列表 */}
               <div className="md:hidden space-y-2">
-                {competition.evaluationCriteria.map((criterion, index) => (
+                {[
+                  { title: '创新性', shortDesc: '技术方案和应用场景的创新程度', fullDesc: '从技术方案的原创性、应用场景的独特性、解决方案的差异化程度等方面进行综合评估。重点关注是否具有明显的技术突破或商业模式创新。' },
+                  { title: '实用性', shortDesc: '方案落地的可行性和实际价值', fullDesc: '评估作品的实际应用价值和落地可行性，包括市场需求分析、商业模式可行性、技术实现路径清晰度等。' },
+                  { title: '技术实现', shortDesc: 'AI技术应用的深度与广度', fullDesc: '考察AI技术的深度应用，包括算法复杂度、模型创新性、数据处理能力、系统架构合理性等技术维度。' },
+                  { title: '团队协作', shortDesc: '团队分工与资源整合能力', fullDesc: '评估团队成员的背景互补性、分工合理性、协作效率，以及对各方资源的整合利用能力。' }
+                ].map((item, index) => (
                   <div key={index} className="bg-neutral-50 rounded-xl overflow-hidden">
                     <button
                       onClick={() => setExpandedCriteria(expandedCriteria === index ? -1 : index)}
@@ -356,8 +361,8 @@ const CompetitionDetail = () => {
                         </svg>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-medium text-neutral-800">{criterion.title}</h3>
-                        <p className="text-xs text-neutral-500 line-clamp-1">{criterion.description}</p>
+                        <h3 className="text-sm font-medium text-neutral-800">{item.title}</h3>
+                        <p className="text-xs text-neutral-500 line-clamp-1">{item.shortDesc}</p>
                       </div>
                       <svg className={`w-4 h-4 text-neutral-400 transition-transform ${expandedCriteria === index ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -365,7 +370,7 @@ const CompetitionDetail = () => {
                     </button>
                     {expandedCriteria === index && (
                       <div className="px-3 pb-3 border-t border-neutral-100">
-                        <p className="text-xs text-neutral-600 pt-2">{criterion.description}</p>
+                        <p className="text-xs text-neutral-600 pt-2 leading-relaxed">{item.fullDesc}</p>
                       </div>
                     )}
                   </div>
@@ -402,26 +407,6 @@ const CompetitionDetail = () => {
                     <p className="text-neutral-600 text-sm">{criterion.description}</p>
                   </div>
                 ))}
-              </div>
-            </div>
-            
-
-            
-
-            
-            {/* CTA区 - 合并简化 */}
-            <div className="bg-primary/10 rounded-xl md:rounded-2xl p-4 md:p-8 text-center mb-6 md:mb-8">
-              <h2 className="text-base md:text-xl font-semibold text-neutral-800 mb-2 md:mb-4 line-clamp-2">立即报名参赛</h2>
-              <p className="text-sm text-neutral-600 mb-4 md:mb-6 line-clamp-2">
-                参与梧桐·鸿鹄人工智能应用创新大赛，展示你的创新才华
-              </p>
-              <div className="flex flex-col md:flex-row justify-center gap-2 md:gap-4">
-                <Link to="/register-competition" className="bg-primary text-white px-6 md:px-8 py-2.5 md:py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors inline-block text-sm md:text-base">
-                  立即报名
-                </Link>
-                <Link to="/competition-center" className="border border-primary text-primary px-6 md:px-8 py-2.5 md:py-3 rounded-lg font-medium hover:bg-primary/5 transition-colors text-center text-sm md:text-base">
-                  返回赛事中心
-                </Link>
               </div>
             </div>
           </div>
