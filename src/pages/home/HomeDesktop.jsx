@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import HomeHero from '../common/HomeHero';
-import ScrollReveal, { ScrollRevealStagger } from '../common/ScrollReveal';
+import HomeHero from '../../components/common/HomeHero';
+import ScrollReveal, { ScrollRevealStagger } from '../../components/common/ScrollReveal';
 
 const TrackCard = ({ track, isActive = false }) => {
   const [imageError, setImageError] = useState(false);

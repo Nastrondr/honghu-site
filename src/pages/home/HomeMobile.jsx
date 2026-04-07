@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+// FORCE_RELOAD_2026
 
 // 2列正方形网格组件
 const SquareCard = ({ icon, title, desc, color = 'primary' }) => {
@@ -84,6 +85,7 @@ const AutoCarousel = ({ children }) => {
 const HomeMobile = () => {
   return (
     <div className="min-h-screen bg-white">
+      <div className="bg-red-600 text-white text-sm p-2 text-center font-bold">MOBILE OK - TEST</div>
       {/* 1. Hero - 限制高度1屏以内 */}
       <section className="relative h-[85vh] max-h-[600px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-white to-purple-50"></div>

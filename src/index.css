@@ -12,11 +12,44 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --motion-fast: 0.2s;
-  --motion-normal: 0.3s;
-  --motion-slow: 0.6s;
+  /* ============================================
+     统一动效系统 - 全站共享
+     ============================================ */
+
+  /* 核心缓动函数 */
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-enter: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ease-button: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* 时长配置 */
+  --duration-page-enter: 0.4s;
+  --duration-page-exit: 0.2s;
+  --duration-section: 0.45s;
+  --duration-section-mobile: 0.35s;
+  --duration-item: 0.4s;
+  --duration-item-mobile: 0.3s;
+  --duration-hover: 0.2s;
+  --duration-active: 0.15s;
+  --duration-tab: 0.25s;
+  --duration-fast: 0.2s;
+  --duration-normal: 0.3s;
+  --duration-slow: 0.6s;
+
+  /* 位移配置 */
+  --offset-page: 16px;
+  --offset-page-mobile: 12px;
+  --offset-section: 20px;
+  --offset-section-mobile: 16px;
+  --offset-item: 16px;
+  --offset-item-mobile: 12px;
+  --offset-card-lift: 4px;
+
+  /* 交错延迟 */
+  --stagger-default: 0.08s;
+  --stagger-mobile: 0.06s;
+  --stagger-fast: 0.05s;
 }
 
 body {
@@ -623,4 +656,300 @@ body {
 
 .page-exit {
   animation: page-scale-out 0.4s var(--ease-standard) forwards;
+}
+
+/* ============================================
+   统一动效类 - 全站共享
+   ============================================ */
+
+/* 页面切换动效 */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(var(--offset-page));
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity var(--duration-page-enter) var(--ease-smooth),
+              transform var(--duration-page-enter) var(--ease-smooth);
+}
+
+.page-transition-exit {
+  opacity: 1;
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transition: opacity var(--duration-page-exit) var(--ease-exit);
+}
+
+/* 区块进入动效 */
+.section-reveal {
+  opacity: 0;
+  transform: translateY(var(--offset-section));
+  transition: opacity var(--duration-section) var(--ease-smooth),
+              transform var(--duration-section) var(--ease-smooth);
+}
+
+.section-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 列表项进入动效 */
+.item-reveal {
+  opacity: 0;
+  transform: translateY(var(--offset-item));
+  transition: opacity var(--duration-item) var(--ease-smooth),
+              transform var(--duration-item) var(--ease-smooth);
+}
+
+.item-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================
+   卡片交互 - 统一上浮效果
+   ============================================ */
+
+.card-interactive {
+  transition: transform var(--duration-hover) var(--ease-smooth),
+              box-shadow var(--duration-hover) var(--ease-smooth),
+              border-color var(--duration-hover) var(--ease-smooth);
+}
+
+.card-interactive:hover {
+  transform: translateY(calc(var(--offset-card-lift) * -1));
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+              0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.card-interactive:active {
+  transform: translateY(0);
+  transition-duration: var(--duration-active);
+}
+
+/* 玻璃卡片交互 */
+.glass-card-interactive {
+  transition: transform var(--duration-hover) var(--ease-smooth),
+              background var(--duration-hover) var(--ease-smooth),
+              box-shadow var(--duration-hover) var(--ease-smooth),
+              border-color var(--duration-hover) var(--ease-smooth);
+}
+
+.glass-card-interactive:hover {
+  transform: translateY(calc(var(--offset-card-lift) * -1));
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 10px 28px rgba(116, 99, 236, 0.1),
+              0 6px 10px rgba(0, 0, 0, 0.05);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.glass-card-interactive:active {
+  transform: translateY(0);
+  transition-duration: var(--duration-active);
+}
+
+/* ============================================
+   按钮交互 - 统一反馈
+   ============================================ */
+
+.btn-interactive {
+  transition: transform var(--duration-active) var(--ease-button),
+              filter var(--duration-hover) var(--ease-smooth),
+              box-shadow var(--duration-hover) var(--ease-smooth),
+              background-color var(--duration-hover) var(--ease-smooth);
+}
+
+.btn-interactive:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-interactive:active {
+  transform: translateY(1px);
+  filter: brightness(0.98);
+}
+
+/* 主按钮样式 */
+.btn-primary {
+  transition: transform var(--duration-active) var(--ease-button),
+              filter var(--duration-hover) var(--ease-smooth),
+              box-shadow var(--duration-hover) var(--ease-smooth);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 4px 14px rgba(116, 99, 236, 0.35);
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+  filter: brightness(0.98);
+}
+
+/* 次按钮样式 */
+.btn-secondary {
+  transition: transform var(--duration-active) var(--ease-button),
+              background-color var(--duration-hover) var(--ease-smooth),
+              border-color var(--duration-hover) var(--ease-smooth);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.btn-secondary:active {
+  transform: translateY(1px);
+}
+
+/* ============================================
+   Tab/切换动效
+   ============================================ */
+
+.tab-indicator {
+  transition: transform var(--duration-tab) var(--ease-smooth),
+              width var(--duration-tab) var(--ease-smooth);
+}
+
+.tab-content {
+  transition: opacity var(--duration-tab) var(--ease-smooth);
+}
+
+.tab-content-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.tab-content-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity var(--duration-tab) var(--ease-smooth),
+              transform var(--duration-tab) var(--ease-smooth);
+}
+
+/* ============================================
+   链接交互
+   ============================================ */
+
+.link-interactive {
+  transition: color var(--duration-hover) var(--ease-smooth),
+              transform var(--duration-hover) var(--ease-smooth);
+}
+
+.link-interactive:hover {
+  transform: translateX(2px);
+}
+
+/* ============================================
+   图片交互
+   ============================================ */
+
+.img-interactive {
+  transition: transform 0.3s var(--ease-smooth);
+}
+
+.img-interactive:hover {
+  transform: scale(1.02);
+}
+
+/* ============================================
+   状态标签 - 呼吸效果
+   ============================================ */
+
+.status-breathing {
+  position: relative;
+}
+
+.status-breathing::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: status-breathe 2s ease-in-out infinite;
+}
+
+@keyframes status-breathe {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(1.1);
+  }
+}
+
+/* ============================================
+   移动端适配
+   ============================================ */
+
+@media (max-width: 768px) {
+  .page-transition-enter {
+    transform: translateY(var(--offset-page-mobile));
+  }
+
+  .section-reveal {
+    transform: translateY(var(--offset-section-mobile));
+  }
+
+  .item-reveal {
+    transform: translateY(var(--offset-item-mobile));
+  }
+
+  /* 移动端禁用 hover 效果，使用 touch 反馈 */
+  .card-interactive:hover,
+  .glass-card-interactive:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .card-interactive:active,
+  .glass-card-interactive:active {
+    transform: scale(0.98);
+    transition-duration: var(--duration-active);
+  }
+
+  /* 移动端按钮反馈 */
+  .btn-interactive:active,
+  .btn-primary:active,
+  .btn-secondary:active {
+    transform: scale(0.98);
+  }
+}
+
+/* ============================================
+   减少动效偏好支持
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .page-transition-enter-active,
+  .page-transition-exit-active,
+  .section-reveal,
+  .item-reveal,
+  .card-interactive,
+  .glass-card-interactive,
+  .btn-interactive,
+  .btn-primary,
+  .btn-secondary,
+  .tab-indicator,
+  .tab-content,
+  .link-interactive,
+  .img-interactive {
+    transition: none !important;
+    animation: none !important;
+  }
 }

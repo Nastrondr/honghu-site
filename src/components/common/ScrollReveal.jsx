@@ -1,50 +1,94 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
+import {
+  sectionVariants,
+  sectionMobileVariants,
+  itemVariants,
+  itemMobileVariants,
+  useReducedMotion,
+  useIsMobile,
+  STAGGER,
+} from './Animations';
+
+// ============================================
+// ScrollReveal - 区块进入动画
+// ============================================
 
 const ScrollReveal = ({
   children,
   className = '',
-  type = 'content',
+  type = 'section',
   delay = 0,
-  threshold = 0.2,
-  rootMargin = '0px 0px -50px 0px'
+  threshold = 0.15,
+  rootMargin = '-50px 0px',
+  once = true,
+}) => {
+  const reducedMotion = useReducedMotion();
+  const isMobile = useIsMobile();
+
+  // 根据类型和平台选择动效
+  const variants = type === 'item'
+    ? (isMobile ? itemMobileVariants : itemVariants)
+    : (isMobile ? sectionMobileVariants : sectionVariants);
+
+  if (reducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      className={className}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once, amount: threshold, margin: rootMargin }}
+      variants={variants}
+      transition={{ delay }}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+// ============================================
+// ScrollRevealStagger - 交错列表动画
+// ============================================
+
+export const ScrollRevealStagger = ({
+  children,
+  className = '',
+  itemClassName = '',
+  staggerDelay = null, // 使用默认值
+  threshold = 0.1,
+  rootMargin = '-30px 0px',
+  once = true,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const [hasAnimated, setHasAnimated] = useState(false);
-  const ref = useRef(null);
+  const containerRef = useRef(null);
+  const reducedMotion = useReducedMotion();
+  const isMobile = useIsMobile();
 
-  const prefersReducedMotion = typeof window !== 'undefined'
-    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-
-  const getAnimationConfig = () => {
-    if (prefersReducedMotion) {
-      return { opacity: 0, y: 0, duration: 0.15 };
-    }
-
-    const configs = {
-      title: { opacity: 0, y: isMobile ? 12 : 20, duration: isMobile ? 0.5 : 0.7 },
-      content: { opacity: 0, y: isMobile ? 12 : 24, duration: isMobile ? 0.4 : 0.6 },
-      image: { opacity: 0, y: isMobile ? 8 : 16, duration: isMobile ? 0.45 : 0.55 }
-    };
-
-    return configs[type] || configs.content;
-  };
+  // 使用默认的交错延迟
+  const actualDelay = staggerDelay ?? (isMobile ? STAGGER.mobile : STAGGER.default);
 
   useEffect(() => {
-    if (prefersReducedMotion) {
+    if (reducedMotion) {
       setIsVisible(true);
-      setHasAnimated(true);
       return;
     }
 
-    const element = ref.current;
+    const element = containerRef.current;
     if (!element) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated) {
+        if (entry.isIntersecting) {
           setIsVisible(true);
-          setHasAnimated(true);
+          // 如果只需要触发一次，取消观察
+          if (once) {
+            observer.unobserve(element);
+          }
+        } else if (!once) {
+          setIsVisible(false);
         }
       },
       { threshold, rootMargin }
@@ -55,68 +99,7 @@ const ScrollReveal = ({
     return () => {
       observer.unobserve(element);
     };
-  }, [hasAnimated, threshold, rootMargin, prefersReducedMotion]);
-
-  const config = getAnimationConfig();
-
-  return (
-    <div
-      ref={ref}
-      className={className}
-      style={{
-        opacity: isVisible ? 1 : config.opacity,
-        transform: isVisible ? 'translateY(0)' : `translateY(${config.y}px)`,
-        transition: `opacity ${config.duration}s cubic-bezier(0.25, 0.1, 0.25, 1), transform ${config.duration}s cubic-bezier(0.25, 0.1, 0.25, 1)`,
-        transitionDelay: `${delay}s`
-      }}
-    >
-      {children}
-    </div>
-  );
-};
-
-export const ScrollRevealStagger = ({
-  children,
-  className = '',
-  staggerDelay = 0.12,
-  threshold = 0.2
-}) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [hasAnimated, setHasAnimated] = useState(false);
-  const containerRef = useRef(null);
-
-  const prefersReducedMotion = typeof window !== 'undefined'
-    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-
-  const actualDelay = isMobile ? staggerDelay * 0.6 : staggerDelay;
-
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      setIsVisible(true);
-      setHasAnimated(true);
-      return;
-    }
-
-    const element = containerRef.current;
-    if (!element) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated) {
-          setIsVisible(true);
-          setHasAnimated(true);
-        }
-      },
-      { threshold, rootMargin: '0px 0px -80px 0px' }
-    );
-
-    observer.observe(element);
-
-    return () => {
-      observer.unobserve(element);
-    };
-  }, [hasAnimated, threshold, prefersReducedMotion]);
+  }, [threshold, rootMargin, once, reducedMotion]);
 
   const childrenArray = React.Children.toArray(children);
 
@@ -125,17 +108,86 @@ export const ScrollRevealStagger = ({
       {childrenArray.map((child, index) => (
         <div
           key={index}
+          className={itemClassName}
           style={{
-            opacity: isVisible ? 1 : 0,
-            transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: `opacity 0.5s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1)`,
-            transitionDelay: isVisible ? `${index * actualDelay}s` : '0s'
+            opacity: isVisible || reducedMotion ? 1 : 0,
+            transform: isVisible || reducedMotion ? 'translateY(0)' : `translateY(${isMobile ? 12 : 16}px)`,
+            transition: `opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)`,
+            transitionDelay: isVisible ? `${index * actualDelay}s` : '0s',
           }}
         >
           {child}
         </div>
       ))}
     </div>
+  );
+};
+
+// ============================================
+// ScrollRevealItem - 单个滚动动画项
+// ============================================
+
+export const ScrollRevealItem = ({
+  children,
+  className = '',
+  index = 0,
+  staggerDelay = null,
+}) => {
+  const isMobile = useIsMobile();
+  const reducedMotion = useReducedMotion();
+  const actualDelay = staggerDelay ?? (isMobile ? STAGGER.mobile : STAGGER.default);
+
+  if (reducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: isMobile ? 12 : 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{
+        duration: isMobile ? 0.35 : 0.4,
+        delay: index * actualDelay,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+// ============================================
+// FadeInView - 简单淡入
+// ============================================
+
+export const FadeInView = ({
+  children,
+  className = '',
+  delay = 0,
+  duration = 0.4,
+}) => {
+  const reducedMotion = useReducedMotion();
+
+  if (reducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      className={className}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{
+        duration,
+        delay,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+    >
+      {children}
+    </motion.div>
   );
 };
 

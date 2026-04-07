@@ -121,13 +121,13 @@ const StatusDropdown = ({ work, onStatusChange }) => {
 
 // 评分详情弹窗
 const ScoreDetailModal = ({ work, isOpen, onClose, onLockScores }) => {
-  if (!isOpen || !work) return null;
-
   const averageScore = useMemo(() => {
-    if (!work.scores || work.scores.length === 0) return null;
-    const avg = work.scores.reduce((sum, s) => sum + s.total, 0) / work.scores.length;
+    if (!work?.scores || work.scores.length === 0) return null;
+    const avg = work.scores.reduce((sum, s) => sum + (s.total || 0), 0) / work.scores.length;
     return avg.toFixed(1);
-  }, [work.scores]);
+  }, [work?.scores]);
+
+  if (!isOpen || !work) return null;
 
   // 检查是否所有评分都已锁定
   const allScoresLocked = work.scores?.length > 0 && work.scores.every(s => s.status === 'locked');
@@ -276,14 +276,14 @@ const ScoreDetailModal = ({ work, isOpen, onClose, onLockScores }) => {
 
 // 详情抽屉组件
 const DetailDrawer = ({ work, isOpen, onClose, onStatusChange }) => {
-  if (!isOpen || !work) return null;
-
-  // 计算平均分
+  // 计算平均分 - 放在 early return 之前
   const averageScore = useMemo(() => {
-    if (!work.scores || work.scores.length === 0) return null;
-    const avg = work.scores.reduce((sum, s) => sum + s.total, 0) / work.scores.length;
+    if (!work?.scores || work.scores.length === 0) return null;
+    const avg = work.scores.reduce((sum, s) => sum + (s.total || 0), 0) / work.scores.length;
     return avg.toFixed(1);
-  }, [work.scores]);
+  }, [work?.scores]);
+
+  if (!isOpen || !work) return null;
 
   return (
     <>

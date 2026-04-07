@@ -139,43 +139,44 @@ function HeroBackground() {
 
 export default function HomeHero() {
   return (
-    <section className="relative isolate overflow-hidden min-h-[85vh] md:min-h-[88vh] lg:min-h-[90vh]">
+    <section className="relative isolate overflow-hidden min-h-[100vh] md:min-h-[88vh] lg:min-h-[90vh]">
       <HeroBackground />
       <MouseTrailParticles />
 
-      <div className="relative z-10 mx-auto flex min-h-[85vh] md:min-h-[88vh] lg:min-h-[90vh] max-w-5xl items-center justify-center px-5 pt-24 pb-20 md:px-6 lg:pt-28 lg:pb-24">
+      <div className="relative z-10 mx-auto flex min-h-[100vh] md:min-h-[88vh] lg:min-h-[90vh] max-w-5xl items-center justify-center px-4 pt-16 pb-8 md:px-6 md:pt-28 md:pb-24">
         <div className="mx-auto max-w-2xl text-center">
-          {/* 标签 */}
-          <div className="hero-badge mb-16 inline-flex items-center rounded-full px-5 py-2 text-[13px] text-white/90 font-medium">
+          {/* 标签 - 移动端缩小 */}
+          <div className="hero-badge mb-6 md:mb-16 inline-flex items-center rounded-full px-4 py-1.5 md:px-5 md:py-2 text-xs md:text-[13px] text-white/90 font-medium">
             <span className="hero-badge-dot mr-2" />
             全国性人工智能赛事 · OPC 核心孵化平台
           </div>
 
-          {/* 主标题 */}
+          {/* 主标题 - 移动端适配 */}
           <h1 className="mx-auto max-w-xl">
-            <span className="block text-[32px] md:text-[48px] lg:text-[56px] font-semibold leading-[1.2] tracking-tight text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.25)]">
+            <span className="block text-[28px] md:text-[48px] lg:text-[56px] font-semibold leading-[1.2] tracking-tight text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.25)]">
               梧桐·鸿鹄
             </span>
-            <span className="block mt-3 text-[36px] md:text-[56px] lg:text-[72px] font-bold leading-[1.05] tracking-tight text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]">
+            <span className="block mt-2 md:mt-3 text-[32px] md:text-[56px] lg:text-[72px] font-bold leading-[1.05] tracking-tight text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]">
               人工智能应用创新大赛
             </span>
           </h1>
 
-          {/* 副标题 */}
-          <div className="mt-16 space-y-3">
-            <p className="text-[16px] leading-7 text-white/90 md:text-lg">
+          {/* 副标题 - 移动端最多2行 */}
+          <div className="mt-6 md:mt-16 space-y-2 md:space-y-3">
+            <p className="text-[15px] leading-6 text-white/90 md:text-lg line-clamp-2">
               以赛促学 · 以赛促用 · 以赛促创
             </p>
-            <p className="text-[15px] leading-6 text-white/70 md:text-[16px]">
+            {/* 移动端隐藏第二行副标题 */}
+            <p className="hidden md:block text-[15px] leading-6 text-white/70 md:text-[16px]">
               打造面向未来的人工智能应用创新与人才孵化平台
             </p>
           </div>
 
-          {/* 按钮 */}
-          <div className="mt-20 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          {/* 按钮 - 移动端紧凑 */}
+          <div className="mt-8 md:mt-20 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
             <Link
               to="/register"
-              className="group relative inline-flex min-w-[160px] items-center justify-center overflow-hidden rounded-2xl px-8 py-4 text-[15px] font-semibold text-white shadow-[0_4px_20px_rgba(116,99,236,0.4)] transition-all duration-300 ease-out bg-[#7463EC] hover:-translate-y-1 hover:shadow-[0_6px_28px_rgba(116,99,236,0.55)] active:scale-[0.98]"
+              className="group relative inline-flex min-w-[140px] md:min-w-[160px] items-center justify-center overflow-hidden rounded-xl md:rounded-2xl px-6 py-3 md:px-8 md:py-4 text-sm md:text-[15px] font-semibold text-white shadow-[0_4px_20px_rgba(116,99,236,0.4)] transition-all duration-300 ease-out bg-[#7463EC] hover:-translate-y-1 hover:shadow-[0_6px_28px_rgba(116,99,236,0.55)] active:scale-[0.98]"
             >
               <span className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)] skew-x-12 -translate-x-full group-hover:translate-x-full" />
               <span className="relative">立即报名</span>
@@ -183,7 +184,7 @@ export default function HomeHero() {
 
             <Link
               to="/competition-center"
-              className="inline-flex min-w-[160px] items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-8 py-4 text-[15px] font-semibold text-white/80 backdrop-blur-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:bg-white/18 hover:text-white hover:border-white/30 active:scale-[0.98]"
+              className="inline-flex min-w-[140px] md:min-w-[160px] items-center justify-center rounded-xl md:rounded-2xl border border-white/20 bg-white/10 px-6 py-3 md:px-8 md:py-4 text-sm md:text-[15px] font-semibold text-white/80 backdrop-blur-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:bg-white/18 hover:text-white hover:border-white/30 active:scale-[0.98]"
             >
               查看赛事
             </Link>
