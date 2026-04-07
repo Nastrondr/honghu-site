@@ -250,35 +250,35 @@ const HomeDesktop = () => {
                 subtitle: '智能金融创新',
                 description: '探索AI在金融风险控制、智能投顾，反欺诈等领域的创新应用',
                 accentColor: 'violet',
-                imageUrl: '/assets/image/matchcategory card/finance.jpg'
+                imageUrl: '/assets/image/matchcategory%20card/finance.jpg'
               },
               {
                 title: '数字教育',
                 subtitle: '智慧教育未来',
                 description: '开发AI驱动的智能教育工具，提升教学效率和学习体验',
                 accentColor: 'blue',
-                imageUrl: '/assets/image/matchcategory card/AI education technology.jpg'
+                imageUrl: '/assets/image/matchcategory%20card/AI%20education%20technology.jpg'
               },
               {
                 title: '数字健康',
                 subtitle: 'AI医疗健康',
                 description: '运用AI技术辅助诊断、药物研发和健康管理，提升医疗服务质量',
                 accentColor: 'cyan',
-                imageUrl: '/assets/image/matchcategory card/smart healthcare.jpg'
+                imageUrl: '/assets/image/matchcategory%20card/smart%20healthcare.jpg'
               },
               {
                 title: '数字文旅',
                 subtitle: '智慧文旅体验',
                 description: '利用AI技术推动文化传播、旅游服务智能化与体验创新',
                 accentColor: 'indigo',
-                imageUrl: '/assets/image/matchcategory card/digital culture immersive.jpg'
+                imageUrl: '/assets/image/matchcategory%20card/digital%20culture%20immersive.jpg'
               },
               {
                 title: '数字法务',
                 subtitle: '智能法律服务',
                 description: '运用AI技术提升法律服务效率，推动智能合规与风险预警',
                 accentColor: 'purple',
-                imageUrl: '/assets/image/matchcategory card/legal tech interface.jpg'
+                imageUrl: '/assets/image/matchcategory%20card/legal%20tech%20interface.jpg'
               }
             ]} />
         </div>

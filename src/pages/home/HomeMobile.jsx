@@ -1,6 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-// FORCE_RELOAD_2026
+
+// 统一卡片 hover 动效类 - 只过渡 transform 和 shadow
+const cardHover = 'transform-gpu translate-y-0 transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:shadow-md active:scale-[0.99]';
+const linkHover = 'transform-gpu transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]';
+const btnHover = 'transform-gpu transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:brightness-105 active:scale-[0.98]';
 
 // 2列正方形网格组件
 const SquareCard = ({ icon, title, desc, color = 'primary' }) => {
@@ -11,7 +15,7 @@ const SquareCard = ({ icon, title, desc, color = 'primary' }) => {
   const c = colorMap[color] || colorMap.primary;
   
   return (
-    <div className="aspect-square bg-white rounded-xl p-3 shadow-sm border border-neutral-100 flex flex-col items-center justify-center text-center">
+    <div className={`aspect-square bg-white rounded-xl p-3 shadow-sm border border-neutral-100 flex flex-col items-center justify-center text-center ${cardHover}`}>
       <div className={`w-9 h-9 ${c.bg} rounded-lg flex items-center justify-center mb-2`}>
         {icon}
       </div>
@@ -21,27 +25,128 @@ const SquareCard = ({ icon, title, desc, color = 'primary' }) => {
   );
 };
 
+// 手机端赛道横向滑动卡片流 - 单卡聚焦效果
+const MobileTrackScroll = () => {
+  const tracks = [
+    { title: '数字金融', desc: '智能金融创新', imageUrl: '/assets/image/matchcategory%20card/finance.jpg', bgColor: 'bg-violet-600' },
+    { title: '数字教育', desc: '智慧教育未来', imageUrl: '/assets/image/matchcategory%20card/AI%20education%20technology.jpg', bgColor: 'bg-blue-600' },
+    { title: '数字健康', desc: 'AI医疗健康', imageUrl: '/assets/image/matchcategory%20card/smart%20healthcare.jpg', bgColor: 'bg-cyan-600' },
+    { title: '数字文旅', desc: '智慧文旅体验', imageUrl: '/assets/image/matchcategory%20card/digital%20culture%20immersive.jpg', bgColor: 'bg-indigo-600' },
+    { title: '数字法务', desc: '智能法律服务', imageUrl: '/assets/image/matchcategory%20card/legal%20tech%20interface.jpg', bgColor: 'bg-purple-600' },
+  ];
+
+  const scrollRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        let maxArea = 0;
+        let maxIndex = 0;
+
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const rect = entry.boundingClientRect;
+            const containerRect = container.getBoundingClientRect();
+            const visibleLeft = Math.max(0, rect.left - containerRect.left);
+            const visibleRight = Math.min(rect.width, rect.right - containerRect.left);
+            const visibleWidth = Math.max(0, visibleRight - visibleLeft);
+            const visibleArea = visibleWidth * rect.height;
+
+            const index = parseInt(entry.target.dataset.trackIndex, 10);
+            if (visibleArea > maxArea) {
+              maxArea = visibleArea;
+              maxIndex = index;
+            }
+          }
+        });
+
+        if (maxArea > 0) {
+          setActiveIndex(maxIndex);
+        }
+      },
+      {
+        root: container,
+        rootMargin: '0px',
+        threshold: [0, 0.25, 0.5, 0.75, 1],
+      }
+    );
+
+    const cards = container.querySelectorAll('[data-track-index]');
+    cards.forEach((card) => observer.observe(card));
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={scrollRef}
+      className="overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2"
+      style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'smooth' }}
+    >
+      <div className="flex gap-3" style={{ width: 'max-content' }}>
+        {tracks.map((track, index) => {
+          const isActive = index === activeIndex;
+          return (
+            <Link
+              key={index}
+              data-track-index={index}
+              to="/competition-center"
+              className={`relative flex-shrink-0 w-[78vw] h-[200px] overflow-hidden rounded-xl transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                isActive ? 'opacity-100 scale-100' : 'opacity-40 scale-95'
+              } ${track.bgColor}`}
+              style={{ scrollSnapAlign: 'center' }}
+            >
+              {/* 图片层 */}
+              <img
+                src={track.imageUrl}
+                alt={track.title}
+                className="absolute inset-0 w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+              {/* 遮罩层 */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+              {/* 文案层 */}
+              <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
+                <p className="text-white/60 text-[11px] mb-0.5">{track.desc}</p>
+                <h3 className="font-bold text-white text-base">{track.title}</h3>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 // 自动轮播组件
-const AutoCarousel = ({ children }) => {
+const AutoCarousel = ({ children, showArrows = false }) => {
   const scrollRef = useRef(null);
   const [isPaused, setIsPaused] = useState(false);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
   const timeoutRef = useRef(null);
 
   useEffect(() => {
     if (isPaused) return;
-    
+
     const scrollContainer = scrollRef.current;
     if (!scrollContainer) return;
 
     const cardWidth = scrollContainer.querySelector('div')?.offsetWidth || 0;
     const gap = 12;
-    
+
     const interval = setInterval(() => {
       if (!scrollContainer) return;
-      
+
       const { scrollLeft, scrollWidth, clientWidth } = scrollContainer;
       const maxScroll = scrollWidth - clientWidth;
-      
+
       if (scrollLeft >= maxScroll - 10) {
         scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
       } else {
@@ -61,23 +166,61 @@ const AutoCarousel = ({ children }) => {
     timeoutRef.current = setTimeout(() => setIsPaused(false), 2000);
   };
 
+  const handleScroll = () => {
+    const container = scrollRef.current;
+    if (!container) return;
+    setCanScrollLeft(container.scrollLeft > 10);
+    setCanScrollRight(container.scrollLeft < container.scrollWidth - container.clientWidth - 10);
+  };
+
+  const scrollBy = (direction) => {
+    const container = scrollRef.current;
+    if (!container) return;
+    const cardWidth = container.querySelector('div')?.offsetWidth || 0;
+    const gap = 12;
+    container.scrollBy({ left: direction * (cardWidth + gap), behavior: 'smooth' });
+  };
+
   return (
-    <div 
-      ref={scrollRef}
-      className="overflow-x-auto scrollbar-hide -mx-4 px-4"
-      style={{ scrollBehavior: 'smooth', scrollSnapType: 'x mandatory' }}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onMouseEnter={handleTouchStart}
-      onMouseLeave={handleTouchEnd}
-    >
-      <div className="flex gap-3" style={{ width: 'max-content' }}>
-        {React.Children.map(children, (child, index) => (
-          <div key={index} style={{ scrollSnapAlign: 'start' }}>
-            {child}
-          </div>
-        ))}
+    <div className="relative">
+      <div
+        ref={scrollRef}
+        className="overflow-x-auto scrollbar-hide -mx-4 px-4"
+        style={{ scrollBehavior: 'smooth', scrollSnapType: 'x mandatory' }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onMouseEnter={handleTouchStart}
+        onMouseLeave={handleTouchEnd}
+        onScroll={handleScroll}
+      >
+        <div className="flex gap-3" style={{ width: 'max-content' }}>
+          {React.Children.map(children, (child, index) => (
+            <div key={index} style={{ scrollSnapAlign: 'start' }}>
+              {child}
+            </div>
+          ))}
+        </div>
       </div>
+      {showArrows && (
+        <>
+          <button
+            onClick={() => scrollBy(-1)}
+            className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/70 backdrop-blur-sm shadow-md flex items-center justify-center text-neutral-600 hover:text-primary hover:bg-white hover:shadow-lg active:scale-95 transition-all duration-200 z-10 md:hidden"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            onClick={() => scrollBy(1)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/70 backdrop-blur-sm shadow-md flex items-center justify-center text-neutral-600 hover:text-primary hover:bg-white hover:shadow-lg active:scale-95 transition-all duration-200 z-10 md:hidden"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </>
+      )}
     </div>
   );
 };
@@ -85,25 +228,40 @@ const AutoCarousel = ({ children }) => {
 const HomeMobile = () => {
   return (
     <div className="min-h-screen bg-white">
-      <div className="bg-red-600 text-white text-sm p-2 text-center font-bold">MOBILE OK - TEST</div>
       {/* 1. Hero - 限制高度1屏以内 */}
       <section className="relative h-[85vh] max-h-[600px] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-white to-purple-50"></div>
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 w-[250px] h-[250px] bg-primary/10 rounded-full blur-3xl"></div>
+        {/* 背景图片 */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: 'url(/assets/image/herobanner.png)' }}
+        />
+        <div className="absolute inset-0 bg-black/40" />
         
         <div className="relative z-10 container mx-auto px-5 py-8 text-center">
-          <h1 className="text-2xl font-bold text-neutral-900 mb-3 leading-tight">
+          {/* hero-badge 标签 */}
+          <div className="hero-badge mb-4 inline-flex items-center rounded-full px-3 py-1 text-[11px] text-white/90 font-medium">
+            <span className="hero-badge-dot mr-2" />
+            全国性人工智能赛事 · OPC 核心孵化平台
+          </div>
+
+          <h1 className="text-2xl font-bold text-white mb-3 leading-tight drop-shadow-lg">
             梧桐·鸿鹄<br/>人工智能应用创新大赛
           </h1>
-          <p className="text-sm text-neutral-600 mb-5 line-clamp-2">
+          <p className="text-sm text-white/80 mb-5 line-clamp-2">
             探索AI无限可能，开启创新之旅
           </p>
           <div className="flex flex-col gap-2.5 max-w-[200px] mx-auto">
             <Link 
               to="/register-competition" 
-              className="w-full bg-primary text-white py-2.5 rounded-lg font-medium text-sm text-center"
+              className={`w-full bg-primary text-white py-2.5 rounded-lg font-medium text-sm text-center ${btnHover}`}
             >
               立即报名
+            </Link>
+            <Link 
+              to="/competition-center"
+              className="w-full border border-white/20 bg-white/10 text-white/80 py-2.5 rounded-lg font-medium text-sm text-center backdrop-blur-sm hover:bg-white/18 hover:text-white hover:border-white/30 transition-all duration-300"
+            >
+              查看赛事
             </Link>
           </div>
         </div>
@@ -161,7 +319,7 @@ const HomeMobile = () => {
       <section className="py-4 px-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-bold text-neutral-800">生态产品</h2>
-          <Link to="/eco-products" className="text-xs text-primary font-medium">更多→</Link>
+          <Link to="/eco-products" className={`text-xs text-primary font-medium ${linkHover}`}>更多→</Link>
         </div>
         <div className="grid grid-cols-2 gap-2.5">
           <SquareCard 
@@ -207,47 +365,26 @@ const HomeMobile = () => {
         </div>
       </section>
 
-      {/* 4. 五大专项赛道 - 自动轮播正方形卡片 */}
-      <section className="py-4 px-0">
+      {/* 4. 五大专项赛道 - 横向滑动卡片流 */}
+      <section className="py-4">
         <h2 className="text-sm font-bold text-neutral-800 mb-3 px-4">专项赛道</h2>
-        <AutoCarousel>
-          {[
-            { title: '数字金融', desc: '智能金融创新', color: 'bg-violet-600' },
-            { title: '数字教育', desc: '智慧教育未来', color: 'bg-blue-600' },
-            { title: '数字健康', desc: 'AI医疗健康', color: 'bg-cyan-600' },
-            { title: '数字文旅', desc: '智慧文旅体验', color: 'bg-indigo-600' },
-            { title: '数字法务', desc: '智能法律服务', color: 'bg-purple-600' },
-          ].map((track, index) => (
-            <Link 
-              key={index}
-              to="/competition-center"
-              className="w-[75vw] aspect-square rounded-xl overflow-hidden flex-shrink-0 relative"
-            >
-              <div className={`absolute inset-0 ${track.color}/30`}></div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <h3 className="font-bold text-white text-sm mb-0.5">{track.title}</h3>
-                <p className="text-white/70 text-xs line-clamp-1">{track.desc}</p>
-              </div>
-            </Link>
-          ))}
-        </AutoCarousel>
+        <MobileTrackScroll />
       </section>
 
       {/* 5. 赛事中心 - 紧凑列表 */}
       <section className="py-4 px-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-bold text-neutral-800">热门赛事</h2>
-          <Link to="/competition-center" className="text-xs text-primary font-medium">更多→</Link>
+          <Link to="/competition-center" className={`text-xs text-primary font-medium ${linkHover}`}>更多→</Link>
         </div>
         <div className="space-y-2">
-          <Link to="/competition/1" className="block bg-white rounded-lg p-2.5 shadow-sm border border-neutral-100">
+          <Link to="/competition/1" className={`block bg-white rounded-lg p-2.5 shadow-sm border border-neutral-100 ${cardHover}`}>
             <div className="flex justify-between items-center gap-2">
               <h3 className="font-medium text-neutral-800 text-xs flex-1 line-clamp-1">2025年梧桐·鸿鹄人工智能应用创新大赛</h3>
               <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[9px] rounded-full flex-shrink-0">进行中</span>
             </div>
           </Link>
-          <Link to="/competition/2" className="block bg-white rounded-lg p-2.5 shadow-sm border border-neutral-100">
+          <Link to="/competition/2" className={`block bg-white rounded-lg p-2.5 shadow-sm border border-neutral-100 ${cardHover}`}>
             <div className="flex justify-between items-center gap-2">
               <h3 className="font-medium text-neutral-800 text-xs flex-1 line-clamp-1">2025年梧桐·鸿鹄AI算法挑战赛</h3>
               <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[9px] rounded-full flex-shrink-0">即将开始</span>
@@ -260,7 +397,7 @@ const HomeMobile = () => {
       <section className="py-4 px-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-bold text-neutral-800">新闻动态</h2>
-          <Link to="/news" className="text-xs text-primary font-medium">更多→</Link>
+          <Link to="/news" className={`text-xs text-primary font-medium ${linkHover}`}>更多→</Link>
         </div>
         <div className="space-y-1.5">
           {[
@@ -268,7 +405,7 @@ const HomeMobile = () => {
             { title: '大赛规则发布', date: '2025年4月10日' },
             { title: '专家评审团名单公布', date: '2025年4月5日' },
           ].map((item, index) => (
-            <Link key={index} to="/news/1" className="flex items-center justify-between py-2 border-b border-neutral-100 last:border-0">
+            <Link key={index} to="/news/1" className={`flex items-center justify-between py-2 border-b border-neutral-100 last:border-0 ${linkHover}`}>
               <span className="text-xs text-neutral-700 line-clamp-1">{item.title}</span>
               <span className="text-[10px] text-neutral-400 flex-shrink-0 ml-2">{item.date}</span>
             </Link>
@@ -281,7 +418,7 @@ const HomeMobile = () => {
         <h2 className="text-sm font-bold text-neutral-800 mb-3">合作伙伴</h2>
         <div className="grid grid-cols-4 gap-1.5">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <div key={i} className="aspect-square bg-neutral-50 rounded-lg flex items-center justify-center">
+            <div key={i} className={`aspect-square bg-neutral-50 rounded-lg flex items-center justify-center ${cardHover}`}>
               <span className="text-[9px] text-neutral-400">合作{i}</span>
             </div>
           ))}
@@ -295,7 +432,7 @@ const HomeMobile = () => {
           <p className="text-xs text-neutral-600 mb-3">展示才华，开启AI精彩旅程</p>
           <Link 
             to="/register-competition" 
-            className="inline-block w-full bg-primary text-white py-2 rounded-lg font-medium text-xs"
+            className={`inline-block w-full bg-primary text-white py-2 rounded-lg font-medium text-xs ${btnHover}`}
           >
             立即报名
           </Link>

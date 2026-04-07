@@ -186,22 +186,6 @@ const Header = () => {
             {navItems.map((item, index) => renderNavLink(item, index))}
             
             <div className={`flex items-center space-x-3 ml-3 pl-4 ${isHomePage ? 'border-l border-white/10' : 'border-l border-slate-200/50'}`}>
-              {/* 专家评审入口 */}
-              <Link 
-                to="/reviewer-login" 
-                className={`flex items-center gap-1 text-[12px] transition-all duration-300 ${
-                  isHomePage 
-                    ? 'text-white/50 hover:text-white' 
-                    : 'text-neutral-400 hover:text-primary'
-                }`}
-                title="专家评审入口"
-              >
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                </svg>
-                专家评审
-              </Link>
-
               {isAuthenticated ? (
                 <Dropdown
                   trigger={
@@ -290,15 +274,6 @@ const Header = () => {
                   {item.label}
                 </Link>
               ))}
-              
-              {/* 专家评审入口 */}
-              <Link
-                to="/reviewer-login"
-                className="block px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:text-neutral-200 dark:hover:bg-neutral-800"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                专家评审
-              </Link>
               
               {/* 用户区域 */}
               <div className="border-t border-neutral-200 dark:border-neutral-700 mt-2 pt-2">

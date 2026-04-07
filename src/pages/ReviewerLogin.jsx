@@ -216,25 +216,25 @@ const ReviewerLogin = () => {
               <p className="text-xs text-gray-400 text-center mb-4">其他身份入口</p>
               <div className="grid grid-cols-3 gap-3">
                 {/* 用户登录 */}
-                <Link 
+                <Link
                   to="/login"
-                  className="flex flex-col items-center p-3 rounded-xl border border-gray-200 hover:border-[#7463EC] hover:bg-[#7463EC]/5 transition-all group"
+                  className="flex flex-col items-center p-3 rounded-xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all group"
                 >
-                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-2 group-hover:bg-[#7463EC]/10 transition-colors">
-                    <User className="w-5 h-5 text-gray-500 group-hover:text-[#7463EC]" />
+                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-2 group-hover:bg-gray-200 transition-colors">
+                    <User className="w-5 h-5 text-gray-500" />
                   </div>
-                  <span className="text-xs font-medium text-gray-600 group-hover:text-[#7463EC]">用户登录</span>
+                  <span className="text-xs font-medium text-gray-600 group-hover:text-gray-800">用户登录</span>
                 </Link>
 
                 {/* 管理后台 */}
-                <Link 
+                <Link
                   to="/admin/login"
-                  className="flex flex-col items-center p-3 rounded-xl border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all group"
+                  className="flex flex-col items-center p-3 rounded-xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all group"
                 >
-                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-2 group-hover:bg-blue-100 transition-colors">
-                    <Settings className="w-5 h-5 text-gray-500 group-hover:text-blue-600" />
+                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-2 group-hover:bg-gray-200 transition-colors">
+                    <Settings className="w-5 h-5 text-gray-500" />
                   </div>
-                  <span className="text-xs font-medium text-gray-600 group-hover:text-blue-600">管理后台</span>
+                  <span className="text-xs font-medium text-gray-600 group-hover:text-gray-800">管理后台</span>
                 </Link>
 
                 {/* 专家评审 - 当前高亮 */}
