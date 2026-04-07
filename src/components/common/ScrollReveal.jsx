@@ -10,23 +10,18 @@ import {
   STAGGER,
 } from './Animations';
 
-// ============================================
-// ScrollReveal - 区块进入动画
-// ============================================
-
 const ScrollReveal = ({
   children,
   className = '',
   type = 'section',
   delay = 0,
-  threshold = 0.15,
-  rootMargin = '-50px 0px',
+  threshold = 0.1,
+  rootMargin = '-20px 0px',
   once = true,
 }) => {
   const reducedMotion = useReducedMotion();
   const isMobile = useIsMobile();
 
-  // 根据类型和平台选择动效
   const variants = type === 'item'
     ? (isMobile ? itemMobileVariants : itemVariants)
     : (isMobile ? sectionMobileVariants : sectionVariants);
@@ -35,6 +30,10 @@ const ScrollReveal = ({
     return <div className={className}>{children}</div>;
   }
 
+  const transitionConfig = delay > 0 
+    ? { ...variants.visible.transition, delay }
+    : variants.visible.transition;
+
   return (
     <motion.div
       className={className}
@@ -42,32 +41,28 @@ const ScrollReveal = ({
       whileInView="visible"
       viewport={{ once, amount: threshold, margin: rootMargin }}
       variants={variants}
-      transition={{ delay }}
+      transition={transitionConfig}
     >
       {children}
     </motion.div>
   );
 };
 
-// ============================================
-// ScrollRevealStagger - 交错列表动画
-// ============================================
-
 export const ScrollRevealStagger = ({
   children,
   className = '',
   itemClassName = '',
-  staggerDelay = null, // 使用默认值
+  staggerDelay = null,
   threshold = 0.1,
-  rootMargin = '-30px 0px',
+  rootMargin = '-20px 0px',
   once = true,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const containerRef = useRef(null);
+  const observerRef = useRef(null);
   const reducedMotion = useReducedMotion();
   const isMobile = useIsMobile();
 
-  // 使用默认的交错延迟
   const actualDelay = staggerDelay ?? (isMobile ? STAGGER.mobile : STAGGER.default);
 
   useEffect(() => {
@@ -80,24 +75,29 @@ export const ScrollRevealStagger = ({
     if (!element) return;
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          // 如果只需要触发一次，取消观察
-          if (once) {
-            observer.unobserve(element);
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            if (once && observerRef.current) {
+              observerRef.current.unobserve(element);
+            }
+          } else if (!once) {
+            setIsVisible(false);
           }
-        } else if (!once) {
-          setIsVisible(false);
-        }
+        });
       },
       { threshold, rootMargin }
     );
 
+    observerRef.current = observer;
     observer.observe(element);
 
     return () => {
-      observer.unobserve(element);
+      if (observerRef.current) {
+        observerRef.current.unobserve(element);
+        observerRef.current.disconnect();
+      }
     };
   }, [threshold, rootMargin, once, reducedMotion]);
 
@@ -122,10 +122,6 @@ export const ScrollRevealStagger = ({
     </div>
   );
 };
-
-// ============================================
-// ScrollRevealItem - 单个滚动动画项
-// ============================================
 
 export const ScrollRevealItem = ({
   children,
@@ -157,10 +153,6 @@ export const ScrollRevealItem = ({
     </motion.div>
   );
 };
-
-// ============================================
-// FadeInView - 简单淡入
-// ============================================
 
 export const FadeInView = ({
   children,
