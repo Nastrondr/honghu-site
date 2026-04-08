@@ -8,6 +8,8 @@ import { CompetitionsModule } from './modules/competitions/competitions.module';
 import { CmsModule } from './modules/cms/cms.module';
 import { HealthModule } from './modules/health/health.module';
 import { EnrollmentModule } from './modules/enrollment/enrollment.module';
+import { TeamModule } from './modules/team/team.module';
+import { ResourcesModule } from './modules/resources/resources.module';
 
 import {
   HttpExceptionFilter,
@@ -24,6 +26,8 @@ import {
     CmsModule,
     HealthModule,
     EnrollmentModule,
+    TeamModule,
+    ResourcesModule,
   ],
   providers: [
     {

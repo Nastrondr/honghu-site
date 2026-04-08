@@ -4,6 +4,7 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './auth.strategy';
+import { JwtStrategyOptional } from './jwt-optional.strategy';
 import { DatabaseModule } from '../../database/database.module';
 
 @Module({
@@ -18,7 +19,7 @@ import { DatabaseModule } from '../../database/database.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, JwtStrategyOptional],
   exports: [AuthService],
 })
 export class AuthModule {}
