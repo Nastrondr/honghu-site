@@ -17,20 +17,20 @@ export class RolesGuard implements CanActivate {
     }
 
     const { user } = context.switchToHttp().getRequest();
-    
+
     if (!user) {
       return false;
     }
 
     const userRoles = user.roles || [];
-    const allRoles = [...userRoles, user.currentRole];
-    
+    const allRoles = [...userRoles, user.currentRole, user.primaryRole].filter(Boolean);
+
     const hasRole = requiredRoles.some(role => allRoles.includes(role));
-    
+
     if (!hasRole) {
       throw new ForbiddenException('您没有权限访问此接口');
     }
-    
+
     return true;
   }
 }

@@ -350,13 +350,12 @@ model Resource {
   @@map("resources")
 }
 
-// ==================== 作品 ====================
-
 model Work {
   id                  String    @id @default(uuid())
   competitionId       String    @map("competition_id")
   trackId             String    @map("track_id")
-  teamId              String    @map("team_id")
+  userId              String?   @map("user_id")
+  teamId              String?   @map("team_id")
   title               String
   slug                String?
   description         String?
@@ -377,8 +376,8 @@ model Work {
 
   competition         Competition @relation(fields: [competitionId], references: [id])
   track               Track       @relation(fields: [trackId], references: [id])
-  team                Team        @relation(fields: [teamId], references: [id], map: "works_team_fkey")
-  user                User        @relation(fields: [teamId], references: [id], map: "works_user_fkey")
+  team                Team?       @relation(fields: [teamId], references: [id], map: "works_team_fkey")
+  user                User?       @relation(fields: [userId], references: [id])
   versions            WorkVersion[]
   attachments         WorkAttachment[]
   reviewAssignments   ReviewAssignment[]
@@ -401,7 +400,6 @@ model WorkVersion {
   demoUrl       String?   @map("demo_url")
   repoUrl       String?   @map("repo_url")
   isFinal       Boolean   @default(false) @map("is_final")
-  isCurrent     Boolean   @default(false) @map("is_current")
   submittedAt   DateTime? @map("submitted_at")
   submittedBy  String?   @map("submitted_by")
   score         Decimal?  @map("score")

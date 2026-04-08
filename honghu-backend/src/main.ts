@@ -22,6 +22,20 @@ async function bootstrap() {
     }),
   );
 
+  const instance = app.getHttpAdapter().getInstance();
+  instance.set('json spaces', 2);
+
+  const originalJson = instance.response.json;
+  instance.response.json = function (body: unknown): unknown {
+    const serialized = JSON.stringify(body, (key, value) => {
+      if (typeof value === 'bigint') {
+        return value.toString();
+      }
+      return value;
+    });
+    return originalJson.call(this, JSON.parse(serialized));
+  };
+
   const config = new DocumentBuilder()
     .setTitle(process.env.SWAGGER_TITLE || '梧桐·鸿鹄大赛平台 API')
     .setDescription(process.env.SWAGGER_DESCRIPTION || 'API 文档')

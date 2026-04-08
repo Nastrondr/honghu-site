@@ -10,6 +10,8 @@ import { HealthModule } from './modules/health/health.module';
 import { EnrollmentModule } from './modules/enrollment/enrollment.module';
 import { TeamModule } from './modules/team/team.module';
 import { ResourcesModule } from './modules/resources/resources.module';
+import { WorksModule } from './modules/works/works.module';
+import { ReviewModule } from './modules/review/review.module';
 
 import {
   HttpExceptionFilter,
@@ -28,6 +30,8 @@ import {
     EnrollmentModule,
     TeamModule,
     ResourcesModule,
+    WorksModule,
+    ReviewModule,
   ],
   providers: [
     {
