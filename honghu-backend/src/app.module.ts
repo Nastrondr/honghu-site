@@ -12,6 +12,9 @@ import { TeamModule } from './modules/team/team.module';
 import { ResourcesModule } from './modules/resources/resources.module';
 import { WorksModule } from './modules/works/works.module';
 import { ReviewModule } from './modules/review/review.module';
+import { AwardModule } from './modules/award/award.module';
+import { StatsModule } from './modules/stats/stats.module';
+import { NotificationModule } from './modules/notification/notification.module';
 
 import {
   HttpExceptionFilter,
@@ -32,6 +35,9 @@ import {
     ResourcesModule,
     WorksModule,
     ReviewModule,
+    AwardModule,
+    StatsModule,
+    NotificationModule,
   ],
   providers: [
     {

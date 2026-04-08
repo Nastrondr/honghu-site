@@ -334,6 +334,16 @@ export class EnrollmentService {
           reviewedAt: new Date(),
         },
       }),
+      this.prisma.notification.create({
+         data: {
+           userId: enrollment.userId,
+           type: status === 'approved' ? 'enrollment_approved' : status === 'rejected' ? 'enrollment_rejected' : 'enrollment_review',
+           title: '报名审核结果通知',
+           content: `您的报名已更新状态为: ${status}${comment ? `，审核意见: ${comment}` : ''}`,
+           linkType: 'enrollment',
+           linkId: enrollmentId,
+         },
+       }),
     ]);
 
     return updated;
