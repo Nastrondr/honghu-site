@@ -25,52 +25,73 @@ const About = () => {
         </div>
 
         {/* 定位与愿景模块 */}
-        <div className="bg-neutral-50/50 rounded-2xl border border-neutral-200/60 p-4 md:p-8 mb-8 md:mb-16">
+        <div className="mb-8 md:mb-16">
           <div className="mb-4 md:mb-8 hidden md:block">
             <h2 className="text-xl md:text-2xl font-semibold text-neutral-800 mb-1 md:mb-2">定位与愿景</h2>
             <p className="text-neutral-500 text-sm">面向未来的AI应用创新与人才孵化平台</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-12">
-            <div className="relative pl-4 md:pl-5">
-              <div className="absolute left-0 top-1 w-1 h-4 md:h-5 bg-gradient-to-b from-violet-500 to-violet-400 rounded-full"></div>
-              <div className="flex items-center justify-between md:block mb-2">
-                <h3 className="text-base md:text-lg font-semibold text-neutral-800">定位</h3>
+          {/* 定位卡片 - 手机端独立卡片 */}
+          <div className="md:hidden bg-white rounded-xl border border-neutral-200 p-4 mb-4">
+            <div className="flex items-start gap-3">
+              <div className="w-1 h-6 bg-gradient-to-b from-violet-500 to-violet-400 rounded-full flex-shrink-0 mt-0.5"></div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-semibold text-neutral-800 mb-2">定位</h3>
+                <div className={`text-neutral-600 text-sm leading-relaxed ${expandedSections.positioning ? '' : 'line-clamp-3'}`}>
+                  <p>梧桐·鸿鹄人工智能应用创新大赛致力于打造一个面向未来的人工智能应用创新与人才孵化平台。我们以"以赛促学、以赛促用、以赛促创"为理念，推动人工智能技术在实际场景中的应用落地，培养和发掘优秀的AI人才。</p>
+                </div>
                 <button 
                   onClick={() => toggleSection('positioning')}
-                  className="md:hidden text-sm text-primary flex items-center gap-1"
+                  className="mt-2 text-sm text-primary font-medium"
                 >
-                  {expandedSections.positioning ? '收起' : '展开'}
-                  <svg className={`w-4 h-4 transition-transform ${expandedSections.positioning ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                  {expandedSections.positioning ? '收起内容' : '展开更多'}
                 </button>
               </div>
-              <div className={`${expandedSections.positioning ? '' : 'hidden md:block'} text-neutral-600 text-sm`}>
-                <p className="leading-relaxed line-clamp-3 md:line-clamp-none">
-                  梧桐·鸿鹄人工智能应用创新大赛致力于打造一个面向未来的人工智能应用创新与人才孵化平台。我们以"以赛促学、以赛促用、以赛促创"为理念，推动人工智能技术在实际场景中的应用落地，培养和发掘优秀的AI人才。
-                </p>
+            </div>
+          </div>
+
+          {/* 愿景卡片 - 手机端独立卡片 */}
+          <div className="md:hidden bg-white rounded-xl border border-neutral-200 p-4 mb-4">
+            <div className="flex items-start gap-3">
+              <div className="w-1 h-6 bg-gradient-to-b from-cyan-500 to-cyan-400 rounded-full flex-shrink-0 mt-0.5"></div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-semibold text-neutral-800 mb-2">愿景</h3>
+                <div className={`text-neutral-600 text-sm leading-relaxed ${expandedSections.vision ? '' : 'line-clamp-3'}`}>
+                  <p>大赛聚焦人工智能应用创新，强调场景驱动和产学研协同，旨在搭建一个连接高校、企业和研究机构的桥梁，促进AI技术与产业需求的深度融合，为人工智能行业的可持续发展注入新动力。</p>
+                </div>
+                <button 
+                  onClick={() => toggleSection('vision')}
+                  className="mt-2 text-sm text-primary font-medium"
+                >
+                  {expandedSections.vision ? '收起内容' : '展开更多'}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* 桌面端双列布局 */}
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-12">
+            <div className="bg-neutral-50/50 rounded-2xl border border-neutral-200/60 p-4 md:p-8">
+              <div className="relative pl-4 md:pl-5">
+                <div className="absolute left-0 top-1 w-1 h-4 md:h-5 bg-gradient-to-b from-violet-500 to-violet-400 rounded-full"></div>
+                <h3 className="text-base md:text-lg font-semibold text-neutral-800 mb-2">定位</h3>
+                <div className="text-neutral-600 text-sm">
+                  <p className="leading-relaxed">
+                    梧桐·鸿鹄人工智能应用创新大赛致力于打造一个面向未来的人工智能应用创新与人才孵化平台。我们以"以赛促学、以赛促用、以赛促创"为理念，推动人工智能技术在实际场景中的应用落地，培养和发掘优秀的AI人才。
+                  </p>
+                </div>
               </div>
             </div>
             
-            <div className="relative pl-4 md:pl-5 md:border-l md:border-neutral-200 md:pl-8">
-              <div className="absolute left-0 top-1 w-1 h-4 md:h-5 bg-gradient-to-b from-cyan-500 to-cyan-400 rounded-full"></div>
-              <div className="flex items-center justify-between md:block mb-2">
-                <h3 className="text-base md:text-lg font-semibold text-neutral-800">愿景</h3>
-                <button 
-                  onClick={() => toggleSection('vision')}
-                  className="md:hidden text-sm text-primary flex items-center gap-1"
-                >
-                  {expandedSections.vision ? '收起' : '展开'}
-                  <svg className={`w-4 h-4 transition-transform ${expandedSections.vision ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              </div>
-              <div className={`${expandedSections.vision ? '' : 'hidden md:block'} text-neutral-600 text-sm`}>
-                <p className="leading-relaxed line-clamp-3 md:line-clamp-none">
-                  大赛聚焦人工智能应用创新，强调场景驱动和产学研协同，旨在搭建一个连接高校、企业和研究机构的桥梁，促进AI技术与产业需求的深度融合，为人工智能行业的可持续发展注入新动力。
-                </p>
+            <div className="bg-neutral-50/50 rounded-2xl border border-neutral-200/60 p-4 md:p-8">
+              <div className="relative pl-4 md:pl-5 md:border-l md:border-neutral-200 md:pl-8">
+                <div className="absolute left-0 top-1 w-1 h-4 md:h-5 bg-gradient-to-b from-cyan-500 to-cyan-400 rounded-full"></div>
+                <h3 className="text-base md:text-lg font-semibold text-neutral-800 mb-2">愿景</h3>
+                <div className="text-neutral-600 text-sm">
+                  <p className="leading-relaxed">
+                    大赛聚焦人工智能应用创新，强调场景驱动和产学研协同，旨在搭建一个连接高校、企业和研究机构的桥梁，促进AI技术与产业需求的深度融合，为人工智能行业的可持续发展注入新动力。
+                  </p>
+                </div>
               </div>
             </div>
           </div>

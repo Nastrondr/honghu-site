@@ -1,0 +1,786 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== 用户相关 ====================
+
+model User {
+  id              String    @id @default(uuid())
+  username        String    @unique
+  email           String    @unique
+  phone           String?   @unique
+  passwordHash    String    @map("password_hash")
+  primaryRole     String    @default("guest") @map("primary_role")
+  currentRole     String    @default("guest") @map("current_role")
+  status          String    @default("active")
+  emailVerified   Boolean   @default(false) @map("email_verified")
+  phoneVerified   Boolean   @default(false) @map("phone_verified")
+  lastLoginAt     DateTime? @map("last_login_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  profile         UserProfile?
+  userRoles       UserRole[]
+  identities      UserIdentity[]
+  enrollments     Enrollment[]
+  enrollmentReviews EnrollmentReview[]
+  teamLeader      Team[]        @relation("TeamLeader")
+  teamMemberships TeamMember[]
+  invitations     TeamInvitation[] @relation("InvitationInviter")
+  invitedTo      TeamInvitation[] @relation("InvitationInvitee")
+  works           Work[]
+  reviewAssignments ReviewAssignment[]
+  reviewRecords   ReviewRecord[]
+  news            News[]        @relation("NewsCreator")
+  auditLogs       AuditLog[]
+  notifications   Notification[]
+  enterpriseApplications  EnterpriseApplication[]
+  eventApplications       EventApplication[]
+
+  @@map("users")
+}
+
+model UserProfile {
+  id            String   @id @default(uuid())
+  userId        String   @unique @map("user_id")
+  realName      String?  @map("real_name")
+  idCard        String?  @map("id_card")
+  gender        String?
+  birthDate     DateTime? @map("birth_date")
+  avatarUrl     String?  @map("avatar_url")
+  bio           String?
+  education     String?
+  school        String?
+  major         String?
+  grade         String?
+  company       String?
+  position      String?
+  industry      String?
+  location      String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model UserRole {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  role        String
+  roleName    String    @map("role_name")
+  status      String    @default("active")
+  grantedBy   String?   @map("granted_by")
+  expiresAt   DateTime? @map("expires_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+  @@map("user_roles")
+}
+
+model UserIdentity {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  identityType    String    @map("identity_type")
+  identityData    Json?     @map("identity_data")
+  status          String    @default("pending")
+  verifiedAt      DateTime? @map("verified_at")
+  expiresAt       DateTime? @map("expires_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, identityType])
+  @@index([userId])
+  @@index([identityType, status])
+  @@map("user_identities")
+}
+
+// ==================== 赛事与赛道 ====================
+
+model Competition {
+  id                    String    @id @default(uuid())
+  name                  String
+  slug                  String    @unique
+  description           String?
+  posterUrl             String?   @map("poster_url")
+  ruleUrl               String?   @map("rule_url")
+  status                String    @default("draft")
+  registrationStart     DateTime? @map("registration_start")
+  registrationEnd       DateTime? @map("registration_end")
+  competitionStart      DateTime? @map("competition_start")
+  competitionEnd        DateTime? @map("competition_end")
+  maxTeamSize           Int       @default(5) @map("max_team_size")
+  maxTeamsPerTrack      Int?      @map("max_teams_per_track")
+  isPublic              Boolean   @default(true) @map("is_public")
+  isFeatured           Boolean   @default(false) @map("is_featured")
+  createdBy             String?   @map("created_by")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  tracks                Track[]
+  enrollments           Enrollment[]
+  teams                 Team[]
+  works                 Work[]
+  reviewRounds          ReviewRound[]
+  resources             Resource[]
+  eventApplications     EventApplication[]
+
+  stages             CompetitionStage[]
+  reviewTemplates    ReviewTemplate[]
+  awards            Award[]
+
+  @@index([status])
+  @@index([isPublic])
+  @@map("competitions")
+}
+
+model CompetitionStage {
+  id              String    @id @default(uuid())
+  competitionId   String    @map("competition_id")
+  stageType       String    @map("stage_type")
+  stageName       String    @map("stage_name")
+  stageOrder      Int       @map("stage_order")
+  startTime       DateTime? @map("start_time")
+  endTime         DateTime? @map("end_time")
+  description     String?
+  isActive        Boolean   @default(false) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  competition     Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+
+  @@index([competitionId])
+  @@map("competition_stages")
+}
+
+model Track {
+  id                    String    @id @default(uuid())
+  competitionId         String    @map("competition_id")
+  name                  String
+  slug                  String?
+  description           String?
+  coverUrl              String?   @map("cover_url")
+  color                 String?
+  maxTeams              Int?      @map("max_teams")
+  minTeamSize           Int       @default(1) @map("min_team_size")
+  maxTeamSize           Int       @default(5) @map("max_team_size")
+  status                String    @default("draft")
+  registrationStart     DateTime? @map("registration_start")
+  registrationEnd       DateTime? @map("registration_end")
+  rulesUrl              String?   @map("rules_url")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  competition           Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  enrollments           Enrollment[]
+  teams                 Team[]
+  works                 Work[]
+  resources             Resource[]
+  reviewRounds          ReviewRound[]
+
+  @@unique([competitionId, slug])
+  @@index([competitionId])
+  @@map("tracks")
+}
+
+// ==================== 报名与团队 ====================
+
+model Enrollment {
+  id                  String    @id @default(uuid())
+  competitionId       String    @map("competition_id")
+  trackId             String    @map("track_id")
+  userId              String    @map("user_id")
+  teamId              String?   @map("team_id")
+  enrollmentType      String    @default("individual") @map("enrollment_type")
+  status              String    @default("draft")
+  reviewRound         Int       @default(1) @map("review_round")
+  submittedAt         DateTime? @map("submitted_at")
+  reviewedBy          String?   @map("reviewed_by")
+  reviewedAt          DateTime? @map("reviewed_at")
+  reviewComment       String?   @map("review_comment")
+  contactPhone        String?   @map("contact_phone")
+  contactEmail        String?   @map("contact_email")
+  extraData           Json?     @map("extra_data")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  competition         Competition @relation(fields: [competitionId], references: [id])
+  track               Track       @relation(fields: [trackId], references: [id])
+  user                User        @relation(fields: [userId], references: [id])
+  team                Team?       @relation(fields: [teamId], references: [id])
+  reviewHistory       EnrollmentReview[]
+
+  @@unique([userId, competitionId])
+  @@index([competitionId])
+  @@index([trackId])
+  @@index([status])
+  @@map("enrollments")
+}
+
+model EnrollmentReview {
+  id            String    @id @default(uuid())
+  enrollmentId  String    @map("enrollment_id")
+  round         Int
+  status        String
+  reviewerId    String?   @map("reviewer_id")
+  comment       String?
+  reviewedAt    DateTime? @map("reviewed_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  enrollment    Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  reviewer      User?      @relation(fields: [reviewerId], references: [id])
+
+  @@index([enrollmentId])
+  @@map("enrollment_reviews")
+}
+
+model Team {
+  id                String    @id @default(uuid())
+  competitionId     String    @map("competition_id")
+  trackId           String    @map("track_id")
+  name              String
+  avatarUrl         String?   @map("avatar_url")
+  description       String?
+  status            String    @default("forming")
+  leaderId          String    @map("leader_id")
+  inviteCode        String?   @unique @map("invite_code")
+  maxMembers        Int       @default(5) @map("max_members")
+  requireApproval   Boolean   @default(true) @map("require_approval")
+  isLocked          Boolean   @default(false) @map("is_locked")
+  lockedAt          DateTime? @map("locked_at")
+  dissolvedAt       DateTime? @map("dissolved_at")
+  dissolvedReason   String?   @map("dissolved_reason")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  competition       Competition @relation(fields: [competitionId], references: [id])
+  track             Track       @relation(fields: [trackId], references: [id])
+  leader            User        @relation("TeamLeader", fields: [leaderId], references: [id])
+  members           TeamMember[]
+  invitations       TeamInvitation[]
+  works             Work[]
+  enrollments       Enrollment[]
+
+  @@index([competitionId])
+  @@index([leaderId])
+  @@map("teams")
+}
+
+model TeamMember {
+  id            String    @id @default(uuid())
+  teamId        String    @map("team_id")
+  userId        String    @map("user_id")
+  role          String    @default("member")
+  memberStatus  String    @default("pending") @map("member_status")
+  joinedAt      DateTime? @map("joined_at")
+  leftAt         DateTime? @map("left_at")
+  leftReason    String?   @map("left_reason")
+  contribution  String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  team          Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, teamId])
+  @@index([teamId])
+  @@map("team_members")
+}
+
+model TeamInvitation {
+  id              String    @id @default(uuid())
+  teamId          String    @map("team_id")
+  inviterId       String    @map("inviter_id")
+  inviteeId       String?   @map("invitee_id")
+  inviteeEmail    String?   @map("invitee_email")
+  inviteCode      String?   @map("invite_code")
+  role            String    @default("member")
+  status          String    @default("pending")
+  expiresAt       DateTime? @map("expires_at")
+  respondedAt     DateTime? @map("responded_at")
+  responseComment String?   @map("response_comment")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  team            Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  inviter         User      @relation("InvitationInviter", fields: [inviterId], references: [id])
+  invitee         User?     @relation("InvitationInvitee", fields: [inviteeId], references: [id])
+
+  @@index([teamId])
+  @@index([inviteeId])
+  @@map("team_invitations")
+}
+
+// ==================== 资源 ====================
+
+model Resource {
+  id              String    @id @default(uuid())
+  competitionId   String    @map("competition_id")
+  trackId         String?   @map("track_id")
+  resourceType    String    @map("resource_type")
+  name            String
+  description     String?
+  fileUrl         String?   @map("file_url")
+  fileSize        BigInt?   @map("file_size")
+  fileType        String?   @map("file_type")
+  accessLevel     String    @default("contestant") @map("access_level")
+  isActive        Boolean   @default(true) @map("is_active")
+  downloadCount   Int       @default(0) @map("download_count")
+  createdBy       String?   @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  competition     Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  track          Track?       @relation(fields: [trackId], references: [id])
+
+  @@index([competitionId])
+  @@index([trackId])
+  @@map("resources")
+}
+
+// ==================== 作品 ====================
+
+model Work {
+  id                  String    @id @default(uuid())
+  competitionId       String    @map("competition_id")
+  trackId             String    @map("track_id")
+  teamId              String    @map("team_id")
+  title               String
+  slug                String?
+  description         String?
+  coverUrl            String?   @map("cover_url")
+  demoUrl             String?   @map("demo_url")
+  repoUrl             String?   @map("repo_url")
+  status              String    @default("draft")
+  isFinal             Boolean   @default(false) @map("is_final")
+  currentVersionId    String?   @map("current_version_id")
+  submissionRound     Int?      @map("submission_round")
+  submittedAt         DateTime? @map("submitted_at")
+  reviewedAt          DateTime? @map("reviewed_at")
+  totalScore          Decimal?  @map("total_score")
+  rank                Int?
+  awardId             String?   @map("award_id")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  competition         Competition @relation(fields: [competitionId], references: [id])
+  track               Track       @relation(fields: [trackId], references: [id])
+  team                Team        @relation(fields: [teamId], references: [id], map: "works_team_fkey")
+  user                User        @relation(fields: [teamId], references: [id], map: "works_user_fkey")
+  versions            WorkVersion[]
+  attachments         WorkAttachment[]
+  reviewAssignments   ReviewAssignment[]
+  reviewRecords       ReviewRecord[]
+  award               Award?      @relation(fields: [awardId], references: [id])
+
+  @@unique([teamId, competitionId])
+  @@index([competitionId])
+  @@index([trackId])
+  @@map("works")
+}
+
+model WorkVersion {
+  id            String    @id @default(uuid())
+  workId        String    @map("work_id")
+  versionNumber Int       @map("version_number")
+  title         String?
+  description   String?
+  content       String?
+  demoUrl       String?   @map("demo_url")
+  repoUrl       String?   @map("repo_url")
+  isFinal       Boolean   @default(false) @map("is_final")
+  isCurrent     Boolean   @default(false) @map("is_current")
+  submittedAt   DateTime? @map("submitted_at")
+  submittedBy  String?   @map("submitted_by")
+  score         Decimal?  @map("score")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  work          Work      @relation(fields: [workId], references: [id], onDelete: Cascade)
+  attachments   WorkAttachment[]
+
+  @@unique([workId, versionNumber])
+  @@index([workId])
+  @@map("work_versions")
+}
+
+model WorkAttachment {
+  id            String    @id @default(uuid())
+  workId        String    @map("work_id")
+  versionId     String    @map("version_id")
+  fileName      String    @map("file_name")
+  fileUrl       String    @map("file_url")
+  fileSize      BigInt?   @map("file_size")
+  fileType      String?   @map("file_type")
+  fileCategory  String?   @map("file_category")
+  displayOrder  Int       @default(0) @map("display_order")
+  uploadedBy    String?   @map("uploaded_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  work           Work        @relation(fields: [workId], references: [id], onDelete: Cascade)
+  version        WorkVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+
+  @@index([workId])
+  @@index([versionId])
+  @@map("work_attachments")
+}
+
+// ==================== 评审 ====================
+
+model ReviewTemplate {
+  id              String    @id @default(uuid())
+  competitionId   String    @map("competition_id")
+  trackId         String?   @map("track_id")
+  templateName    String    @map("template_name")
+  description     String?
+  totalScore      Decimal   @default(100) @map("total_score")
+  isActive        Boolean   @default(true) @map("is_active")
+  createdBy       String?   @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  competition     Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  criteria       ReviewCriterion[]
+  reviewRounds   ReviewRound[]
+
+  @@index([competitionId])
+  @@map("review_templates")
+}
+
+model ReviewCriterion {
+  id            String    @id @default(uuid())
+  templateId    String    @map("template_id")
+  criterionName String    @map("criterion_name")
+  description   String?
+  maxScore      Decimal   @map("max_score")
+  weight        Decimal   @default(1) @map("weight")
+  scoringGuide  String?   @map("scoring_guide")
+  displayOrder  Int       @default(0) @map("display_order")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  template      ReviewTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  scores        ReviewScoreDetail[]
+
+  @@index([templateId])
+  @@map("review_criteria")
+}
+
+model ReviewRound {
+  id                String    @id @default(uuid())
+  competitionId     String    @map("competition_id")
+  trackId           String?   @map("track_id")
+  roundName         String    @map("round_name")
+  roundType         String    @map("round_type")
+  roundOrder        Int       @map("round_order")
+  templateId        String    @map("template_id")
+  workFilterSql     String?   @map("work_filter_sql")
+  minScoreThreshold Decimal?  @map("min_score_threshold")
+  passingCount      Int?      @map("passing_count")
+  status            String    @default("pending")
+  startTime         DateTime? @map("start_time")
+  endTime           DateTime? @map("end_time")
+  createdBy         String?   @map("created_by")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  competition       Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  track            Track?       @relation(fields: [trackId], references: [id])
+  template          ReviewTemplate @relation(fields: [templateId], references: [id])
+  assignments       ReviewAssignment[]
+  records           ReviewRecord[]
+
+  @@index([competitionId])
+  @@map("review_rounds")
+}
+
+model ReviewAssignment {
+  id              String    @id @default(uuid())
+  roundId         String    @map("round_id")
+  workId          String    @map("work_id")
+  reviewerId      String    @map("reviewer_id")
+  assignmentType  String    @default("auto") @map("assignment_type")
+  status          String    @default("assigned")
+  assignedBy      String?   @map("assigned_by")
+  assignedAt      DateTime  @default(now()) @map("assigned_at")
+  dueDate         DateTime? @map("due_date")
+  completedAt     DateTime? @map("completed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  round            ReviewRound @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  work             Work        @relation(fields: [workId], references: [id])
+  reviewer         User        @relation(fields: [reviewerId], references: [id])
+  record           ReviewRecord?
+
+  @@unique([workId, roundId, reviewerId])
+  @@index([roundId])
+  @@index([reviewerId])
+  @@map("review_assignments")
+}
+
+model ReviewRecord {
+  id              String    @id @default(uuid())
+  assignmentId    String    @unique @map("assignment_id")
+  roundId         String    @map("round_id")
+  workId          String    @map("work_id")
+  reviewerId      String    @map("reviewer_id")
+  overallScore    Decimal?  @map("overall_score")
+  overallComment  String?   @map("overall_comment")
+  recommendation  String?
+  status          String    @default("draft")
+  submittedAt     DateTime? @map("submitted_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  assignment      ReviewAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  round           ReviewRound      @relation(fields: [roundId], references: [id])
+  work            Work             @relation(fields: [workId], references: [id])
+  reviewer        User             @relation(fields: [reviewerId], references: [id])
+  scores          ReviewScoreDetail[]
+
+  @@index([roundId])
+  @@index([workId])
+  @@map("review_records")
+}
+
+model ReviewScoreDetail {
+  id              String    @id @default(uuid())
+  reviewRecordId  String    @map("review_record_id")
+  criterionId     String    @map("criterion_id")
+  score           Decimal?
+  comment         String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  reviewRecord    ReviewRecord  @relation(fields: [reviewRecordId], references: [id], onDelete: Cascade)
+  criterion       ReviewCriterion @relation(fields: [criterionId], references: [id])
+
+  @@unique([reviewRecordId, criterionId])
+  @@map("review_score_details")
+}
+
+model Award {
+  id                String    @id @default(uuid())
+  competitionId     String    @map("competition_id")
+  trackId           String?   @map("track_id")
+  awardName         String    @map("award_name")
+  awardLevel        String    @map("award_level")
+  awardDescription  String?   @map("award_description")
+  prizeAmount       Decimal?  @map("prize_amount")
+  prizeDetail       String?   @map("prize_detail")
+  displayOrder      Int       @default(0) @map("display_order")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  competition       Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  works             Work[]
+
+  @@index([competitionId])
+  @@map("awards")
+}
+
+// ==================== CMS ====================
+
+model News {
+  id            String    @id @default(uuid())
+  title         String
+  slug          String    @unique
+  summary       String?
+  content       String
+  coverUrl      String?   @map("cover_url")
+  newsType      String    @default("news") @map("news_type")
+  tags          String?
+  isPublished   Boolean   @default(false) @map("is_published")
+  isFeatured    Boolean   @default(false) @map("is_featured")
+  publishedAt   DateTime? @map("published_at")
+  viewCount     Int       @default(0) @map("view_count")
+  createdBy     String?   @map("created_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  creator       User?     @relation("NewsCreator", fields: [createdBy], references: [id])
+
+  @@index([slug])
+  @@index([newsType])
+  @@index([publishedAt])
+  @@map("news")
+}
+
+model Expert {
+  id            String    @id @default(uuid())
+  name          String
+  avatarUrl     String?   @map("avatar_url")
+  title         String?
+  organization  String?
+  bio           String?
+  expertise     String?
+  isPublished   Boolean   @default(false) @map("is_published")
+  displayOrder  Int       @default(0) @map("display_order")
+  createdBy     String?   @map("created_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([isPublished])
+  @@map("experts")
+}
+
+model Partner {
+  id              String    @id @default(uuid())
+  name            String
+  logoUrl         String?   @map("logo_url")
+  websiteUrl      String?   @map("website_url")
+  partnerType     String    @default("joint") @map("partner_type")
+  description     String?
+  isPublished     Boolean   @default(false) @map("is_published")
+  displayOrder    Int       @default(0) @map("display_order")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([partnerType])
+  @@map("partners")
+}
+
+// ==================== 企业与办赛申请 ====================
+
+model EnterpriseApplication {
+  id                      String    @id @default(uuid())
+  userId                  String    @map("user_id")
+  companyName             String    @map("company_name")
+  unifiedCreditCode       String?   @map("unified_credit_code")
+  legalRepresentative     String?   @map("legal_representative")
+  contactName            String    @map("contact_name")
+  contactPhone           String    @map("contact_phone")
+  contactEmail           String    @map("contact_email")
+  companyScale           String?   @map("company_scale")
+  industry               String?   @map("industry")
+  businessLicenseUrl     String?   @map("business_license_url")
+  proposalTitle          String    @map("proposal_title")
+  proposalContent        String    @map("proposal_content")
+  proposalFileUrl        String?   @map("proposal_file_url")
+  status                  String    @default("draft")
+  currentRound           Int       @default(1) @map("current_round")
+  reviewer1Id            String?   @map("reviewer_1_id")
+  reviewer1Result        String?   @map("reviewer_1_result")
+  reviewer1Comment       String?   @map("reviewer_1_comment")
+  reviewer2Id            String?   @map("reviewer_2_id")
+  reviewer2Result        String?   @map("reviewer_2_result")
+  reviewer2Comment       String?   @map("reviewer_2_comment")
+  approvedAt             DateTime? @map("approved_at")
+  expiresAt              DateTime? @map("expires_at")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+
+  user                   User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@map("enterprise_applications")
+}
+
+model EventApplication {
+  id                    String    @id @default(uuid())
+  userId                String    @map("user_id")
+  competitionId          String?   @map("competition_id")
+  applicantType         String    @map("applicant_type")
+  organizationName      String    @map("organization_name")
+  organizationCode      String?   @map("organization_code")
+  licenseUrl            String?   @map("license_url")
+  contactName           String    @map("contact_name")
+  contactPhone          String    @map("contact_phone")
+  contactEmail          String    @map("contact_email")
+  proposalTitle         String    @map("proposal_title")
+  proposalContent       String    @map("proposal_content")
+  proposalFileUrl       String?   @map("proposal_file_url")
+  plannedLocation       String?   @map("planned_location")
+  plannedScale          Int?      @map("planned_scale")
+  resourceCommitment    String?   @map("resource_commitment")
+  status                String    @default("draft")
+  currentRound          Int       @default(1) @map("current_round")
+  reviewer1Id            String?   @map("reviewer_1_id")
+  reviewer1Result        String?   @map("reviewer_1_result")
+  reviewer1Comment       String?   @map("reviewer_1_comment")
+  reviewer2Id            String?   @map("reviewer_2_id")
+  reviewer2Result        String?   @map("reviewer_2_result")
+  reviewer2Comment       String?   @map("reviewer_2_comment")
+  approvedAt            DateTime? @map("approved_at")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  user                  User       @relation(fields: [userId], references: [id])
+  competition           Competition? @relation(fields: [competitionId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@map("event_applications")
+}
+
+// ==================== 通知与审计 ====================
+
+model Notification {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  type        String
+  title       String
+  content     String?
+  linkType    String?   @map("link_type")
+  linkId      String?   @map("link_id")
+  isRead      Boolean   @default(false) @map("is_read")
+  readAt      DateTime? @map("read_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id            String    @id @default(uuid())
+  userId        String?   @map("user_id")
+  action        String
+  resourceType  String    @map("resource_type")
+  resourceId    String?   @map("resource_id")
+  oldValue      Json?     @map("old_value")
+  newValue      Json?     @map("new_value")
+  description   String?
+  ipAddress     String?   @map("ip_address")
+  userAgent     String?   @map("user_agent")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  user          User?     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([resourceType, resourceId])
+  @@map("audit_logs")
+}
+
+// ==================== 系统配置 ====================
+
+model SystemConfig {
+  id            String    @id @default(uuid())
+  configKey     String    @unique @map("config_key")
+  configValue   String?   @map("config_value")
+  configType    String    @default("string") @map("config_type")
+  configGroup   String?   @map("config_group")
+  description   String?
+  isPublic      Boolean   @default(false) @map("is_public")
+  createdBy     String?   @map("created_by")
+  updatedBy     String?   @map("updated_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([configGroup])
+  @@map("system_configs")
+}
