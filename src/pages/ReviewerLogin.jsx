@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Star, Settings } from 'lucide-react';
-
-// TODO: 接入专家评审登录接口
-// TODO: 接入评审权限校验
+import { useAuth } from '../context/AuthContext';
+import { request } from '../lib/api';
 
 const ReviewerLogin = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +13,7 @@ const ReviewerLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,32 +29,43 @@ const ReviewerLogin = () => {
     setError('');
     setIsLoading(true);
 
-    // TODO: 接入真实评审登录接口
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      // 调用真实登录接口
+      const result = await request('/v1/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: formData.account,
+          password: formData.password
+        })
+      });
 
-    // mock 验证
-    if (formData.account && formData.password) {
-      console.log('评审专家登录成功:', formData.account);
-      
-      // 存储评审专家登录状态和角色信息
-      const reviewerInfo = {
-        name: formData.account,
-        role: 'reviewer',
-        email: formData.account + '@honghu-ai.com'
-      };
-      localStorage.setItem('reviewer_token', 'mock_token_' + Date.now());
-      localStorage.setItem('reviewer_info', JSON.stringify(reviewerInfo));
-      
-      // 同时设置到 AuthContext 使用的格式，以便弹窗组件能识别
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('user', JSON.stringify(reviewerInfo));
-      
-      navigate('/reviewer/dashboard');
-    } else {
-      setError('请输入评审账号和密码');
+      if (result.ok && result.data.code === 0) {
+        const userData = result.data.data;
+        
+        // 检查用户是否有 reviewer 角色
+        const roles = userData.user?.roles || userData.roles || [];
+        const hasReviewerRole = roles.includes('reviewer') || 
+                                userData.user?.primaryRole === 'reviewer' || 
+                                userData.user?.currentRole === 'reviewer';
+        if (!hasReviewerRole) {
+          setError('该账号没有评审权限');
+          setIsLoading(false);
+          return;
+        }
+
+        // 存储 token 和用户信息
+        localStorage.setItem('accessToken', userData.accessToken);
+        login(userData);
+        
+        navigate('/reviewer/dashboard');
+      } else {
+        setError(result.data.message || '登录失败，请检查账号密码');
+      }
+    } catch (err) {
+      setError('网络错误，请重试');
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   // 统一颜色配置 - 专家评审登录：柔和橙色主题（高级克制）
@@ -110,18 +121,18 @@ const ReviewerLogin = () => {
               {/* 评审账号 - 统一高度48px，圆角12px */}
               <div>
                 <label htmlFor="account" className="block text-sm font-medium text-gray-700 mb-2">
-                  评审账号
+                  评审账号（邮箱）
                 </label>
                 <div className="relative">
                   <input
-                    type="text"
+                    type="email"
                     id="account"
                     name="account"
                     value={formData.account}
                     onChange={handleChange}
                     required
                     className={`w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white ${theme.focusBorder} ${theme.focusRing} transition-all duration-200`}
-                    placeholder="请输入评审账号"
+                    placeholder="请输入评审账号邮箱"
                   />
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                     <Star className="w-5 h-5 text-gray-400" />

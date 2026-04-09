@@ -19,7 +19,12 @@ import ReviewerLogin from './pages/ReviewerLogin';
 import TeamHall from './pages/TeamHall';
 import CompetitionData from './pages/CompetitionData';
 import WorkSubmission from './pages/WorkSubmission';
+import ApiDebug from './pages/ApiDebug';
 import Dashboard from './pages/Dashboard';
+import MyWorks from './pages/MyWorks';
+import WorkDetail from './pages/WorkDetail';
+import Notifications from './pages/Notifications';
+import CompetitionResults from './pages/CompetitionResults';
 import Experts from './pages/Experts';
 import EcoProducts from './pages/EcoProducts';
 import ComputeAccount from './pages/ComputeAccount';
@@ -80,6 +85,11 @@ const FrontendRoutes = () => {
         <Route path="/competition-data" element={<CompetitionData />} />
         <Route path="/work-submission" element={<WorkSubmission />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/works/:id" element={<WorkDetail />} />
+        <Route path="/my-works" element={<MyWorks />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/competitions/:id/results" element={<CompetitionResults />} />
+        <Route path="/api-debug" element={<ApiDebug />} />
       </Routes>
     </PageTransition>
   );

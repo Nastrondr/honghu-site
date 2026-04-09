@@ -1,9 +1,46 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { request } from '../lib/api';
 
 const WorkSubmission = () => {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  const [checkLoading, setCheckLoading] = useState(true);
+  const [checkError, setCheckError] = useState('');
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setCheckLoading(false);
+      return;
+    }
+
+    const checkUserWorks = async () => {
+      setCheckLoading(true);
+      setCheckError('');
+
+      try {
+        const result = await request('/v1/works/my');
+        if (result.ok && result.data.code === 0) {
+          const works = result.data.data?.list || [];
+          if (works.length > 0) {
+            navigate(`/works/${works[0].id}`, { replace: true });
+            return;
+          } else {
+            navigate('/my-works', { replace: true });
+            return;
+          }
+        }
+      } catch (err) {
+        // 继续显示表单
+      } finally {
+        setCheckLoading(false);
+      }
+    };
+
+    checkUserWorks();
+  }, [isAuthenticated]);
 
   // 作品状态控制 - draft / submitted / under_review / reviewed / awarded
   const [workStatus, setWorkStatus] = useState('draft');
@@ -80,24 +117,28 @@ const WorkSubmission = () => {
       progress += Math.random() * 30;
       if (progress >= 100) {
         progress = 100;
-        setUploadProgress(100);
+        clearInterval(interval);
+        setIsUploading(false);
 
-        // 上传完成后添加文件到列表
+        // 模拟上传完成
         const newFiles = files.map(file => ({
-          id: Date.now() + Math.random(),
           name: file.name,
-          size: formatFileSize(file.size),
-          type: file.type
+          size: file.size,
+          type: file.type || 'application/octet-stream',
+          uploadTime: new Date().toLocaleString('zh-CN')
         }));
 
         setUploadedFiles(prev => [...prev, ...newFiles]);
-        setIsUploading(false);
-        clearInterval(interval);
-        showToast(`${files.length}个文件上传成功`);
-      } else {
-        setUploadProgress(Math.min(progress, 99));
+        showToast(`${files.length} 个文件上传成功`);
       }
-    }, 300);
+      setUploadProgress(Math.min(progress, 100));
+    }, 200);
+  };
+
+  // 移除文件
+  const handleRemoveFile = (index) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+    showToast('文件已移除');
   };
 
   // 格式化文件大小
@@ -107,122 +148,54 @@ const WorkSubmission = () => {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
-  // 删除文件
-  const handleRemoveFile = (fileId) => {
-    setUploadedFiles(prev => prev.filter(f => f.id !== fileId));
-    showToast('文件已删除');
+  // 处理表单输入
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   // 提交作品
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     if (!isAuthenticated) {
       showToast('请先登录', 'error');
       return;
     }
-    // 显示确认弹窗
+    if (!formData.title.trim()) {
+      showToast('请填写作品标题', 'error');
+      return;
+    }
     setShowConfirmModal(true);
   };
 
   // 确认提交
-  const handleConfirmSubmit = () => {
-    // TODO: 接入作品接口 - 调用提交作品API
+  const confirmSubmit = () => {
     setWorkStatus('submitted');
-    // 添加新提交记录
-    const newSubmission = {
-      version: currentVersion,
-      submitTime: new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/\//g, '-'),
-      status: '已提交',
-      isFinal: true
-    };
-    // 将之前的最终版本标记为非最终
-    setSubmissions(prev => prev.map(s => ({ ...s, isFinal: false })));
-    setSubmissions(prev => [...prev, newSubmission]);
-    setFinalVersion(currentVersion);
     setShowConfirmModal(false);
     showToast('作品提交成功');
   };
 
-  // 新建版本
-  const handleNewVersion = () => {
-    // 解析当前版本号
-    const versionParts = currentVersion.split('.');
-    const major = versionParts[0];
-    const minor = parseInt(versionParts[1]) + 1;
-    const newVersion = `${major}.${minor}`;
-
-    setCurrentVersion(newVersion);
-    setWorkStatus('draft');
-    // 清空表单
-    setFormData({
-      title: '',
-      description: '',
-      fileUrl: '',
-      aiTools: '',
-      computeUsage: ''
-    });
-    // 清空已上传文件
-    setUploadedFiles([]);
-    showToast(`已创建新版本 ${newVersion}`);
+  // 删除提交记录
+  const handleDeleteSubmission = (index) => {
+    const updated = submissions.filter((_, i) => i !== index);
+    setSubmissions(updated);
+    showToast('提交记录已删除');
   };
 
-  // 获取状态颜色
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'draft':
-        return 'bg-blue-100 text-blue-800';
-      case 'submitted':
-        return 'bg-orange-100 text-orange-800';
-      case 'under_review':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'reviewed':
-        return 'bg-green-100 text-green-800';
-      case 'awarded':
-        return 'bg-purple-100 text-purple-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  // 获取状态文字
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'draft':
-        return '草稿';
-      case 'submitted':
-        return '已提交';
-      case 'under_review':
-        return '评审中';
-      case 'reviewed':
-        return '已评审';
-      case 'awarded':
-        return '已获奖';
-      default:
-        return status;
-    }
-  };
-
-  // 判断表单是否可编辑
-  const isFormEditable = () => {
-    return workStatus === 'draft';
-  };
-
-  // 未登录状态
   if (!isAuthenticated) {
     return (
-      <div className="container mx-auto px-4 py-12 animate-fadeIn">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="bg-white rounded-xl shadow-md p-12">
-            <svg className="w-16 h-16 text-neutral-400 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+      <div className="container mx-auto px-4 py-16 animate-fadeIn">
+        <div className="max-w-lg mx-auto text-center">
+          <div className="bg-white rounded-2xl shadow-md p-12 border border-gray-100">
+            <svg className="w-16 h-16 text-gray-300 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
-            <h2 className="text-2xl font-bold text-neutral-800 mb-4">请先登录</h2>
-            <p className="text-neutral-600 mb-8">登录后可提交作品</p>
-            <div className="flex justify-center gap-4">
-              <Link to="/login" className="bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+            <h2 className="text-2xl font-bold text-gray-800 mb-3">请先登录</h2>
+            <p className="text-gray-500 mb-8">登录后可提交作品</p>
+            <div className="flex justify-center gap-3">
+              <Link to="/login" className="bg-primary text-white px-8 py-3 rounded-xl font-medium hover:bg-primary/90 transition-colors">
                 登录
               </Link>
-              <Link to="/register" className="border border-primary text-primary px-6 py-3 rounded-lg font-medium hover:bg-primary/5 transition-colors">
+              <Link to="/register" className="border border-gray-200 text-gray-600 px-8 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors">
                 注册
               </Link>
             </div>
@@ -232,6 +205,21 @@ const WorkSubmission = () => {
     );
   }
 
+  // Loading 状态
+  if (checkLoading) {
+    return (
+      <div className="container mx-auto px-4 py-16">
+        <div className="text-center">
+          <div className="w-12 h-12 border-3 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-500">检查作品状态...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 有作品的用户会在 useEffect 中通过 navigate 跳走
+  // 继续显示表单（无作品用户）
+
   return (
     <div className="container mx-auto px-4 py-8 animate-fadeIn">
       <div className="max-w-6xl mx-auto">
@@ -239,6 +227,13 @@ const WorkSubmission = () => {
           <h1 className="text-3xl font-bold text-neutral-800 mb-2">作品提交</h1>
           <p className="text-neutral-600">在规定阶段内完成作品提交</p>
         </div>
+
+        {/* Dev 调试区 */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+            <p className="text-sm text-blue-700 font-semibold">开发模式：有作品用户将自动跳转</p>
+          </div>
+        )}
 
         {/* 赛事信息卡片 */}
         <div className="bg-white rounded-xl shadow-md p-6 mb-8">
@@ -253,177 +248,119 @@ const WorkSubmission = () => {
               </div>
             </div>
             <div className="text-right">
-              <p className="text-neutral-500 text-sm mb-1">当前团队</p>
-              <p className="text-lg font-semibold text-neutral-800">AI创新先锋队</p>
-            </div>
-          </div>
-        </div>
-
-        {/* 作品状态提示区域 */}
-        {workStatus === 'submitted' && (
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <svg className="w-6 h-6 text-orange-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-.633-1.964-.633-2.732 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <p className="text-orange-700">作品已提交，当前版本已锁定，无法修改</p>
-              </div>
-              <button
-                onClick={handleNewVersion}
-                className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors"
-              >
-                新建版本
-              </button>
-            </div>
-          </div>
-        )}
-
-        {workStatus === 'under_review' && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8">
-            <div className="flex items-center">
-              <svg className="w-6 h-6 text-yellow-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="text-yellow-700">评审中，请耐心等待...</p>
-            </div>
-          </div>
-        )}
-
-        {/* 获奖提示（预留） */}
-        {workStatus === 'awarded' && (
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-8">
-            <div className="flex items-center">
-              <svg className="w-6 h-6 text-purple-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-              </svg>
-              <p className="text-purple-700">恭喜！您的作品在本次大赛中获奖</p>
-            </div>
-          </div>
-        )}
-
-        {/* 提交要求卡片 */}
-        <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-          <h2 className="text-lg font-bold text-neutral-800 mb-4">提交要求</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center p-3 bg-neutral-50 rounded-lg">
-              <svg className="w-5 h-5 text-primary mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-              <span className="text-neutral-700">支持格式：MP4（1080p）、PDF、DOCX</span>
-            </div>
-            <div className="flex items-center p-3 bg-neutral-50 rounded-lg">
-              <svg className="w-5 h-5 text-primary mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="text-neutral-700">时长要求：个人赛3-5分钟，团队赛5-8分钟</span>
-            </div>
-            <div className="flex items-center p-3 bg-neutral-50 rounded-lg">
-              <svg className="w-5 h-5 text-primary mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <span className="text-neutral-700">文字说明：500字以内</span>
-            </div>
-            <div className="flex items-center p-3 bg-neutral-50 rounded-lg">
-              <svg className="w-5 h-5 text-primary mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-              </svg>
-              <span className="text-neutral-700">AI工具说明：需说明使用的AI模型</span>
-            </div>
-            <div className="flex items-center p-3 bg-neutral-50 rounded-lg md:col-span-2">
-              <svg className="w-5 h-5 text-primary mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-              </svg>
-              <span className="text-neutral-700">算力使用记录：需说明使用的算力资源</span>
-            </div>
-          </div>
-        </div>
-
-        {/* 作品表单 */}
-        <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <h2 className="text-lg font-bold text-neutral-800">提交作品</h2>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(workStatus)}`}>
-                {getStatusText(workStatus)}
+              <span className={`inline-block px-4 py-2 rounded-full text-sm font-medium ${
+                workStatus === 'draft' ? 'bg-yellow-100 text-yellow-700' :
+                workStatus === 'submitted' ? 'bg-green-100 text-green-700' :
+                'bg-gray-100 text-gray-700'
+              }`}>
+                {workStatus === 'draft' ? '草稿' :
+                 workStatus === 'submitted' ? '已提交' :
+                 workStatus === 'under_review' ? '评审中' :
+                 workStatus === 'reviewed' ? '已评审' : workStatus}
               </span>
             </div>
-            <span className="text-neutral-500">当前版本：{currentVersion}</span>
           </div>
+        </div>
 
-          <form className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                作品名称 <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => setFormData({...formData, title: e.target.value})}
-                disabled={!isFormEditable()}
-                className={`w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${!isFormEditable() ? 'bg-neutral-50 cursor-not-allowed' : ''}`}
-                placeholder="请输入作品名称"
-                required
-              />
-            </div>
+        {/* Dev 调试区 */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+            <p className="text-sm text-blue-700">
+              <span className="font-semibold">联调模式：</span>当前为无作品用户，显示作品提交表单
+            </p>
+          </div>
+        )}
 
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                作品简介 <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
-                disabled={!isFormEditable()}
-                placeholder="请简要介绍您的作品（500字以内）"
-                rows={4}
-                className={`w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors resize-none ${!isFormEditable() ? 'bg-neutral-50 cursor-not-allowed' : ''}`}
-                required
-              />
-            </div>
-
-            {/* 文件上传区域 */}
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                上传作品文件 / 视频链接 <span className="text-red-500">*</span>
-              </label>
-
-              {/* 上传区域 */}
-              {isFormEditable() ? (
-                <div className="border-2 border-dashed border-neutral-300 rounded-lg p-6 hover:border-primary transition-colors">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* 左侧：作品信息表单 */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* 基本信息 */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h3 className="text-lg font-bold text-neutral-800 mb-4">基本信息</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">作品标题 *</label>
                   <input
-                    type="file"
-                    className="hidden"
-                    id="file-upload"
-                    multiple
-                    onChange={handleFileUpload}
+                    type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    placeholder="请输入作品标题"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                   />
-                  <label htmlFor="file-upload" className="cursor-pointer block">
-                    <div className="flex flex-col items-center justify-center">
-                      <svg className="w-10 h-10 text-neutral-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                      </svg>
-                      <p className="text-neutral-600 mb-1">点击或拖拽文件到此处上传</p>
-                      <p className="text-neutral-400 text-sm">支持 MP4、PDF、DOCX 格式，大小不超过500MB</p>
-                    </div>
-                  </label>
                 </div>
-              ) : (
-                <div className="border-2 border-dashed border-neutral-200 bg-neutral-50 rounded-lg p-6 text-center">
-                  <p className="text-neutral-500">文件已锁定，不可修改</p>
-                </div>
-              )}
 
-              {/* 上传进度条 */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">作品描述 *</label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    rows={4}
+                    placeholder="请详细描述您的作品，包括创新点、技术实现、预期效果等"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">使用的AI工具</label>
+                  <input
+                    type="text"
+                    name="aiTools"
+                    value={formData.aiTools}
+                    onChange={handleInputChange}
+                    placeholder="如：ChatGPT、Midjourney、Stable Diffusion 等"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">算力使用情况</label>
+                  <input
+                    type="text"
+                    name="computeUsage"
+                    value={formData.computeUsage}
+                    onChange={handleInputChange}
+                    placeholder="请描述您的算力使用情况"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 文件上传 */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h3 className="text-lg font-bold text-neutral-800 mb-4">附件上传</h3>
+              <p className="text-sm text-neutral-500 mb-4">支持上传项目源码、架构图、演示视频等文件，请确保文件格式正确（doc/docx/pdf/mp4）</p>
+
+              <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:border-primary/50 transition-colors">
+                <input
+                  type="file"
+                  id="file-upload"
+                  multiple
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  accept=".doc,.docx,.pdf,.mp4"
+                />
+                <label htmlFor="file-upload" className="cursor-pointer">
+                  <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  <p className="text-neutral-600 mb-2">点击或拖拽文件到此区域</p>
+                  <p className="text-sm text-neutral-400">支持 doc、docx、pdf、mp4 格式</p>
+                </label>
+              </div>
+
+              {/* 上传进度 */}
               {isUploading && (
                 <div className="mt-4">
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-neutral-600">上传中...</span>
-                    <span className="text-primary">{Math.round(uploadProgress)}%</span>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-neutral-600">上传中...</span>
+                    <span className="text-sm text-primary">{Math.round(uploadProgress)}%</span>
                   </div>
-                  <div className="w-full bg-neutral-200 rounded-full h-2">
+                  <div className="w-full bg-gray-100 rounded-full h-2">
                     <div
-                      className="bg-primary h-2 rounded-full transition-all duration-300"
+                      className="bg-primary h-2 rounded-full transition-all duration-200"
                       style={{ width: `${uploadProgress}%` }}
                     ></div>
                   </div>
@@ -432,202 +369,180 @@ const WorkSubmission = () => {
 
               {/* 已上传文件列表 */}
               {uploadedFiles.length > 0 && (
-                <div className="mt-4 space-y-2">
+                <div className="mt-6 space-y-3">
                   <h4 className="text-sm font-medium text-neutral-700">已上传文件</h4>
-                  {uploadedFiles.map((file) => (
-                    <div key={file.id} className="flex items-center justify-between bg-neutral-50 rounded-lg p-3">
-                      <div className="flex items-center">
-                        <svg className="w-5 h-5 text-neutral-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  {uploadedFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                         </svg>
-                        <div>
-                          <p className="text-sm text-neutral-700 truncate max-w-[200px]">{file.name}</p>
-                          <p className="text-xs text-neutral-500">{file.size}</p>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-neutral-700 truncate">{file.name}</p>
+                          <p className="text-xs text-neutral-400">{formatFileSize(file.size)}</p>
                         </div>
                       </div>
-                      {isFormEditable() && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveFile(file.id)}
-                          className="text-red-500 hover:text-red-700 p-1"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleRemoveFile(index)}
+                        className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                AI工具说明 <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                value={formData.aiTools}
-                onChange={(e) => setFormData({...formData, aiTools: e.target.value})}
-                disabled={!isFormEditable()}
-                placeholder="请说明作品中使用的AI模型、工具及其作用"
-                rows={3}
-                className={`w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors resize-none ${!isFormEditable() ? 'bg-neutral-50 cursor-not-allowed' : ''}`}
-                required
-              />
+            {/* 操作按钮 */}
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={handleSaveDraft}
+                className="px-6 py-3 rounded-xl border border-gray-200 text-neutral-600 font-medium hover:bg-gray-50 transition-colors"
+              >
+                保存草稿
+              </button>
+              <button
+                onClick={handleSubmit}
+                className="px-8 py-3 rounded-xl bg-primary text-white font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/30"
+              >
+                提交作品
+              </button>
             </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                算力使用记录 <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                value={formData.computeUsage}
-                onChange={(e) => setFormData({...formData, computeUsage: e.target.value})}
-                disabled={!isFormEditable()}
-                placeholder="请说明使用的算力资源，如GPU型号、训练时长等"
-                rows={3}
-                className={`w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors resize-none ${!isFormEditable() ? 'bg-neutral-50 cursor-not-allowed' : ''}`}
-                required
-              />
-            </div>
+          {/* 右侧：提交记录 */}
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h3 className="text-lg font-bold text-neutral-800 mb-4">提交记录</h3>
 
-            {/* 评分展示区域（已评审状态显示） */}
-            {workStatus === 'reviewed' && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-green-800 mb-4">评审结果</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-600">总分</span>
-                    <span className="text-2xl font-bold text-green-700">{mockScore.totalScore}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-600">创新性</span>
-                    <span className="font-medium">{mockScore.innovation}分</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-600">技术实现</span>
-                    <span className="font-medium">{mockScore.technology}分</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-600">实用性</span>
-                    <span className="font-medium">{mockScore.practicality}分</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-600">展示效果</span>
-                    <span className="font-medium">{mockScore.presentation}分</span>
-                  </div>
-                  <div className="pt-3 border-t border-green-200">
-                    <p className="text-neutral-600 mb-2">评委评语</p>
-                    <p className="text-neutral-700">{mockScore.comment}</p>
-                  </div>
+              {submissions.length === 0 ? (
+                <p className="text-neutral-400 text-center py-8">暂无提交记录</p>
+              ) : (
+                <div className="space-y-4">
+                  {submissions.map((item, index) => (
+                    <div key={index} className="border border-gray-100 rounded-lg p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                            item.isFinal
+                              ? 'bg-primary/10 text-primary'
+                              : 'bg-gray-100 text-gray-600'
+                          }`}>
+                            {item.version}
+                          </span>
+                          {item.isFinal && (
+                            <span className="px-2 py-0.5 bg-green-100 text-green-600 text-xs rounded">
+                              最终版
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-neutral-400">{item.submitTime}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className={`text-sm ${
+                          item.status === '已提交' ? 'text-green-600' :
+                          item.status === '待修改' ? 'text-yellow-600' : 'text-gray-600'
+                        }`}>
+                          {item.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
-            {/* 获奖信息展示（预留） */}
-            {workStatus === 'awarded' && (
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
-                <div className="flex items-center mb-4">
-                  <svg className="w-8 h-8 text-purple-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+            {/* AI 评分 */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h3 className="text-lg font-bold text-neutral-800 mb-4">AI 自评</h3>
+              <div className="text-center py-4">
+                <div className="relative inline-flex items-center justify-center w-32 h-32">
+                  <svg className="w-32 h-32 transform -rotate-90">
+                    <circle
+                      cx="64"
+                      cy="64"
+                      r="56"
+                      stroke="#e5e7eb"
+                      strokeWidth="12"
+                      fill="none"
+                    />
+                    <circle
+                      cx="64"
+                      cy="64"
+                      r="56"
+                      stroke="#10b981"
+                      strokeWidth="12"
+                      fill="none"
+                      strokeDasharray={`${(mockScore.totalScore / 100) * 351.86} 351.86`}
+                      strokeLinecap="round"
+                    />
                   </svg>
-                  <h3 className="text-lg font-semibold text-purple-800">恭喜获奖！</h3>
-                </div>
-                <p className="text-purple-700">您的作品在本次大赛中获得优异成绩，具体奖项信息请查看官方公告。</p>
-              </div>
-            )}
-
-            {/* 表单操作按钮 */}
-            {isFormEditable() && (
-              <div className="flex flex-col sm:flex-row gap-4 justify-end">
-                <button
-                  type="button"
-                  onClick={handleSaveDraft}
-                  className="px-6 py-3 border border-neutral-300 text-neutral-700 rounded-lg font-medium hover:bg-neutral-50 transition-colors"
-                >
-                  保存草稿
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  className="px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors"
-                >
-                  提交作品
-                </button>
-              </div>
-            )}
-          </form>
-        </div>
-
-        {/* 提交记录 */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-lg font-bold text-neutral-800 mb-4">提交记录</h2>
-
-          <div className="space-y-4">
-            {submissions.map((submission, index) => (
-              <div key={index} className={`border rounded-lg overflow-hidden ${submission.isFinal ? 'border-primary' : 'border-neutral-200'}`}>
-                <div className="flex items-center justify-between p-4 bg-neutral-50">
-                  <div className="flex items-center gap-4">
-                    <span className={`text-lg font-semibold ${submission.isFinal ? 'text-primary' : 'text-neutral-800'}`}>
-                      {submission.version}
-                    </span>
-                    {submission.isFinal && (
-                      <span className="px-2 py-1 bg-primary text-white rounded text-xs">最终提交版本</span>
-                    )}
-                  </div>
-                  <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
-                    {submission.status}
-                  </span>
-                </div>
-                <div className="p-4">
-                  <div className="flex items-center text-neutral-600">
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>提交时间：{submission.submitTime}</span>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-3xl font-bold text-neutral-800">{mockScore.totalScore}</span>
+                    <span className="text-xs text-neutral-400">AI评分</span>
                   </div>
                 </div>
+
+                <div className="mt-6 space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-neutral-600">创新性</span>
+                    <span className="font-medium text-neutral-800">{mockScore.innovation}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-neutral-600">技术实现</span>
+                    <span className="font-medium text-neutral-800">{mockScore.technology}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-neutral-600">实用性</span>
+                    <span className="font-medium text-neutral-800">{mockScore.practicality}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-neutral-600">展示效果</span>
+                    <span className="font-medium text-neutral-800">{mockScore.presentation}</span>
+                  </div>
+                </div>
+
+                <p className="mt-4 text-sm text-neutral-500 italic">{mockScore.comment}</p>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </div>
 
       {/* 提交确认弹窗 */}
       {showConfirmModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-.633-1.964-.633-2.732 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-neutral-800 mb-2">确认提交</h3>
-              <p className="text-neutral-600 mb-6">提交后将无法修改，是否确认提交？</p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowConfirmModal(false)}
-                  className="flex-1 py-3 border border-neutral-300 rounded-lg font-medium hover:bg-neutral-50 transition-colors"
-                >
-                  取消
-                </button>
-                <button
-                  onClick={handleConfirmSubmit}
-                  className="flex-1 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors"
-                >
-                  确认提交
-                </button>
-              </div>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 max-w-md mx-4 shadow-2xl">
+            <h3 className="text-xl font-bold text-neutral-800 mb-4">确认提交</h3>
+            <p className="text-neutral-600 mb-6">
+              提交后将无法修改作品内容，请确认所有信息无误后提交。
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="px-6 py-2 rounded-xl border border-gray-200 text-neutral-600 hover:bg-gray-50 transition-colors"
+              >
+                取消
+              </button>
+              <button
+                onClick={confirmSubmit}
+                className="px-6 py-2 rounded-xl bg-primary text-white hover:bg-primary/90 transition-colors"
+              >
+                确认提交
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Toast通知 */}
+      {/* Toast 通知 */}
       {showNotification && (
-        <div className={`fixed bottom-4 right-4 px-4 py-3 rounded-lg shadow-lg ${notificationType === 'error' ? 'bg-red-600 text-white' : 'bg-neutral-800 text-white'}`}>
+        <div className={`fixed top-24 right-8 px-6 py-4 rounded-xl shadow-lg z-50 animate-slideIn ${
+          notificationType === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+        }`}>
           {notificationMessage}
         </div>
       )}

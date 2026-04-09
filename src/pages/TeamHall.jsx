@@ -1,121 +1,218 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { request } from '../lib/api';
 
 const TeamHall = () => {
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
-  // 页面状态控制
-  const [hasTeam, setHasTeam] = useState(false); // 是否已加入团队
-  const [isLeader, setIsLeader] = useState(true); // TODO: 接入团队接口 - 模拟当前用户是否为队长
+  const [teams, setTeams] = useState([]);
+  const [currentTeam, setCurrentTeam] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [currentUserRole, setCurrentUserRole] = useState(null);
+  const [lastOperation, setLastOperation] = useState({ name: '-', status: '-', time: null });
+
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
 
-  // 团队状态 - 组建中 / 已报名 / 已提交作品 / 已锁定
-  const [teamStatus, setTeamStatus] = useState('组建中');
-
-  // 创建团队表单数据
   const [createTeamForm, setCreateTeamForm] = useState({
     name: '',
     description: '',
-    competition: '2024年梧桐·鸿鹄人工智能应用创新大赛'
+    competitionId: '',
+    trackId: ''
   });
 
-  // 邀请码弹窗状态
   const [showInviteModal, setShowInviteModal] = useState(false);
-
-  // 加入团队弹窗状态
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [joinCode, setJoinCode] = useState('');
 
-  // 模拟团队数据 - TODO: 接入团队接口
-  const [teamData, setTeamData] = useState({
-    name: 'AI创新先锋队',
-    description: '致力于人工智能应用创新的优秀团队',
-    captainName: '张明',
-    memberCount: 3,
-    maxMembers: 5,
-    competition: '2024年梧桐·鸿鹄人工智能应用创新大赛',
-    inviteCode: 'HONGHU2024ABC',
-    members: [
-      { id: 1, name: '张明', school: '清华大学', role: '队长', status: '已加入', avatar: null },
-      { id: 2, name: '李华', school: '北京大学', role: '成员', status: '已加入', avatar: null },
-      { id: 3, name: '王芳', school: '浙江大学', role: '成员', status: '已加入', avatar: null }
-    ]
-  });
-
-  // 获取团队状态颜色
-  const getStatusColor = (status) => {
-    switch (status) {
-      case '组建中':
-        return 'bg-blue-100 text-blue-800';
-      case '已报名':
-        return 'bg-orange-100 text-orange-800';
-      case '已提交作品':
-        return 'bg-green-100 text-green-800';
-      case '已锁定':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  // 显示通知提示
   const showToast = (message) => {
     setNotificationMessage(message);
     setShowNotification(true);
     setTimeout(() => setShowNotification(false), 3000);
   };
 
-  // 复制邀请码
+  const fetchMyTeams = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const result = await request('/v1/teams/my/list');
+
+      if (!result.ok) {
+        if (result.status === 401) {
+          setError('登录已过期，请重新登录');
+          return;
+        }
+        setError('获取团队信息失败');
+        return;
+      }
+
+      const data = result.data;
+      if (data.code === 0) {
+        const list = data.data?.list || [];
+        setTeams(list);
+        if (list.length > 0) {
+          setCurrentTeam(list[0]);
+          const isLeader = list[0].leader?.id === user?.id;
+          setCurrentUserRole(isLeader ? 'leader' : 'member');
+        } else {
+          setCurrentTeam(null);
+          setCurrentUserRole(null);
+        }
+      } else {
+        setError(data.message || '获取团队信息失败');
+      }
+    } catch (err) {
+      setError('网络错误，请重试');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchMyTeams();
+    }
+  }, [isAuthenticated]);
+
   const handleCopyInviteCode = () => {
-    navigator.clipboard.writeText(teamData.inviteCode);
-    showToast('邀请码已复制到剪贴板');
+    if (currentTeam?.inviteCode) {
+      navigator.clipboard.writeText(currentTeam.inviteCode);
+      showToast('邀请码已复制到剪贴板');
+    }
   };
 
-  // 创建团队
-  const handleCreateTeam = (e) => {
+  const handleCreateTeam = async (e) => {
     e.preventDefault();
-    // TODO: 接入团队接口 - 调用创建团队API
-    setTeamData(prev => ({
-      ...prev,
-      name: createTeamForm.name,
-      description: createTeamForm.description
-    }));
-    setHasTeam(true);
-    setIsLeader(true);
-    showToast('团队创建成功');
+    setLastOperation({ name: '创建团队', status: '请求中...', time: new Date().toLocaleTimeString() });
+    try {
+      const result = await request('/v1/teams', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: createTeamForm.name,
+          description: createTeamForm.description,
+          competitionId: createTeamForm.competitionId || undefined,
+          trackId: createTeamForm.trackId || undefined
+        })
+      });
+
+      setLastOperation({ name: '创建团队', status: result.status, time: new Date().toLocaleTimeString() });
+      if (result.ok && result.data.code === 0) {
+        showToast('团队创建成功');
+        fetchMyTeams();
+        setCreateTeamForm({ name: '', description: '', competitionId: '', trackId: '' });
+      } else {
+        showToast(result.data.message || '创建失败');
+      }
+    } catch (err) {
+      setLastOperation({ name: '创建团队', status: '网络错误', time: new Date().toLocaleTimeString() });
+      showToast('网络错误');
+    }
   };
 
-  // 移除成员
-  const handleRemoveMember = (memberId) => {
-    // TODO: 接入团队接口 - 调用移除成员API
-    setTeamData(prev => ({
-      ...prev,
-      members: prev.members.filter(m => m.id !== memberId),
-      memberCount: prev.memberCount - 1
-    }));
-    showToast('成员已移除');
-  };
-
-  // 加入团队
-  const handleJoinTeam = (e) => {
+  const handleJoinTeam = async (e) => {
     e.preventDefault();
-    // TODO: 接入团队接口 - 调用加入团队API
-    setHasTeam(true);
-    setIsLeader(false);
-    setShowJoinModal(false);
-    showToast('加入团队成功');
+    setLastOperation({ name: '加入团队', status: '请求中...', time: new Date().toLocaleTimeString() });
+    try {
+      const result = await request(`/v1/teams/join-by-code/${joinCode}`, {
+        method: 'POST'
+      });
+
+      setLastOperation({ name: '加入团队', status: result.status, time: new Date().toLocaleTimeString() });
+      if (result.ok && result.data.code === 0) {
+        showToast('加入团队成功');
+        setShowJoinModal(false);
+        setJoinCode('');
+        fetchMyTeams();
+      } else {
+        showToast(result.data.message || '加入失败');
+      }
+    } catch (err) {
+      setLastOperation({ name: '加入团队', status: '网络错误', time: new Date().toLocaleTimeString() });
+      showToast('网络错误');
+    }
   };
 
-  // 退出团队
-  const handleLeaveTeam = () => {
-    // TODO: 接入团队接口 - 调用退出团队API
-    setHasTeam(false);
-    showToast('已退出团队');
+  const handleLeaveTeam = async () => {
+    if (!currentTeam) return;
+    if (!confirm('确定要退出团队吗？')) return;
+    setLastOperation({ name: '退出团队', status: '请求中...', time: new Date().toLocaleTimeString() });
+
+    try {
+      const result = await request(`/v1/teams/${currentTeam.id}/leave`, {
+        method: 'POST',
+        body: JSON.stringify({})
+      });
+
+      setLastOperation({ name: '退出团队', status: result.status, time: new Date().toLocaleTimeString() });
+      if (result.ok && result.data.code === 0) {
+        showToast('已退出团队');
+        setCurrentTeam(null);
+        fetchMyTeams();
+      } else {
+        showToast(result.data.message || '退出失败');
+      }
+    } catch (err) {
+      setLastOperation({ name: '退出团队', status: '网络错误', time: new Date().toLocaleTimeString() });
+      showToast('网络错误');
+    }
   };
 
-  // 未登录状态
+  const handleRemoveMember = async (memberId) => {
+    if (!currentTeam || !confirm('确定要移除该成员吗？')) return;
+    setLastOperation({ name: '移除成员', status: '请求中...', time: new Date().toLocaleTimeString() });
+
+    try {
+      const result = await request(`/v1/teams/${currentTeam.id}/remove-member`, {
+        method: 'POST',
+        body: JSON.stringify({ memberId })
+      });
+
+      setLastOperation({ name: '移除成员', status: result.status, time: new Date().toLocaleTimeString() });
+      if (result.ok && result.data.code === 0) {
+        showToast('成员已移除');
+        fetchMyTeams();
+      } else {
+        showToast(result.data.message || '移除失败');
+      }
+    } catch (err) {
+      setLastOperation({ name: '移除成员', status: '网络错误', time: new Date().toLocaleTimeString() });
+      showToast('网络错误');
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'forming': return 'bg-blue-100 text-blue-800';
+      case 'complete': return 'bg-green-100 text-green-800';
+      case 'locked': return 'bg-gray-100 text-gray-800';
+      case 'dissolved': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'forming': return '组建中';
+      case 'complete': return '已完成';
+      case 'locked': return '已锁定';
+      case 'dissolved': return '已解散';
+      default: return status || '未知';
+    }
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '-';
+    try {
+      return new Date(dateStr).toLocaleDateString('zh-CN');
+    } catch {
+      return dateStr;
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="container mx-auto px-4 py-12 animate-fadeIn">
@@ -140,17 +237,82 @@ const TeamHall = () => {
     );
   }
 
-  // ========== 未加入团队状态 ==========
-  if (!hasTeam) {
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-12 animate-fadeIn">
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="bg-white rounded-xl shadow-md p-12">
+            <div className="w-12 h-12 border-3 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-neutral-500">加载中...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-12 animate-fadeIn">
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="bg-white rounded-xl shadow-md p-12">
+            <p className="text-red-500 mb-4">{error}</p>
+            <button onClick={fetchMyTeams} className="bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+              重试
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentTeam) {
     return (
       <div className="container mx-auto px-4 py-12 animate-fadeIn">
         <div className="max-w-6xl mx-auto">
+          {process.env.NODE_ENV === 'development' && (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-semibold text-blue-700">API 联调信息</h3>
+                <span className="text-xs text-blue-500">开发环境可见</span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-gray-400 mb-1">请求接口</p>
+                  <p className="font-mono text-gray-800">GET /api/v1/teams/my/list</p>
+                </div>
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-gray-400 mb-1">HTTP 状态</p>
+                  <p className="text-green-600 font-semibold">{loading ? '请求中...' : '成功'}</p>
+                </div>
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-gray-400 mb-1">团队数量</p>
+                  <p className="text-gray-800">{teams.length}</p>
+                </div>
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-gray-400 mb-1">当前用户身份</p>
+                  <p className="text-gray-800">-</p>
+                </div>
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-gray-400 mb-1">最近操作</p>
+                  <p className="text-gray-800">{lastOperation.name}</p>
+                </div>
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-gray-400 mb-1">操作状态</p>
+                  <p className={`font-semibold ${lastOperation.status === '200' ? 'text-green-600' : lastOperation.status === '请求中...' ? 'text-yellow-600' : 'text-red-600'}`}>{lastOperation.status}</p>
+                </div>
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-gray-400 mb-1">操作时间</p>
+                  <p className="text-gray-800">{lastOperation.time || '-'}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-neutral-800 mb-2">我的团队</h1>
             <p className="text-neutral-600">创建或加入团队，开始您的参赛之旅</p>
           </div>
 
-          {/* 未加入团队 - 居中卡片 */}
           <div className="max-w-lg mx-auto">
             <div className="bg-white rounded-xl shadow-md p-8 text-center">
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -177,7 +339,6 @@ const TeamHall = () => {
               </div>
             </div>
 
-            {/* 创建团队表单 */}
             <div id="create-team-form" className="bg-white rounded-xl shadow-md p-6 mt-8">
               <h3 className="text-lg font-semibold text-neutral-800 mb-6">创建新团队</h3>
               <form onSubmit={handleCreateTeam} className="space-y-4">
@@ -203,15 +364,6 @@ const TeamHall = () => {
                     required
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">所属赛事</label>
-                  <input
-                    type="text"
-                    value={createTeamForm.competition}
-                    disabled
-                    className="w-full px-4 py-3 border border-neutral-200 rounded-lg bg-neutral-50 text-neutral-600"
-                  />
-                </div>
                 <button
                   type="submit"
                   className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
@@ -223,7 +375,6 @@ const TeamHall = () => {
           </div>
         </div>
 
-        {/* 加入团队弹窗 */}
         {showJoinModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
@@ -261,7 +412,6 @@ const TeamHall = () => {
           </div>
         )}
 
-        {/* Toast通知 */}
         {showNotification && (
           <div className="fixed bottom-4 right-4 bg-neutral-800 text-white px-4 py-3 rounded-lg shadow-lg">
             {notificationMessage}
@@ -271,57 +421,106 @@ const TeamHall = () => {
     );
   }
 
-  // ========== 已加入团队状态 ==========
+  const isLeader = currentUserRole === 'leader';
+
   return (
     <div className="container mx-auto px-4 py-12 animate-fadeIn">
       <div className="max-w-6xl mx-auto">
-        {/* 页面标题 */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-blue-700">API 联调信息</h3>
+              <span className="text-xs text-blue-500">开发环境可见</span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+              <div className="bg-white rounded-lg p-3">
+                <p className="text-gray-400 mb-1">请求接口</p>
+                <p className="font-mono text-gray-800">GET /api/v1/teams/my/list</p>
+              </div>
+              <div className="bg-white rounded-lg p-3">
+                <p className="text-gray-400 mb-1">HTTP 状态</p>
+                <p className="text-green-600 font-semibold">成功</p>
+              </div>
+              <div className="bg-white rounded-lg p-3">
+                <p className="text-gray-400 mb-1">团队 ID</p>
+                <p className="text-gray-800 truncate">{currentTeam?.id || '-'}</p>
+              </div>
+              <div className="bg-white rounded-lg p-3">
+                <p className="text-gray-400 mb-1">成员数量</p>
+                <p className="text-gray-800">{currentTeam?._count?.members || 0}人</p>
+              </div>
+              <div className="bg-white rounded-lg p-3">
+                <p className="text-gray-400 mb-1">队长</p>
+                <p className="text-gray-800">{currentTeam?.leader?.username || '-'}</p>
+              </div>
+              <div className="bg-white rounded-lg p-3">
+                <p className="text-gray-400 mb-1">当前用户身份</p>
+                <p className={`font-semibold ${isLeader ? 'text-yellow-600' : 'text-blue-600'}`}>
+                  {isLeader ? '队长' : '成员'}
+                </p>
+              </div>
+              <div className="bg-white rounded-lg p-3">
+                <p className="text-gray-400 mb-1">最近操作</p>
+                <p className="text-gray-800">{lastOperation.name}</p>
+              </div>
+              <div className="bg-white rounded-lg p-3">
+                <p className="text-gray-400 mb-1">操作状态</p>
+                <p className={`font-semibold ${lastOperation.status === '200' ? 'text-green-600' : lastOperation.status === '请求中...' ? 'text-yellow-600' : 'text-red-600'}`}>{lastOperation.status}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-neutral-800 mb-2">我的团队</h1>
           <p className="text-neutral-600">管理您的团队，邀请成员或加入其他团队</p>
         </div>
 
-        {/* 主内容区 - 左右两栏布局 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* 左侧 - 团队信息卡 */}
           <div className="space-y-6">
-            {/* 团队信息卡片 */}
             <div className="bg-white rounded-xl shadow-md p-6">
               <h2 className="text-xl font-bold text-neutral-800 mb-4">团队信息</h2>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-neutral-800">{teamData.name}</h3>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(teamStatus)}`}>
-                    {teamStatus}
+                  <h3 className="text-lg font-semibold text-neutral-800">{currentTeam.name}</h3>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(currentTeam.status)}`}>
+                    {getStatusText(currentTeam.status)}
                   </span>
                 </div>
-                <p className="text-neutral-600 text-sm">{teamData.description}</p>
+                <p className="text-neutral-600 text-sm">{currentTeam.description || '暂无简介'}</p>
                 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-neutral-100">
                   <div>
                     <p className="text-neutral-500 text-sm">队长</p>
-                    <p className="text-neutral-800 font-medium">{teamData.captainName}</p>
+                    <p className="text-neutral-800 font-medium">{currentTeam.leader?.username || '-'}</p>
                   </div>
                   <div>
                     <p className="text-neutral-500 text-sm">成员数量</p>
-                    <p className="text-neutral-800 font-medium">{teamData.memberCount}/{teamData.maxMembers}</p>
+                    <p className="text-neutral-800 font-medium">{currentTeam._count?.members || 0}{currentTeam.maxMembers ? `/${currentTeam.maxMembers}` : ''}</p>
                   </div>
-                  <div className="col-span-2">
-                    <p className="text-neutral-500 text-sm">所属赛事</p>
-                    <p className="text-neutral-800 font-medium">{teamData.competition}</p>
-                  </div>
+                  {currentTeam.competition && (
+                    <div className="col-span-2">
+                      <p className="text-neutral-500 text-sm">所属赛事</p>
+                      <p className="text-neutral-800 font-medium">{currentTeam.competition.name}</p>
+                    </div>
+                  )}
+                  {currentTeam.track && (
+                    <div className="col-span-2">
+                      <p className="text-neutral-500 text-sm">参赛赛道</p>
+                      <p className="text-neutral-800 font-medium">{currentTeam.track.name}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* 邀请成员卡片（仅队长可见） */}
-            {isLeader && (
+            {isLeader && currentTeam.inviteCode && (
               <div className="bg-white rounded-xl shadow-md p-6">
                 <h2 className="text-xl font-bold text-neutral-800 mb-4">邀请成员</h2>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg">
                     <div>
                       <p className="text-neutral-500 text-sm mb-1">邀请码</p>
-                      <p className="text-lg font-mono text-neutral-800">{teamData.inviteCode}</p>
+                      <p className="text-lg font-mono text-neutral-800">{currentTeam.inviteCode}</p>
                     </div>
                     <button
                       onClick={handleCopyInviteCode}
@@ -337,7 +536,6 @@ const TeamHall = () => {
               </div>
             )}
 
-            {/* 操作按钮区 */}
             <div className="bg-white rounded-xl shadow-md p-6">
               <h2 className="text-xl font-bold text-neutral-800 mb-4">团队操作</h2>
               <div className="space-y-3">
@@ -349,18 +547,14 @@ const TeamHall = () => {
                     >
                       邀请成员
                     </button>
-                    <button className="w-full border border-neutral-300 text-neutral-700 py-3 rounded-lg font-medium hover:bg-neutral-50 transition-colors">
-                      编辑团队信息
-                    </button>
                   </>
                 )}
                 <Link
-                  to="/work-submission"
+                  to="/my-works"
                   className="block w-full text-center bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition-colors"
                 >
                   前往作品提交
                 </Link>
-                <p className="text-sm text-neutral-500 text-center">团队创建完成后，即可进入作品提交流程</p>
                 {!isLeader && (
                   <button
                     onClick={handleLeaveTeam}
@@ -373,60 +567,58 @@ const TeamHall = () => {
             </div>
           </div>
 
-          {/* 右侧 - 成员列表 */}
           <div className="bg-white rounded-xl shadow-md p-6">
             <h2 className="text-xl font-bold text-neutral-800 mb-6">成员列表</h2>
             <div className="space-y-4">
-              {teamData.members.map((member) => (
+              {currentTeam.members?.map((member) => (
                 <div key={member.id} className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg">
                   <div className="flex items-center">
-                    {/* 默认头像 */}
                     <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4">
-                      <span className="text-primary font-medium text-lg">{member.name[0]}</span>
+                      <span className="text-primary font-medium text-lg">
+                        {member.user?.username?.[0] || member.user?.email?.[0] || '?'}
+                      </span>
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="text-neutral-800 font-medium">{member.name}</p>
-                        {member.role === '队长' && (
+                        <p className="text-neutral-800 font-medium">{member.user?.username || '-'}</p>
+                        {member.user?.id === currentTeam.leader?.id && (
                           <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded-full font-medium">
                             队长
                           </span>
                         )}
                       </div>
-                      <p className="text-neutral-500 text-sm">{member.school}</p>
+                      <p className="text-neutral-500 text-sm">{member.user?.profile?.school || member.user?.email || '-'}</p>
                     </div>
                   </div>
-                  {/* 队长操作按钮 */}
-                  {isLeader && member.role !== '队长' && (
+                  {isLeader && member.user?.id !== currentTeam.leader?.id && (
                     <button
-                      onClick={() => handleRemoveMember(member.id)}
+                      onClick={() => handleRemoveMember(member.user?.id)}
                       className="text-red-500 hover:text-red-700 text-sm font-medium"
                     >
                       移除
                     </button>
                   )}
-                  {/* 非队长显示状态 */}
                   {!isLeader && (
-                    <span className={`px-2 py-1 rounded text-xs ${member.status === '已加入' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                      {member.status}
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      member.memberStatus === 'joined' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                    }`}>
+                      {member.memberStatus === 'joined' ? '已加入' : member.memberStatus}
                     </span>
                   )}
                 </div>
               ))}
             </div>
 
-            {/* 成员已满提示 */}
-            {teamData.memberCount >= teamData.maxMembers && (
+            {currentTeam.maxMembers && currentTeam._count?.members >= currentTeam.maxMembers && (
               <div className="mt-4 p-4 bg-gray-100 rounded-lg text-center">
                 <p className="text-neutral-600 text-sm">团队成员已满，无法继续添加</p>
               </div>
             )}
 
-            {/* 招募提示 */}
-            {teamData.memberCount < teamData.maxMembers && (
+            {currentTeam.maxMembers && currentTeam._count?.members < currentTeam.maxMembers && (
               <div className="mt-4 p-4 bg-blue-50 rounded-lg text-center">
                 <p className="text-blue-700 text-sm">
-                  还可加入 {teamData.maxMembers - teamData.memberCount} 名成员
+                  还可加入 {currentTeam.maxMembers - currentTeam._count?.members} 名成员
                 </p>
               </div>
             )}
@@ -434,7 +626,6 @@ const TeamHall = () => {
         </div>
       </div>
 
-      {/* 邀请成员弹窗 */}
       {showInviteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
@@ -442,7 +633,7 @@ const TeamHall = () => {
             <div className="space-y-4">
               <div className="text-center p-6 bg-neutral-50 rounded-lg">
                 <p className="text-neutral-500 text-sm mb-2">分享邀请码给队友</p>
-                <p className="text-2xl font-mono font-bold text-primary">{teamData.inviteCode}</p>
+                <p className="text-2xl font-mono font-bold text-primary">{currentTeam.inviteCode || '-'}</p>
               </div>
               <p className="text-sm text-neutral-500 text-center">
                 队友在团队大厅点击"输入邀请码加入"即可加入
@@ -467,7 +658,6 @@ const TeamHall = () => {
         </div>
       )}
 
-      {/* Toast通知 */}
       {showNotification && (
         <div className="fixed bottom-4 right-4 bg-neutral-800 text-white px-4 py-3 rounded-lg shadow-lg">
           {notificationMessage}

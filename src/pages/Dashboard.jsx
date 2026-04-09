@@ -1,54 +1,144 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { request } from '../lib/api';
 
 const Dashboard = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
 
-  // ========== 页面状态控制（MOCK数据）==========
-  // TODO: 接入 dashboard 接口 - 替换为真实API数据
-  const [enrollmentStatus, setEnrollmentStatus] = useState('approved'); // not_applied | pending_review | approved | rejected
-  const [hasTeam, setHasTeam] = useState(true);
-  const [workStatus, setWorkStatus] = useState('submitted'); // none | draft | submitted | under_review
-  const [unreadNotificationCount, setUnreadNotificationCount] = useState(3);
-  const [currentStep, setCurrentStep] = useState(4); // 0-5 对应6个步骤
-  
-  // 手机端选中的详情卡片 (0:报名, 1:团队, 2:作品, 3:通知)
+  const [works, setWorks] = useState([]);
+  const [worksLoading, setWorksLoading] = useState(true);
+  const [worksError, setWorksError] = useState('');
+  const [worksData, setWorksData] = useState(null);
+
+  const [enrollment, setEnrollment] = useState(null);
+  const [enrollmentLoading, setEnrollmentLoading] = useState(true);
+  const [enrollmentError, setEnrollmentError] = useState('');
+
+  const [team, setTeam] = useState(null);
+  const [teamLoading, setTeamLoading] = useState(true);
+  const [teamError, setTeamError] = useState('');
+
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+  const [currentStep, setCurrentStep] = useState(4);
   const [mobileActiveTab, setMobileActiveTab] = useState(0);
 
-  // MOCK报名数据
-  const mockEnrollment = {
-    competitionName: '2024年梧桐·鸿鹄人工智能应用创新大赛',
-    participationType: '团队参赛',
-    track: '数字金融',
-    enrollmentTime: '2024-11-01',
-    rejectionReason: ''
+  const fetchMyWorks = async () => {
+    setWorksLoading(true);
+    setWorksError('');
+
+    try {
+      const result = await request('/v1/works/my');
+
+      if (!result.ok) {
+        if (result.status === 401) {
+          setWorksError('登录已过期，请重新登录');
+          logout();
+          navigate('/login');
+          return;
+        }
+        setWorksError('获取作品失败');
+        return;
+      }
+
+      const data = result.data;
+      if (data.code === 0) {
+        const worksList = data.data?.list || [];
+        setWorks(worksList);
+        setWorksData(data.data);
+      } else {
+        setWorksError(data.message || '获取作品失败');
+      }
+    } catch (error) {
+      setWorksError('网络错误，请重试');
+    } finally {
+      setWorksLoading(false);
+    }
   };
 
-  // MOCK团队数据
-  const mockTeam = {
-    name: 'AI创新先锋队',
-    captainName: '张明',
-    currentMembers: 3,
-    maxMembers: 5,
-    status: '已报名'
+  const fetchMyEnrollment = async () => {
+    setEnrollmentLoading(true);
+    setEnrollmentError('');
+
+    try {
+      const result = await request('/v1/enrollments');
+
+      if (!result.ok) {
+        if (result.status === 401) {
+          setEnrollmentError('登录已过期');
+          return;
+        }
+        setEnrollmentError('获取报名信息失败');
+        return;
+      }
+
+      const data = result.data;
+      if (data.code === 0) {
+        const list = data.data?.list || [];
+        setEnrollment(list.length > 0 ? list[0] : null);
+      } else {
+        setEnrollmentError(data.message || '获取报名信息失败');
+      }
+    } catch (error) {
+      setEnrollmentError('网络错误');
+    } finally {
+      setEnrollmentLoading(false);
+    }
   };
 
-  // MOCK作品数据
-  const mockWork = {
-    title: '智能金融风控系统',
-    version: 'V1.2',
-    lastUpdateTime: '2024-11-15 14:30'
+  const fetchMyTeam = async () => {
+    setTeamLoading(true);
+    setTeamError('');
+
+    try {
+      const result = await request('/v1/teams/my/list');
+
+      if (!result.ok) {
+        if (result.status === 401) {
+          setTeamError('登录已过期');
+          return;
+        }
+        setTeamError('获取团队信息失败');
+        return;
+      }
+
+      const data = result.data;
+      if (data.code === 0) {
+        const list = data.data?.list || [];
+        setTeam(list.length > 0 ? list[0] : null);
+      } else {
+        setTeamError(data.message || '获取团队信息失败');
+      }
+    } catch (error) {
+      setTeamError('网络错误');
+    } finally {
+      setTeamLoading(false);
+    }
   };
 
-  // MOCK通知数据
-  const mockNotifications = [
-    { id: 1, title: '您的报名已通过审核', content: '恭喜！您的参赛报名已通过审核，请尽快组建团队。', date: '2024-11-02', isRead: false, type: '报名' },
-    { id: 2, title: '团队成员加入申请', content: '李华申请加入您的团队，是否同意？', date: '2024-11-10', isRead: false, type: '团队' },
-    { id: 3, title: '作品提交成功', content: '您提交的作品 V1.2 已成功提交，等待评审。', date: '2024-11-15', isRead: true, type: '作品' }
-  ];
+  const fetchUnreadNotificationCount = async () => {
+    try {
+      const result = await request('/v1/notifications/unread-count');
+      if (result.ok && result.data.code === 0) {
+        setUnreadNotificationCount(result.data.data?.count || 0);
+      }
+    } catch (error) {
+      console.error('获取未读通知数失败:', error);
+    }
+  };
 
-  // 参赛进度步骤
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchMyWorks();
+      fetchMyEnrollment();
+      fetchMyTeam();
+      fetchUnreadNotificationCount();
+    }
+  }, [isAuthenticated]);
+
+  const token = localStorage.getItem('accessToken');
+
   const progressSteps = [
     { name: '报名参赛', date: '4-5月' },
     { name: '审核通过', date: '5月' },
@@ -58,25 +148,28 @@ const Dashboard = () => {
     { name: '查看结果', date: '9月' }
   ];
 
-  // ========== 辅助函数 ==========
-
-  // 获取报名状态颜色和文字
   const getEnrollmentStatusInfo = (status) => {
     switch (status) {
-      case 'not_applied':
-        return { color: 'bg-yellow-50 text-yellow-600 border border-yellow-200', text: '未报名' };
+      case 'draft':
+        return { color: 'bg-gray-50 text-gray-600 border border-gray-200', text: '草稿' };
+      case 'submitted':
+        return { color: 'bg-blue-50 text-blue-600 border border-blue-200', text: '已提交' };
       case 'pending_review':
         return { color: 'bg-orange-50 text-orange-600 border border-orange-200', text: '待审核' };
       case 'approved':
         return { color: 'bg-green-50 text-green-600 border border-green-200', text: '已通过' };
       case 'rejected':
         return { color: 'bg-red-50 text-red-600 border border-red-200', text: '已驳回' };
+      case 'need_more_material':
+        return { color: 'bg-yellow-50 text-yellow-600 border border-yellow-200', text: '需补料' };
+      case 'withdrawn':
+        return { color: 'bg-gray-50 text-gray-600 border border-gray-200', text: '已撤回' };
+      case 'not_applied':
       default:
-        return { color: 'bg-gray-50 text-gray-600 border border-gray-200', text: status };
+        return { color: 'bg-yellow-50 text-yellow-600 border border-yellow-200', text: '未报名' };
     }
   };
 
-  // 获取作品状态颜色和文字
   const getWorkStatusInfo = (status) => {
     switch (status) {
       case 'none':
@@ -87,12 +180,29 @@ const Dashboard = () => {
         return { color: 'text-purple-500', text: '已提交' };
       case 'under_review':
         return { color: 'text-orange-500', text: '评审中' };
+      case 'published':
+        return { color: 'text-green-500', text: '已公示' };
       default:
-        return { color: 'text-gray-400', text: status };
+        return { color: 'text-gray-400', text: status || '未知' };
     }
   };
 
-  // ========== 未登录状态 ==========
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '-';
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="container mx-auto px-4 py-16 animate-fadeIn">
@@ -117,16 +227,55 @@ const Dashboard = () => {
     );
   }
 
-  // ========== 主页面 ==========
   return (
     <div className="min-h-screen bg-gray-50/50 py-8 animate-fadeIn">
+      {/* Dev 调试区 */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="max-w-6xl mx-auto px-4 mb-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-blue-700">API 联调信息</h3>
+              <span className="text-xs text-blue-500">开发环境可见</span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+              <div className="bg-white rounded-lg p-3">
+                <p className="text-gray-400 mb-1">我的作品</p>
+                <p className="font-mono text-gray-800 break-all">GET /api/v1/works/my</p>
+                <p className={`mt-1 ${worksLoading ? 'text-gray-400' : worksError ? 'text-red-600' : 'text-green-600'}`}>
+                  {worksLoading ? '请求中...' : worksError ? '失败' : '成功'}
+                </p>
+                {!worksLoading && !worksError && <p className="text-gray-500">list: {works.length} 条</p>}
+              </div>
+              <div className="bg-white rounded-lg p-3">
+                <p className="text-gray-400 mb-1">我的报名</p>
+                <p className="font-mono text-gray-800 break-all">GET /api/v1/enrollments</p>
+                <p className={`mt-1 ${enrollmentLoading ? 'text-gray-400' : enrollmentError ? 'text-red-600' : 'text-green-600'}`}>
+                  {enrollmentLoading ? '请求中...' : enrollmentError ? '失败' : '成功'}
+                </p>
+                {!enrollmentLoading && !enrollmentError && <p className="text-gray-500">{enrollment ? '已报名' : '未报名'}</p>}
+              </div>
+              <div className="bg-white rounded-lg p-3">
+                <p className="text-gray-400 mb-1">我的团队</p>
+                <p className="font-mono text-gray-800 break-all">GET /api/v1/teams/my/list</p>
+                <p className={`mt-1 ${teamLoading ? 'text-gray-400' : teamError ? 'text-red-600' : 'text-green-600'}`}>
+                  {teamLoading ? '请求中...' : teamError ? '失败' : '成功'}
+                </p>
+                {!teamLoading && !teamError && <p className="text-gray-500">{team ? '已加入团队' : '未加入'}</p>}
+              </div>
+            </div>
+            <div className="mt-3 bg-green-100 border border-green-200 rounded-lg p-3">
+              <p className="text-sm text-green-700 font-semibold">✓ 三块核心卡片已全部接入真实后端数据</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto px-4">
 
-        {/* ========== 第一层：顶部欢迎区（精简）========== */}
+        {/* 顶部欢迎区 */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between">
             <div className="flex items-center gap-4">
-              {/* 用户头像 */}
               <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center shadow-sm">
                 <span className="text-white text-lg font-bold">
                   {user?.name?.[0] || user?.phone?.[0] || user?.phoneOrEmail?.[0] || '参'}
@@ -139,14 +288,13 @@ const Dashboard = () => {
                 <p className="text-sm text-gray-400">继续完成你的参赛流程</p>
               </div>
             </div>
-            {/* 状态徽章 - 突出显示 */}
-            <div className={`mt-4 md:mt-0 px-5 py-2.5 rounded-full text-sm font-semibold ${getEnrollmentStatusInfo(enrollmentStatus).color}`}>
-              {getEnrollmentStatusInfo(enrollmentStatus).text}
+            <div className={`mt-4 md:mt-0 px-5 py-2.5 rounded-full text-sm font-semibold ${getEnrollmentStatusInfo(enrollment?.status || 'not_applied').color}`}>
+              {getEnrollmentStatusInfo(enrollment?.status || 'not_applied').text}
             </div>
           </div>
         </div>
 
-        {/* ========== 个人资料（第二层）========== */}
+        {/* 个人资料 */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
           <div className="flex items-center justify-between gap-3 mb-4">
             <h3 className="font-semibold text-gray-800 flex-shrink-0">个人资料</h3>
@@ -176,19 +324,16 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* ========== 第二层：参赛进度（主视觉区）========== */}
+        {/* 参赛进度 */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-6">
           <h2 className="text-base font-semibold text-gray-500 mb-8 hidden md:block">参赛进度</h2>
 
-          {/* 桌面端：横向时间轴 */}
           <div className="hidden md:flex items-start justify-between relative">
-            {/* 进度连接线 */}
             <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-100 -z-0" style={{ marginLeft: '20px', marginRight: '20px' }}></div>
             <div className="absolute top-5 left-0 h-0.5 bg-gradient-to-r from-primary to-primary/40 -z-0" style={{ width: `${(currentStep / (progressSteps.length - 1)) * 100}%`, marginLeft: '20px', marginRight: '20px', maxWidth: 'calc(100% - 40px)' }}></div>
 
             {progressSteps.map((step, index) => (
               <div key={index} className="flex flex-col items-center relative z-10">
-                {/* 步骤圆点 */}
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
                     index < currentStep
@@ -206,7 +351,6 @@ const Dashboard = () => {
                     <span className="text-sm font-semibold">{index + 1}</span>
                   )}
                 </div>
-                {/* 步骤文字 */}
                 <div className="mt-3 text-center">
                   <p className={`text-sm font-medium ${index <= currentStep ? 'text-gray-800' : 'text-gray-400'}`}>
                     {step.name}
@@ -217,13 +361,11 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* 手机端：纵向进度列表 */}
           <div className="md:hidden">
             <h2 className="text-base font-semibold text-gray-500 mb-4">参赛进度</h2>
             <div className="space-y-4">
               {progressSteps.map((step, index) => (
                 <div key={index} className="flex items-center gap-4">
-                  {/* 节点圆点 */}
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                     index < currentStep
                       ? 'bg-primary text-white'
@@ -239,8 +381,6 @@ const Dashboard = () => {
                       <span className="text-xs font-semibold">{index + 1}</span>
                     )}
                   </div>
-
-                  {/* 文字内容 */}
                   <div className="flex-1">
                     <p className={`text-sm font-medium ${index <= currentStep ? 'text-gray-800' : 'text-gray-400'}`}>
                       {step.name}
@@ -253,16 +393,15 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* ========== 第三层：4个概览卡片（轻量）========== */}
+        {/* 4个概览卡片 */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-          {/* 我的报名 - 手机端可点击切换 */}
-          <div 
+          <div
             onClick={() => setMobileActiveTab(0)}
             className={`bg-white rounded-xl shadow-sm border p-4 hover:shadow-md transition-all cursor-pointer lg:hover:shadow-md ${
               mobileActiveTab === 0 ? 'md:border-gray-100 border-primary ring-1 ring-primary/20' : 'border-gray-100'
             }`}
           >
-            <Link to="/register-competition" className="hidden lg:block">
+            <div className="hidden lg:block">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
                   <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -271,10 +410,18 @@ const Dashboard = () => {
                 </div>
                 <span className="text-sm font-medium text-gray-500">我的报名</span>
               </div>
-              <p className={`text-xl font-bold ${enrollmentStatus === 'not_applied' ? 'text-yellow-500' : 'text-green-500'}`}>
-                {getEnrollmentStatusInfo(enrollmentStatus).text}
-              </p>
-            </Link>
+              {enrollmentLoading ? (
+                <p className="text-xl font-bold text-gray-400">加载中...</p>
+              ) : enrollmentError ? (
+                <p className="text-xl font-bold text-red-500">错误</p>
+              ) : !enrollment ? (
+                <p className="text-xl font-bold text-yellow-500">未报名</p>
+              ) : (
+                <p className={`text-xl font-bold ${getEnrollmentStatusInfo(enrollment.status).color.replace('bg-', 'text-').split(' ')[0]}`}>
+                  {getEnrollmentStatusInfo(enrollment.status).text}
+                </p>
+              )}
+            </div>
             <div className="lg:hidden">
               <div className="flex items-center gap-2 mb-2">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${mobileActiveTab === 0 ? 'bg-primary/10' : 'bg-blue-50'}`}>
@@ -284,20 +431,27 @@ const Dashboard = () => {
                 </div>
                 <span className={`text-sm font-medium ${mobileActiveTab === 0 ? 'text-primary' : 'text-gray-500'}`}>我的报名</span>
               </div>
-              <p className={`text-xl font-bold ${enrollmentStatus === 'not_applied' ? 'text-yellow-500' : 'text-green-500'}`}>
-                {getEnrollmentStatusInfo(enrollmentStatus).text}
-              </p>
+              {enrollmentLoading ? (
+                <p className="text-xl font-bold text-gray-400">加载中...</p>
+              ) : enrollmentError ? (
+                <p className="text-xl font-bold text-red-500">错误</p>
+              ) : !enrollment ? (
+                <p className="text-xl font-bold text-yellow-500">未报名</p>
+              ) : (
+                <p className={`text-xl font-bold ${getEnrollmentStatusInfo(enrollment.status).color.replace('bg-', 'text-').split(' ')[0]}`}>
+                  {getEnrollmentStatusInfo(enrollment.status).text}
+                </p>
+              )}
             </div>
           </div>
 
-          {/* 我的团队 - 手机端可点击切换 */}
-          <div 
+          <div
             onClick={() => setMobileActiveTab(1)}
             className={`bg-white rounded-xl shadow-sm border p-4 hover:shadow-md transition-all cursor-pointer lg:hover:shadow-md ${
               mobileActiveTab === 1 ? 'md:border-gray-100 border-primary ring-1 ring-primary/20' : 'border-gray-100'
             }`}
           >
-            <Link to="/team-hall" className="hidden lg:block">
+            <div className="hidden lg:block">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
                   <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -306,10 +460,16 @@ const Dashboard = () => {
                 </div>
                 <span className="text-sm font-medium text-gray-500">我的团队</span>
               </div>
-              <p className={`text-xl font-bold ${hasTeam ? 'text-green-500' : 'text-yellow-500'}`}>
-                {hasTeam ? '已加入' : '未加入'}
-              </p>
-            </Link>
+              {teamLoading ? (
+                <p className="text-xl font-bold text-gray-400">加载中...</p>
+              ) : teamError ? (
+                <p className="text-xl font-bold text-red-500">错误</p>
+              ) : !team ? (
+                <p className="text-xl font-bold text-yellow-500">未加入</p>
+              ) : (
+                <p className="text-xl font-bold text-green-500">已加入</p>
+              )}
+            </div>
             <div className="lg:hidden">
               <div className="flex items-center gap-2 mb-2">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${mobileActiveTab === 1 ? 'bg-primary/10' : 'bg-purple-50'}`}>
@@ -319,20 +479,25 @@ const Dashboard = () => {
                 </div>
                 <span className={`text-sm font-medium ${mobileActiveTab === 1 ? 'text-primary' : 'text-gray-500'}`}>我的团队</span>
               </div>
-              <p className={`text-xl font-bold ${hasTeam ? 'text-green-500' : 'text-yellow-500'}`}>
-                {hasTeam ? '已加入' : '未加入'}
-              </p>
+              {teamLoading ? (
+                <p className="text-xl font-bold text-gray-400">加载中...</p>
+              ) : teamError ? (
+                <p className="text-xl font-bold text-red-500">错误</p>
+              ) : !team ? (
+                <p className="text-xl font-bold text-yellow-500">未加入</p>
+              ) : (
+                <p className="text-xl font-bold text-green-500">已加入</p>
+              )}
             </div>
           </div>
 
-          {/* 我的作品 - 手机端可点击切换 */}
-          <div 
-            onClick={() => setMobileActiveTab(2)}
+          <div
+            onClick={() => navigate('/my-works')}
             className={`bg-white rounded-xl shadow-sm border p-4 hover:shadow-md transition-all cursor-pointer lg:hover:shadow-md ${
               mobileActiveTab === 2 ? 'md:border-gray-100 border-primary ring-1 ring-primary/20' : 'border-gray-100'
             }`}
           >
-            <Link to="/work-submission" className="hidden lg:block">
+            <div className="hidden lg:block">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
                   <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -341,10 +506,18 @@ const Dashboard = () => {
                 </div>
                 <span className="text-sm font-medium text-gray-500">我的作品</span>
               </div>
-              <p className={`text-xl font-bold ${getWorkStatusInfo(workStatus).color}`}>
-                {getWorkStatusInfo(workStatus).text}
-              </p>
-            </Link>
+              {worksLoading ? (
+                <p className="text-xl font-bold text-gray-400">加载中...</p>
+              ) : worksError ? (
+                <p className="text-xl font-bold text-red-500">错误</p>
+              ) : works.length === 0 ? (
+                <p className="text-xl font-bold text-yellow-500">未提交</p>
+              ) : (
+                <p className={`text-xl font-bold ${getWorkStatusInfo(works[0].status).color}`}>
+                  {getWorkStatusInfo(works[0].status).text}
+                </p>
+              )}
+            </div>
             <div className="lg:hidden">
               <div className="flex items-center gap-2 mb-2">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${mobileActiveTab === 2 ? 'bg-primary/10' : 'bg-green-50'}`}>
@@ -354,16 +527,23 @@ const Dashboard = () => {
                 </div>
                 <span className={`text-sm font-medium ${mobileActiveTab === 2 ? 'text-primary' : 'text-gray-500'}`}>我的作品</span>
               </div>
-              <p className={`text-xl font-bold ${getWorkStatusInfo(workStatus).color}`}>
-                {getWorkStatusInfo(workStatus).text}
-              </p>
+              {worksLoading ? (
+                <p className="text-xl font-bold text-gray-400">加载中...</p>
+              ) : worksError ? (
+                <p className="text-xl font-bold text-red-500">错误</p>
+              ) : works.length === 0 ? (
+                <p className="text-xl font-bold text-yellow-500">未提交</p>
+              ) : (
+                <p className={`text-xl font-bold ${getWorkStatusInfo(works[0].status).color}`}>
+                  {getWorkStatusInfo(works[0].status).text}
+                </p>
+              )}
             </div>
           </div>
 
-          {/* 我的通知 - 手机端可点击切换 */}
-          <div 
-            onClick={() => setMobileActiveTab(3)}
-            className={`bg-white rounded-xl shadow-sm border p-4 hover:shadow-md transition-all cursor-pointer lg:hover:shadow-md ${
+          <Link
+            to="/notifications"
+            className={`bg-white rounded-xl shadow-sm border p-4 hover:shadow-md transition-all cursor-pointer lg:hover:shadow-md block ${
               mobileActiveTab === 3 ? 'md:border-gray-100 border-primary ring-1 ring-primary/20' : 'border-gray-100'
             }`}
           >
@@ -395,23 +575,41 @@ const Dashboard = () => {
                 <span className="text-sm font-normal text-gray-400"> 条未读</span>
               </p>
             </div>
-          </div>
+          </Link>
         </div>
 
-        {/* ========== 第四层：详细信息区 ========== */}
-        
-        {/* 桌面端：三列布局 */}
+        {/* 详细信息区 */}
         <div className="hidden lg:grid grid-cols-3 gap-4 mb-6">
-          {/* 我的报名详情 */}
+          {/* 我的报名详情 - 真实API数据 */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
             <div className="flex items-center justify-between gap-3 mb-4">
               <h3 className="font-semibold text-gray-800 flex-shrink-0">我的报名</h3>
-              <span className={`text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ${getEnrollmentStatusInfo(enrollmentStatus).color}`}>
-                {getEnrollmentStatusInfo(enrollmentStatus).text}
-              </span>
+              {enrollmentLoading ? (
+                <span className="text-xs text-gray-400">加载中</span>
+              ) : enrollmentError ? (
+                <span className="text-xs text-red-500">错误</span>
+              ) : !enrollment ? (
+                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-yellow-50 text-yellow-600">未报名</span>
+              ) : (
+                <span className={`text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ${getEnrollmentStatusInfo(enrollment.status).color}`}>
+                  {getEnrollmentStatusInfo(enrollment.status).text}
+                </span>
+              )}
             </div>
 
-            {enrollmentStatus === 'not_applied' ? (
+            {enrollmentLoading ? (
+              <div className="text-center py-8">
+                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                <p className="text-gray-400 text-sm">加载中...</p>
+              </div>
+            ) : enrollmentError ? (
+              <div className="text-center py-6">
+                <p className="text-red-400 text-sm mb-3">{enrollmentError}</p>
+                <button onClick={fetchMyEnrollment} className="text-sm bg-primary text-white px-5 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                  重试
+                </button>
+              </div>
+            ) : !enrollment ? (
               <div className="text-center py-6">
                 <p className="text-gray-400 text-sm mb-3">您还没有报名参赛</p>
                 <Link to="/register-competition" className="text-sm bg-primary text-white px-5 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors">
@@ -422,41 +620,61 @@ const Dashboard = () => {
               <div className="space-y-3">
                 <div className="pb-3 border-b border-gray-100">
                   <p className="text-xs text-gray-400 mb-1">赛事名称</p>
-                  <p className="text-sm text-gray-700 font-medium truncate">{mockEnrollment.competitionName}</p>
+                  <p className="text-sm text-gray-700 font-medium truncate">{enrollment.competition?.name || '-'}</p>
                 </div>
                 <div className="pb-3 border-b border-gray-100">
                   <p className="text-xs text-gray-400 mb-1">参赛方式 · 赛道</p>
-                  <p className="text-sm text-gray-700">{mockEnrollment.participationType} · {mockEnrollment.track}</p>
+                  <p className="text-sm text-gray-700">
+                    {enrollment.enrollmentType === 'team' ? '团队参赛' : '个人参赛'} · {enrollment.track?.name || '-'}
+                  </p>
                 </div>
                 <div className="pb-3 border-b border-gray-100">
                   <p className="text-xs text-gray-400 mb-1">报名时间</p>
-                  <p className="text-sm text-gray-700">{mockEnrollment.enrollmentTime}</p>
+                  <p className="text-sm text-gray-700">{formatDate(enrollment.createdAt)}</p>
                 </div>
-                {enrollmentStatus === 'rejected' && (
+                {enrollment.status === 'rejected' && enrollment.reviewComment && (
                   <div className="pt-2">
                     <p className="text-xs text-red-500 mb-1">驳回原因</p>
-                    <p className="text-sm text-red-600">{mockEnrollment.rejectionReason || '材料不符合要求'}</p>
+                    <p className="text-sm text-red-600">{enrollment.reviewComment}</p>
                   </div>
                 )}
-                <Link to="/register-competition" className="block text-center text-sm text-primary hover:underline pt-2">
-                  {enrollmentStatus === 'rejected' ? '补充材料' : '查看详情'}
-                </Link>
+                <button className="block w-full text-center text-sm text-gray-400 pt-2 cursor-not-allowed" disabled>
+                  查看详情（待接入）
+                </button>
               </div>
             )}
           </div>
 
-          {/* 我的团队详情 */}
+          {/* 我的团队详情 - 真实API数据 */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
             <div className="flex items-center justify-between gap-3 mb-4">
               <h3 className="font-semibold text-gray-800 flex-shrink-0">我的团队</h3>
-              {hasTeam && (
-                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 flex-shrink-0">
-                  {mockTeam.status}
+              {teamLoading ? (
+                <span className="text-xs text-gray-400">加载中</span>
+              ) : teamError ? (
+                <span className="text-xs text-red-500">错误</span>
+              ) : !team ? (
+                <span className="text-xs text-gray-400">-</span>
+              ) : (
+                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-blue-50 text-blue-600">
+                  {team.status === 'locked' ? '已锁定' : team.status === 'dissolved' ? '已解散' : team.status === 'complete' ? '已完成' : '组建中'}
                 </span>
               )}
             </div>
 
-            {!hasTeam ? (
+            {teamLoading ? (
+              <div className="text-center py-8">
+                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                <p className="text-gray-400 text-sm">加载中...</p>
+              </div>
+            ) : teamError ? (
+              <div className="text-center py-6">
+                <p className="text-red-400 text-sm mb-3">{teamError}</p>
+                <button onClick={fetchMyTeam} className="text-sm bg-primary text-white px-5 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                  重试
+                </button>
+              </div>
+            ) : !team ? (
               <div className="text-center py-6">
                 <p className="text-gray-400 text-sm mb-3">您还没有加入团队</p>
                 <Link to="/team-hall" className="text-sm bg-primary text-white px-5 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors">
@@ -467,275 +685,136 @@ const Dashboard = () => {
               <div className="space-y-3">
                 <div className="pb-3 border-b border-gray-100">
                   <p className="text-xs text-gray-400 mb-1">团队名称</p>
-                  <p className="text-sm text-gray-700 font-medium">{mockTeam.name}</p>
+                  <p className="text-sm text-gray-700 font-medium">{team.name || '-'}</p>
                 </div>
                 <div className="pb-3 border-b border-gray-100">
                   <p className="text-xs text-gray-400 mb-1">队长 · 成员</p>
-                  <p className="text-sm text-gray-700">{mockTeam.captainName} · {mockTeam.currentMembers}/{mockTeam.maxMembers}人</p>
+                  <p className="text-sm text-gray-700">{team.leader?.username || '-'} · {team._count?.members || 0}人</p>
                 </div>
-                <div className="pt-2">
-                  <div className="flex justify-between text-xs text-gray-400 mb-1.5">
-                    <span>成员进度</span>
-                    <span>{Math.round((mockTeam.currentMembers / mockTeam.maxMembers) * 100)}%</span>
+                {team.maxMembers && (
+                  <div className="pt-2">
+                    <div className="flex justify-between text-xs text-gray-400 mb-1.5">
+                      <span>成员进度</span>
+                      <span>{Math.round(((team._count?.members || 0) / team.maxMembers) * 100)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-1.5">
+                      <div className="bg-primary h-1.5 rounded-full" style={{ width: `${Math.min(100, ((team._count?.members || 0) / team.maxMembers) * 100)}%` }}></div>
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-1.5">
-                    <div className="bg-primary h-1.5 rounded-full" style={{ width: `${(mockTeam.currentMembers / mockTeam.maxMembers) * 100}%` }}></div>
-                  </div>
-                </div>
-                <Link to="/team-hall" className="block text-center text-sm text-primary hover:underline pt-2">
+                )}
+                <Link to="/team-hall" className="block w-full text-center text-sm text-primary hover:underline pt-2">
                   前往团队大厅
                 </Link>
               </div>
             )}
           </div>
 
-          {/* 我的作品详情 */}
+          {/* 我的作品详情 - 真实API数据 */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
             <div className="flex items-center justify-between gap-3 mb-4">
               <h3 className="font-semibold text-gray-800 flex-shrink-0">我的作品</h3>
-              <span className={`text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ${workStatus === 'none' ? 'bg-gray-100 text-gray-500' : workStatus === 'draft' ? 'bg-blue-50 text-blue-600' : workStatus === 'submitted' ? 'bg-purple-50 text-purple-600' : 'bg-orange-50 text-orange-600'}`}>
-                {getWorkStatusInfo(workStatus).text}
-              </span>
+              {!worksLoading && !worksError && works.length > 0 && (
+                <span className={`text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ${
+                  works[0].status === 'submitted' ? 'bg-purple-50 text-purple-600' :
+                  works[0].status === 'draft' ? 'bg-blue-50 text-blue-600' :
+                  works[0].status === 'under_review' ? 'bg-orange-50 text-orange-600' :
+                  works[0].status === 'published' ? 'bg-green-50 text-green-600' :
+                  'bg-gray-100 text-gray-500'
+                }`}>
+                  {getWorkStatusInfo(works[0].status).text}
+                </span>
+              )}
             </div>
 
-            {workStatus === 'none' ? (
+            {worksLoading ? (
+              <div className="text-center py-8">
+                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                <p className="text-gray-400 text-sm">加载中...</p>
+              </div>
+            ) : worksError ? (
+              <div className="text-center py-6">
+                <p className="text-red-400 text-sm mb-3">{worksError}</p>
+                <button onClick={fetchMyWorks} className="text-sm bg-primary text-white px-5 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                  重试
+                </button>
+              </div>
+            ) : works.length === 0 ? (
               <div className="text-center py-6">
                 <p className="text-gray-400 text-sm mb-3">您还没有提交作品</p>
-                <Link to="/work-submission" className="text-sm bg-primary text-white px-5 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                <Link to="/my-works" className="text-sm bg-primary text-white px-5 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors">
                   提交作品
                 </Link>
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="pb-3 border-b border-gray-100">
-                  <p className="text-xs text-gray-400 mb-1">作品名称</p>
-                  <p className="text-sm text-gray-700 font-medium truncate">{mockWork.title}</p>
-                </div>
-                <div className="pb-3 border-b border-gray-100">
-                  <p className="text-xs text-gray-400 mb-1">当前版本</p>
-                  <p className="text-sm text-gray-700">{mockWork.version}</p>
-                </div>
-                <div className="pt-2">
-                  <p className="text-xs text-gray-400 mb-1">最近更新</p>
-                  <p className="text-sm text-gray-700">{mockWork.lastUpdateTime}</p>
-                </div>
-                <Link to="/work-submission" className="block text-center text-sm text-primary hover:underline pt-2">
-                  {workStatus === 'draft' ? '继续编辑' : '查看详情'}
-                </Link>
+                {works.map((work) => (
+                  <div key={work.id} className="pb-3 border-b border-gray-100 last:border-0 last:pb-0">
+                    <Link to={`/works/${work.id}`}>
+                      <p className="text-xs text-gray-400 mb-1">作品名称</p>
+                      <p className="text-sm text-gray-700 font-medium truncate">{work.title || '-'}</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        更新: {formatDate(work.updatedAt || work.createdAt)}
+                      </p>
+                    </Link>
+                  </div>
+                ))}
               </div>
             )}
           </div>
         </div>
 
-        {/* 桌面端：通知列表 */}
-        <div className="hidden lg:block bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
-          <div className="flex items-center justify-between gap-3 mb-4">
-            <h3 className="font-semibold text-gray-800 flex-shrink-0">我的通知</h3>
-            <button className="text-sm text-primary hover:underline flex-shrink-0">查看全部</button>
-          </div>
-          <div className="space-y-2">
-            {mockNotifications.slice(0, 3).map((notification) => (
-              <div
-                key={notification.id}
-                className={`p-4 rounded-xl flex items-start justify-between ${notification.isRead ? 'bg-gray-50/50' : 'bg-blue-50/30'}`}
-              >
-                <div className="flex items-start flex-1">
-                  {!notification.isRead && (
-                    <span className="w-2 h-2 bg-orange-400 rounded-full mr-3 mt-2 flex-shrink-0"></span>
-                  )}
-                  {notification.isRead && <span className="w-2 mr-3"></span>}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className={`text-sm font-medium ${notification.isRead ? 'text-gray-500' : 'text-gray-800'}`}>
-                        {notification.title}
-                      </h4>
-                      <span className={`text-xs px-2 py-0.5 rounded ${
-                        notification.type === '报名' ? 'bg-blue-100 text-blue-600' :
-                        notification.type === '团队' ? 'bg-purple-100 text-purple-600' :
-                        'bg-green-100 text-green-600'
-                      }`}>
-                        {notification.type}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-400 truncate">{notification.content}</p>
-                  </div>
-                </div>
-                <span className="text-xs text-gray-400 whitespace-nowrap ml-4">{notification.date}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 手机端：动态详情区（单卡片切换） */}
+        {/* 手机端：作品详情 */}
         <div className="lg:hidden mb-6">
-          {/* 我的报名详情 */}
-          {mobileActiveTab === 0 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-              <div className="flex items-center justify-between gap-3 mb-4">
-                <h3 className="font-semibold text-gray-800 flex-shrink-0">我的报名</h3>
-                <span className={`text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ${getEnrollmentStatusInfo(enrollmentStatus).color}`}>
-                  {getEnrollmentStatusInfo(enrollmentStatus).text}
-                </span>
-              </div>
-
-              {enrollmentStatus === 'not_applied' ? (
-                <div className="text-center py-6">
-                  <p className="text-gray-400 text-sm mb-3">您还没有报名参赛</p>
-                  <Link to="/register-competition" className="text-sm bg-primary text-white px-5 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors">
-                    立即报名
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="pb-3 border-b border-gray-100">
-                    <p className="text-xs text-gray-400 mb-1">赛事名称</p>
-                    <p className="text-sm text-gray-700 font-medium truncate">{mockEnrollment.competitionName}</p>
-                  </div>
-                  <div className="pb-3 border-b border-gray-100">
-                    <p className="text-xs text-gray-400 mb-1">参赛方式 · 赛道</p>
-                    <p className="text-sm text-gray-700">{mockEnrollment.participationType} · {mockEnrollment.track}</p>
-                  </div>
-                  <div className="pb-3 border-b border-gray-100">
-                    <p className="text-xs text-gray-400 mb-1">报名时间</p>
-                    <p className="text-sm text-gray-700">{mockEnrollment.enrollmentTime}</p>
-                  </div>
-                  {enrollmentStatus === 'rejected' && (
-                    <div className="pt-2">
-                      <p className="text-xs text-red-500 mb-1">驳回原因</p>
-                      <p className="text-sm text-red-600">{mockEnrollment.rejectionReason || '材料不符合要求'}</p>
-                    </div>
-                  )}
-                  <Link to="/register-competition" className="block text-center text-sm text-primary hover:underline pt-2">
-                    {enrollmentStatus === 'rejected' ? '补充材料' : '查看详情'}
-                  </Link>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* 我的团队详情 */}
-          {mobileActiveTab === 1 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-              <div className="flex items-center justify-between gap-3 mb-4">
-                <h3 className="font-semibold text-gray-800 flex-shrink-0">我的团队</h3>
-                {hasTeam && (
-                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 flex-shrink-0">
-                    {mockTeam.status}
-                  </span>
-                )}
-              </div>
-
-              {!hasTeam ? (
-                <div className="text-center py-6">
-                  <p className="text-gray-400 text-sm mb-3">您还没有加入团队</p>
-                  <Link to="/team-hall" className="text-sm bg-primary text-white px-5 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors">
-                    创建/加入团队
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="pb-3 border-b border-gray-100">
-                    <p className="text-xs text-gray-400 mb-1">团队名称</p>
-                    <p className="text-sm text-gray-700 font-medium">{mockTeam.name}</p>
-                  </div>
-                  <div className="pb-3 border-b border-gray-100">
-                    <p className="text-xs text-gray-400 mb-1">队长 · 成员</p>
-                    <p className="text-sm text-gray-700">{mockTeam.captainName} · {mockTeam.currentMembers}/{mockTeam.maxMembers}人</p>
-                  </div>
-                  <div className="pt-2">
-                    <div className="flex justify-between text-xs text-gray-400 mb-1.5">
-                      <span>成员进度</span>
-                      <span>{Math.round((mockTeam.currentMembers / mockTeam.maxMembers) * 100)}%</span>
-                    </div>
-                    <div className="w-full bg-gray-100 rounded-full h-1.5">
-                      <div className="bg-primary h-1.5 rounded-full" style={{ width: `${(mockTeam.currentMembers / mockTeam.maxMembers) * 100}%` }}></div>
-                    </div>
-                  </div>
-                  <Link to="/team-hall" className="block text-center text-sm text-primary hover:underline pt-2">
-                    前往团队大厅
-                  </Link>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* 我的作品详情 */}
           {mobileActiveTab === 2 && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
               <div className="flex items-center justify-between gap-3 mb-4">
                 <h3 className="font-semibold text-gray-800 flex-shrink-0">我的作品</h3>
-                <span className={`text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ${workStatus === 'none' ? 'bg-gray-100 text-gray-500' : workStatus === 'draft' ? 'bg-blue-50 text-blue-600' : workStatus === 'submitted' ? 'bg-purple-50 text-purple-600' : 'bg-orange-50 text-orange-600'}`}>
-                  {getWorkStatusInfo(workStatus).text}
-                </span>
+                {!worksLoading && !worksError && works.length > 0 && (
+                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ${
+                    works[0].status === 'submitted' ? 'bg-purple-50 text-purple-600' :
+                    works[0].status === 'draft' ? 'bg-blue-50 text-blue-600' :
+                    'bg-gray-100 text-gray-500'
+                  }`}>
+                    {getWorkStatusInfo(works[0].status).text}
+                  </span>
+                )}
               </div>
 
-              {workStatus === 'none' ? (
+              {worksLoading ? (
+                <div className="text-center py-8">
+                  <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                  <p className="text-gray-400 text-sm">加载中...</p>
+                </div>
+              ) : worksError ? (
+                <div className="text-center py-6">
+                  <p className="text-red-400 text-sm mb-3">{worksError}</p>
+                  <button onClick={fetchMyWorks} className="text-sm bg-primary text-white px-5 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                    重试
+                  </button>
+                </div>
+              ) : works.length === 0 ? (
                 <div className="text-center py-6">
                   <p className="text-gray-400 text-sm mb-3">您还没有提交作品</p>
-                  <Link to="/work-submission" className="text-sm bg-primary text-white px-5 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                  <Link to="/my-works" className="text-sm bg-primary text-white px-5 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors">
                     提交作品
                   </Link>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="pb-3 border-b border-gray-100">
-                    <p className="text-xs text-gray-400 mb-1">作品名称</p>
-                    <p className="text-sm text-gray-700 font-medium truncate">{mockWork.title}</p>
-                  </div>
-                  <div className="pb-3 border-b border-gray-100">
-                    <p className="text-xs text-gray-400 mb-1">当前版本</p>
-                    <p className="text-sm text-gray-700">{mockWork.version}</p>
-                  </div>
-                  <div className="pt-2">
-                    <p className="text-xs text-gray-400 mb-1">最近更新</p>
-                    <p className="text-sm text-gray-700">{mockWork.lastUpdateTime}</p>
-                  </div>
-                  <Link to="/work-submission" className="block text-center text-sm text-primary hover:underline pt-2">
-                    {workStatus === 'draft' ? '继续编辑' : '查看详情'}
+                  {works.map((work) => (
+                    <div key={work.id} className="pb-3 border-b border-gray-100 last:border-0 last:pb-0">
+                      <p className="text-xs text-gray-400 mb-1">作品名称</p>
+                      <p className="text-sm text-gray-700 font-medium truncate">{work.title || '-'}</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        更新: {formatDate(work.updatedAt || work.createdAt)}
+                      </p>
+                    </div>
+                  ))}
+                  <Link to={`/works/${work.id}`} className="block text-center text-sm text-primary hover:underline pt-2">
+                    查看详情
                   </Link>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* 我的通知详情 */}
-          {mobileActiveTab === 3 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-              <div className="flex items-center justify-between gap-3 mb-4">
-                <h3 className="font-semibold text-gray-800 flex-shrink-0">我的通知</h3>
-                <button className="text-sm text-primary hover:underline flex-shrink-0">查看全部</button>
-              </div>
-              <div className="space-y-2">
-                {mockNotifications.slice(0, 3).map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`p-4 rounded-xl ${notification.isRead ? 'bg-gray-50/50' : 'bg-blue-50/30'}`}
-                  >
-                    <div className="flex items-start gap-3">
-                      {!notification.isRead && (
-                        <span className="w-2 h-2 bg-orange-400 rounded-full mt-1.5 flex-shrink-0"></span>
-                      )}
-                      {notification.isRead && <span className="w-2 flex-shrink-0"></span>}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-1">
-                          <h4 className={`text-sm font-medium ${notification.isRead ? 'text-gray-500' : 'text-gray-800'}`}>
-                            {notification.title}
-                          </h4>
-                          <span className={`text-xs px-2 py-0.5 rounded flex-shrink-0 ${
-                            notification.type === '报名' ? 'bg-blue-100 text-blue-600' :
-                            notification.type === '团队' ? 'bg-purple-100 text-purple-600' :
-                            'bg-green-100 text-green-600'
-                          }`}>
-                            {notification.type}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-400 truncate">{notification.content}</p>
-                        <span className="text-xs text-gray-400 mt-1 block">{notification.date}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
         </div>

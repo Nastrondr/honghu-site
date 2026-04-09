@@ -335,6 +335,17 @@ export class WorksService {
       throw new ForbiddenException('已提交的作品无法添加附件');
     }
 
+    const ALLOWED_FILE_TYPES = [
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/pdf',
+      'video/mp4',
+    ];
+
+    if (dto.fileType && !ALLOWED_FILE_TYPES.includes(dto.fileType)) {
+      throw new BadRequestException('仅支持 doc、docx、pdf、mp4 格式');
+    }
+
     return this.prisma.workAttachment.create({
       data: {
         versionId,

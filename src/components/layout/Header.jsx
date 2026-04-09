@@ -205,7 +205,7 @@ const Header = () => {
                     { path: '/dashboard', label: '个人中心' },
                     { path: '/team-hall', label: '我的团队' },
                     { path: '/competition-data', label: '赛题数据' },
-                    { path: '/work-submission', label: '作品提交' },
+                    { path: '/my-works', label: '我的作品' },
                     { type: 'divider' },
                     { path: '#', label: '退出登录', onClick: handleLogout },
                   ]}
@@ -324,3 +324,4 @@ const Header = () => {
 };
 
 export default Header;
+

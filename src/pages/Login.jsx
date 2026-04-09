@@ -14,6 +14,13 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const handleLogin = async (email, accessToken, userData) => {
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('isAuthenticated', 'true');
+    login(userData);
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -28,19 +35,29 @@ const Login = () => {
     setError('');
     setIsLoading(true);
 
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    if (formData.phoneOrEmail && formData.password) {
-      login({
-        phoneOrEmail: formData.phoneOrEmail,
-        name: formData.phoneOrEmail
+    try {
+      const response = await fetch('/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.phoneOrEmail,
+          password: formData.password,
+        }),
       });
-      navigate('/');
-    } else {
-      setError('请输入手机号/邮箱和密码');
-    }
 
-    setIsLoading(false);
+      const result = await response.json();
+
+      if (result.code === 0 && result.data?.accessToken) {
+        handleLogin(formData.phoneOrEmail, result.data.accessToken, result.data);
+        navigate('/');
+      } else {
+        setError(result.message || '登录失败');
+      }
+    } catch (err) {
+      setError('网络错误，请重试');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // 统一颜色配置 - 用户登录：紫色主题
