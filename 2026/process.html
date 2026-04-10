@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>梧桐·鸿鹄OPC入驻与管理流程</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f0f4f8;
+  color: #2d3748;
+  padding: 24px;
+}
+.container { max-width: 1200px; margin: 0 auto; }
+
+/* 头部 */
+.header {
+  background: linear-gradient(135deg, #1a202c 0%, #2d3748 40%, #4a5568 100%);
+  color: white;
+  border-radius: 16px;
+  padding: 36px 40px;
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+}
+.header::before {
+  content: '';
+  position: absolute;
+  right: -40px; top: -40px;
+  width: 220px; height: 220px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50%;
+}
+.header h1 { font-size: 26px; font-weight: 800; margin-bottom: 8px; }
+.header p { font-size: 14px; opacity: 0.8; line-height: 1.6; }
+.header .meta {
+  margin-top: 14px;
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+.header .meta span {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 12px;
+}
+
+/* 章节标题 */
+.section { margin-bottom: 32px; }
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.section-title .num {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 800; color: white;
+  flex-shrink: 0;
+}
+.section-title h2 {
+  font-size: 20px; font-weight: 700; color: #1a202c;
+}
+.section-title p { font-size: 13px; color: #718096; margin-top: 2px; }
+
+/* 流程步骤卡片 */
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+.step-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.step-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+.step-header {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.step-num {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800; color: white;
+  flex-shrink: 0;
+}
+.step-header .step-title { font-weight: 700; font-size: 15px; }
+.step-header .step-subtitle { font-size: 12px; color: #718096; margin-top: 2px; }
+.step-body {
+  padding: 0 18px 16px;
+  border-top: 1px solid #f7fafc;
+}
+.step-body ul { list-style: none; padding: 0; }
+.step-body ul li {
+  padding: 5px 0 5px 20px;
+  position: relative;
+  font-size: 13px;
+  color: #4a5568;
+  line-height: 1.6;
+  border-bottom: 1px dashed #f0f4f8;
+}
+.step-body ul li:last-child { border-bottom: none; }
+.step-body ul li::before {
+  content: '▸';
+  position: absolute;
+  left: 0; top: 6px;
+  color: #a0aec0;
+  font-size: 11px;
+}
+.step-body ul li strong { color: #2d3748; }
+
+/* 流程箭头（水平流程图） */
+.flow-wrap {
+  background: white;
+  border-radius: 12px;
+  padding: 28px 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  overflow-x: auto;
+}
+.flow-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-width: 900px;
+  flex-wrap: nowrap;
+}
+.flow-node {
+  flex: 1;
+  text-align: center;
+  padding: 14px 8px;
+  border-radius: 10px;
+  position: relative;
+  min-width: 100px;
+}
+.flow-node .node-icon { font-size: 22px; margin-bottom: 6px; }
+.flow-node .node-title { font-size: 13px; font-weight: 700; color: #1a202c; }
+.flow-node .node-sub { font-size: 11px; color: #718096; margin-top: 3px; }
+.flow-arrow {
+  font-size: 20px;
+  color: #a0aec0;
+  flex-shrink: 0;
+  padding: 0 4px;
+}
+
+/* 颜色主题 */
+.c-blue { background: #ebf8ff; }
+.c-green { background: #f0fff4; }
+.c-orange { background: #fffaf0; }
+.c-purple { background: #faf5ff; }
+.c-red { background: #fff5f5; }
+.c-teal { background: #e6fffa; }
+.c-yellow { background: #fffff0; }
+
+.num-blue { background: #3182ce; }
+.num-green { background: #38a169; }
+.num-orange { background: #dd6b20; }
+.num-purple { background: #6b46c1; }
+.num-teal { background: #2c7a7b; }
+
+.snum-blue { background: #4299e1; }
+.snum-green { background: #48bb78; }
+.snum-orange { background: #ed8936; }
+.snum-purple { background: #805ad5; }
+.snum-teal { background: #38b2ac; }
+
+/* 表格 */
+.table-wrap {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  overflow: hidden;
+}
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th {
+  background: #f7fafc;
+  padding: 11px 16px;
+  text-align: left;
+  font-weight: 700;
+  color: #4a5568;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+td {
+  padding: 11px 16px;
+  border-bottom: 1px solid #edf2f7;
+  vertical-align: top;
+  line-height: 1.7;
+  color: #4a5568;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f7fafc; }
+
+/* 标签 */
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.tag-req { background: #fed7d7; color: #c53030; }
+.tag-opt { background: #c6f6d5; color: #276749; }
+.tag-tip { background: #bee3f8; color: #2b6cb0; }
+.tag-warn { background: #fefcbf; color: #744210; }
+
+/* 注意箱 */
+.notice {
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-top: 16px;
+  font-size: 13px;
+  line-height: 1.8;
+  display: flex;
+  gap: 12px;
+}
+.notice-icon { font-size: 20px; flex-shrink: 0; }
+.notice-blue { background: #ebf8ff; border-left: 4px solid #3182ce; }
+.notice-yellow { background: #fffff0; border-left: 4px solid #d69e2e; }
+.notice-green { background: #f0fff4; border-left: 4px solid #38a169; }
+
+/* POWERS模型 */
+.powers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.power-card {
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+}
+.power-letter {
+  font-size: 36px; font-weight: 900;
+  line-height: 1.1; margin-bottom: 6px;
+}
+.power-name { font-size: 13px; font-weight: 700; color: #2d3748; }
+.power-desc { font-size: 12px; color: #718096; margin-top: 4px; line-height: 1.5; }
+
+/* 里程碑时间轴 */
+.timeline { position: relative; padding-left: 40px; }
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 14px; top: 0; bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, #3182ce, #38a169, #dd6b20);
+}
+.tl-item {
+  position: relative;
+  margin-bottom: 20px;
+  background: white;
+  border-radius: 10px;
+  padding: 14px 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.tl-item::before {
+  content: '';
+  position: absolute;
+  left: -33px; top: 18px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  border: 3px solid white;
+}
+.tl-blue::before { background: #3182ce; }
+.tl-green::before { background: #38a169; }
+.tl-orange::before { background: #dd6b20; }
+.tl-purple::before { background: #6b46c1; }
+.tl-item .tl-title { font-weight: 700; font-size: 14px; color: #1a202c; margin-bottom: 4px; }
+.tl-item .tl-time { font-size: 11px; color: #a0aec0; }
+.tl-item .tl-desc { font-size: 13px; color: #4a5568; margin-top: 6px; line-height: 1.6; }
+
+/* 底部 */
+.footer {
+  text-align: center;
+  color: #a0aec0; font-size: 12px;
+  padding: 20px;
+  margin-top: 8px;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .powers-grid { grid-template-columns: repeat(2, 1fr); }
+  .steps-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- 头部 -->
+<div class="header">
+  <h1>🏢 梧桐·鸿鹄OPC入驻与管理流程</h1>
+  <p>基于新《公司法》、广东省/湖北省行动方案、武汉市/深圳市/苏州认定办法及团体标准 T/SZAI 001-2026 整理</p>
+  <div class="meta">
+    <span>📅 整理日期：2026年3月25日</span>
+    <span>📋 政策依据：多地官方文件</span>
+    <span>🎯 适用对象：OPC创业者 / 社区运营方</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     第一部分：OPC公司注册登记流程
+═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">
+    <div class="num num-blue">①</div>
+    <div>
+      <h2>OPC公司注册登记流程</h2>
+      <p>依据新《公司法》（2024年7月施行），全国统一适用，最快1个工作日完成</p>
+    </div>
+  </div>
+
+  <!-- 流程图 -->
+  <div class="flow-wrap" style="margin-bottom:16px;">
+    <div class="flow-row">
+      <div class="flow-node c-blue">
+        <div class="node-icon">📝</div>
+        <div class="node-title">确定方向</div>
+        <div class="node-sub">名称+经营范围</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node c-teal">
+        <div class="node-icon">🖥️</div>
+        <div class="node-title">网上核名</div>
+        <div class="node-sub">政务服务网申报</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node c-green">
+        <div class="node-icon">📄</div>
+        <div class="node-title">准备材料</div>
+        <div class="node-sub">章程+身份证明</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node c-orange">
+        <div class="node-icon">✍️</div>
+        <div class="node-title">实名认证</div>
+        <div class="node-sub">APP电子签名</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node c-purple">
+        <div class="node-icon">📮</div>
+        <div class="node-title">提交审核</div>
+        <div class="node-sub">在线提交申请</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node c-red">
+        <div class="node-icon">🏅</div>
+        <div class="node-title">领取执照</div>
+        <div class="node-sub">邮寄或现场</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node c-yellow">
+        <div class="node-icon">🧾</div>
+        <div class="node-title">税务登记</div>
+        <div class="node-sub">开票资质办理</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-header c-blue">
+        <div class="step-num snum-blue">1</div>
+        <div>
+          <div class="step-title">确定公司名称与经营范围</div>
+          <div class="step-subtitle">前期准备，约0.5天</div>
+        </div>
+      </div>
+      <div class="step-body">
+        <ul>
+          <li><strong>公司名称格式：</strong>行政区划 + 字号 + 行业 + 组织形式</li>
+          <li><strong>推荐经营范围：</strong>互联网信息服务、软件开发、技术咨询（宽泛类目适应未来发展）</li>
+          <li>可同步查询同名，避免重名</li>
+          <li>OPC社区可提供免费注册地址（无需自备房产）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-header c-teal">
+        <div class="step-num snum-teal">2</div>
+        <div>
+          <div class="step-title">网上核名与在线申请</div>
+          <div class="step-subtitle">登录政务服务网，约1天</div>
+        </div>
+      </div>
+      <div class="step-body">
+        <ul>
+          <li>登录各地政务服务网，选择"企业开办全程网办"</li>
+          <li>完成"名称自主申报"，系统自动比对</li>
+          <li>核名通过后，填写公司基本信息</li>
+          <li><strong>部分城市OPC绿色通道：</strong>杭州1天、苏州7天内办结</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-header c-green">
+        <div class="step-num snum-green">3</div>
+        <div>
+          <div class="step-title">准备注册材料</div>
+          <div class="step-subtitle">必备材料清单</div>
+        </div>
+      </div>
+      <div class="step-body">
+        <ul>
+          <li><strong>必备：</strong>公司登记（备案）申请书 <span class="tag tag-req">必须</span></li>
+          <li><strong>必备：</strong>公司章程（股东本人签署）<span class="tag tag-req">必须</span></li>
+          <li><strong>必备：</strong>股东身份证明（身份证复印件）<span class="tag tag-req">必须</span></li>
+          <li><strong>必备：</strong>法定代表人任职文件 <span class="tag tag-req">必须</span></li>
+          <li><strong>住所证明：</strong>房产证/租赁合同（OPC社区提供）<span class="tag tag-opt">可替代</span></li>
+          <li>注册资本：认缴制，金额自主约定，无需验资报告</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-header c-orange">
+        <div class="step-num snum-orange">4</div>
+        <div>
+          <div class="step-title">实名认证与电子签名</div>
+          <div class="step-subtitle">完成身份核验</div>
+        </div>
+      </div>
+      <div class="step-body">
+        <ul>
+          <li>使用"登记注册身份验证"APP完成实名认证</li>
+          <li>对股东、法定代表人等人员逐一进行身份核验</li>
+          <li>完成电子签名后提交申请至工商部门</li>
+          <li>全程无需线下跑路</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-header c-red">
+        <div class="step-num" style="background:#e53e3e;">5</div>
+        <div>
+          <div class="step-title">领取营业执照</div>
+          <div class="step-subtitle">审核通过后发放</div>
+        </div>
+      </div>
+      <div class="step-body">
+        <ul>
+          <li>工商部门审核通过后发送通知</li>
+          <li>可选择电子执照（即时获取）或纸质执照（邮寄）</li>
+          <li>执照发放后即可对外开展经营活动</li>
+          <li>同步办理公章刻制（可选）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-header c-yellow">
+        <div class="step-num" style="background:#d69e2e;">6</div>
+        <div>
+          <div class="step-title">税务登记与发票申领</div>
+          <div class="step-subtitle">领照后及时办理</div>
+        </div>
+      </div>
+      <div class="step-body">
+        <ul>
+          <li>登录电子税务局完成税务实名注册</li>
+          <li>核定税种：增值税（月销售额≤10万免征）</li>
+          <li>申请发票资质及票种核定</li>
+          <li><strong>可享优惠：</strong>小微企业所得税实际税负低至5%</li>
+          <li>推荐使用AI财税软件自动记账报税</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     第二部分：OPC社区入驻流程
+═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">
+    <div class="num num-green">②</div>
+    <div>
+      <h2>OPC社区入驻申请流程</h2>
+      <p>依据深圳行动计划（2026.1.15）、武汉市科创局通知（2026.3.10）整理</p>
+    </div>
+  </div>
+
+  <!-- 入驻流程图 -->
+  <div class="flow-wrap" style="margin-bottom:16px;">
+    <div class="flow-row">
+      <div class="flow-node c-blue">
+        <div class="node-icon">🔍</div>
+        <div class="node-title">了解政策</div>
+        <div class="node-sub">查阅入驻条件</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node c-green">
+        <div class="node-icon">📋</div>
+        <div class="node-title">提交申请</div>
+        <div class="node-sub">在线填报信息</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node c-orange">
+        <div class="node-icon">🔎</div>
+        <div class="node-title">资格预审</div>
+        <div class="node-sub">社区初步审核</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node c-purple">
+        <div class="node-icon">🏠</div>
+        <div class="node-title">现场核查</div>
+        <div class="node-sub">条件核实</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node c-teal">
+        <div class="node-icon">📣</div>
+        <div class="node-title">公示确认</div>
+        <div class="node-sub">公示5个工作日</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node c-yellow">
+        <div class="node-icon">✅</div>
+        <div class="node-title">正式入驻</div>
+        <div class="node-sub">签约+拎包入住</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-header c-blue">
+        <div class="step-num snum-blue">1</div>
+        <div>
+          <div class="step-title">了解入驻条件与选择社区</div>
+          <div class="step-subtitle">前期调研</div>
+        </div>
+      </div>
+      <div class="step-body">
+        <ul>
+          <li><strong>关注渠道：</strong>各区工信局/科创局官网、OPC社区官方公众号</li>
+          <li><strong>社区类型：</strong>综合类（多赛道）VS 垂直领域类（AI硬件/内容/软件等）</li>
+          <li>了解当地算力券、工位补贴、资金扶持等具体政策</li>
+          <li>深圳：南山/龙岗/福田/光明先行区已开放入驻</li>
+          <li>武汉：可登录武汉市科创局官网查询最新名单</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-header c-green">
+        <div class="step-num snum-green">2</div>
+        <div>
+          <div class="step-title">准备申请材料</div>
+          <div class="step-subtitle">材料清单</div>
+        </div>
+      </div>
+      <div class="step-body">
+        <ul>
+          <li>营业执照复印件 <span class="tag tag-req">必须</span></li>
+          <li>法定代表人身份证明 <span class="tag tag-req">必须</span></li>
+          <li>公司经营方向说明 / 项目介绍 <span class="tag tag-req">必须</span></li>
+          <li>AI工具使用能力证明（作品集/演示） <span class="tag tag-tip">建议</span></li>
+          <li>团队规模说明（≤20人） <span class="tag tag-req">必须</span></li>
+          <li>诚信承诺书（各地格式不同）<span class="tag tag-req">必须</span></li>
+          <li>融资需求说明（可选） <span class="tag tag-opt">可选</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-header c-orange">
+        <div class="step-num snum-orange">3</div>
+        <div>
+          <div class="step-title">在线申报与初审</div>
+          <div class="step-subtitle">武汉模式（可参考）</div>
+        </div>
+      </div>
+      <div class="step-body">
+        <ul>
+          <li>登录武汉市科创局门户网站（kjj.wuhan.gov.cn）</li>
+          <li>点击"项目申报与管理—在线申报"，个人账户登录</li>
+          <li>选择"2026年度—OPC生态社区认定"模块</li>
+          <li>在线填写基本信息并上传签字盖章材料（PDF格式）</li>
+          <li>单位账户登录后点击"推荐"提交至区科技部门</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-header c-purple">
+        <div class="step-num snum-purple">4</div>
+        <div>
+          <div class="step-title">区级推荐与现场核查</div>
+          <div class="step-subtitle">双层审核机制</div>
+        </div>
+      </div>
+      <div class="step-body">
+        <ul>
+          <li>区科技管理部门进行初审</li>
+          <li>安排现场核实（场地、团队、设施）</li>
+          <li>区科技部门在系统中点击"推荐"</li>
+          <li>提交区级推荐函至市科创局</li>
+          <li>市级统筹审核认定（常年申报、定期认定）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-header c-teal">
+        <div class="step-num snum-teal">5</div>
+        <div>
+          <div class="step-title">公示与正式入驻</div>
+          <div class="step-subtitle">完成入驻最后步骤</div>
+        </div>
+      </div>
+      <div class="step-body">
+        <ul>
+          <li>审核通过后进行社会公示（一般5个工作日）</li>
+          <li>公示无异议后，与社区签署入驻协议</li>
+          <li>享受"拎包入驻"：精装工位/办公室，即来即用</li>
+          <li><strong>深圳：</strong>提供50㎡以内低成本创业空间</li>
+          <li><strong>上海临港：</strong>办公+住宿双免（零界魔方社区）</li>
+          <li><strong>武汉：</strong>最长2年免费公共服务包（财税/法律/知产）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-header c-yellow">
+        <div class="step-num" style="background:#d69e2e;">6</div>
+        <div>
+          <div class="step-title">政策补贴申领</div>
+          <div class="step-subtitle">入驻后激活政策红利</div>
+        </div>
+      </div>
+      <div class="step-body">
+        <ul>
+          <li><strong>算力券/模型券：</strong>向运营方或区工信局申请，抵扣算力成本</li>
+          <li><strong>资金资助：</strong>在线填报项目申请书，附商业计划书</li>
+          <li><strong>租金减免：</strong>由社区运营方直接抵扣，无需单独申请</li>
+          <li><strong>人才安居：</strong>向各区住房保障部门提交申请（最长36个月）</li>
+          <li><strong>一站式办理：</strong>省政务服务网/市政务网可集成办理多项补贴</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     第三部分：OPC社区认定标准（运营方）
+═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">
+    <div class="num num-orange">③</div>
+    <div>
+      <h2>OPC社区认定标准（运营方适用）</h2>
+      <p>依据武汉市科创局认定条件（2026.3.10）及苏州团标 T/SZAI 001-2026</p>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:60px;">序号</th>
+          <th style="width:140px;">认定维度</th>
+          <th>具体标准要求</th>
+          <th style="width:100px;">是否强制</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><strong>申报主体资质</strong></td>
+          <td>具备独立法人资格的市场化专业机构；具有产业生态构建能力</td>
+          <td><span class="tag tag-req">强制</span></td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><strong>场地规模</strong></td>
+          <td>核心办公面积 ≥ 3000㎡（深圳要求单社区 ≥ 1万㎡）；入驻人工智能相关企业 ≥ 20家，其中OPC ≥ 10家</td>
+          <td><span class="tag tag-req">强制</span></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><strong>专业服务能力</strong></td>
+          <td>具备接入或高效链接普惠算力、高质量数据集、主流开发工具与模型的能力；能提供算力补贴、数据资源等支持</td>
+          <td><span class="tag tag-req">强制</span></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><strong>金融服务</strong></td>
+          <td>设立专项投资基金；入驻金融机构 ≥ 2家；每年组织投融资路演 ≥ 5场</td>
+          <td><span class="tag tag-req">强制</span></td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><strong>生活配套</strong></td>
+          <td>具备人才公寓、餐饮、商务等设施；构建10分钟办公生活圈</td>
+          <td><span class="tag tag-warn">建议</span></td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><strong>公共服务包</strong></td>
+          <td>为入驻企业提供最长2年免费公共服务包（财务/税务/法律/专利等）</td>
+          <td><span class="tag tag-req">强制</span></td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><strong>生态活动</strong></td>
+          <td>每年举办创新创业赛事、资源对接、培训等活动 ≥ 10场</td>
+          <td><span class="tag tag-req">强制</span></td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><strong>场景支持</strong></td>
+          <td>每年为社区内OPC挖掘 ≥ 20个应用场景，促成 ≥ 5个场景落地</td>
+          <td><span class="tag tag-req">强制</span></td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><strong>制度建设</strong></td>
+          <td>建立完善的入驻管理制度、退出机制、动态跟踪服务机制</td>
+          <td><span class="tag tag-req">强制</span></td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><strong>运营团队</strong></td>
+          <td>具备专职运营团队，配备产业运营、政策对接、招商引资等专业人员</td>
+          <td><span class="tag tag-req">强制</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- POWERS模型 -->
+  <div class="notice notice-blue" style="margin-top:20px; margin-bottom:16px;">
+    <div class="notice-icon">💡</div>
+    <div><strong>苏州团体标准 T/SZAI 001-2026</strong> 创立了"POWERS赋能六力模型"，作为OPC社区综合评价体系（国内首个），评价结果可作为政府政策制定依据及金融机构合作参考。</div>
+  </div>
+
+  <div class="powers-grid">
+    <div class="power-card c-blue">
+      <div class="power-letter" style="color:#3182ce;">P</div>
+      <div class="power-name">先锋人才汇聚力</div>
+      <div class="power-desc">吸引和凝聚高端创新型人才的能力</div>
+    </div>
+    <div class="power-card c-orange">
+      <div class="power-letter" style="color:#dd6b20;">O</div>
+      <div class="power-name">机会引擎驱动力</div>
+      <div class="power-desc">为OPC提供商业机会和市场资源的动力</div>
+    </div>
+    <div class="power-card c-green">
+      <div class="power-letter" style="color:#38a169;">W</div>
+      <div class="power-name">全程陪跑引导力</div>
+      <div class="power-desc">从孵化到成长全过程辅导支持</div>
+    </div>
+    <div class="power-card c-purple">
+      <div class="power-letter" style="color:#6b46c1;">E</div>
+      <div class="power-name">生态网络链接力</div>
+      <div class="power-desc">产业、资本、技术资源对接整合能力</div>
+    </div>
+    <div class="power-card c-red">
+      <div class="power-letter" style="color:#c53030;">R</div>
+      <div class="power-name">回报成长加速力</div>
+      <div class="power-desc">帮助创业者实现商业回报与快速成长</div>
+    </div>
+    <div class="power-card c-teal">
+      <div class="power-letter" style="color:#2c7a7b;">S</div>
+      <div class="power-name">专业服务支撑力</div>
+      <div class="power-desc">法律、财务、技术、政策专业化保障</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     第四部分：OPC日常管理与运营规范
+═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">
+    <div class="num num-purple">④</div>
+    <div>
+      <h2>OPC日常管理与运营规范</h2>
+      <p>入驻后的合规经营、动态管理及退出机制</p>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:120px;">管理维度</th>
+          <th style="width:160px;">具体要求</th>
+          <th>操作要点</th>
+          <th style="width:100px;">周期</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>📊 财务合规</strong></td>
+          <td>账务独立、规范记录</td>
+          <td>公司财产与个人财产严格分开（混同将丧失有限责任保护）；建立独立账户；推荐使用AI财税软件自动记账</td>
+          <td>持续</td>
+        </tr>
+        <tr>
+          <td><strong>🧾 纳税申报</strong></td>
+          <td>按期申报纳税</td>
+          <td>月销售额≤10万：增值税免征；小微企业所得税按季申报；享受5%低税负需符合年应纳税所得额≤300万条件</td>
+          <td>每月/季度</td>
+        </tr>
+        <tr>
+          <td><strong>📋 年度报告</strong></td>
+          <td>工商年报公示</td>
+          <td>每年1月1日至6月30日，通过国家企业信用信息公示系统完成年报；一人公司需对年报内容的真实性负个人责任</td>
+          <td>每年</td>
+        </tr>
+        <tr>
+          <td><strong>🔄 动态跟踪</strong></td>
+          <td>接受社区动态评估</td>
+          <td>配合社区/主管部门的定期评估；提供经营数据、场景落地情况；符合条件者可纳入省级数字经济创新型企业库</td>
+          <td>每季度</td>
+        </tr>
+        <tr>
+          <td><strong>📈 政策申报</strong></td>
+          <td>按需申请补贴奖励</td>
+          <td>算力券：按季申请抵扣；研发补贴/场景奖励：项目完成后3个月内提交；上市奖励：上市后12个月内申请</td>
+          <td>按需</td>
+        </tr>
+        <tr>
+          <td><strong>🤝 生态参与</strong></td>
+          <td>融入社区生态</td>
+          <td>参与社区组织的路演、对接活动（≥每年4场）；加入省算力产业创新联盟、数商联合会等行业组织；共享场景资源</td>
+          <td>每年</td>
+        </tr>
+        <tr>
+          <td><strong>🔒 知识产权</strong></td>
+          <td>保护核心资产</td>
+          <td>AI生成内容的著作权保护；软件著作权登记；发明专利申请（成都：每项奖励10万元）；避免侵权风险</td>
+          <td>持续</td>
+        </tr>
+        <tr>
+          <td><strong>🚪 退出机制</strong></td>
+          <td>规范退出流程</td>
+          <td>主动退出：提前30天书面通知社区；清算债权债务；注销或迁出登记地；发生违规：由社区或主管部门启动动态管理退出程序</td>
+          <td>按需</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     第五部分：90天启动里程碑计划
+═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">
+    <div class="num num-teal">⑤</div>
+    <div>
+      <h2>OPC 90天启动里程碑计划</h2>
+      <p>从想法到正式运营的完整时间轴</p>
+    </div>
+  </div>
+
+  <div class="timeline">
+    <div class="tl-item tl-blue">
+      <div class="tl-title">🗓️ 第1～7天：方向确认与公司注册</div>
+      <div class="tl-time">Week 1</div>
+      <div class="tl-desc">
+        完成市场调研，确定业务方向（AI工具开发/内容创作/跨境电商等）；选择注册城市（优先有政策红利的城市）；完成工商登记、税务注册；同步申请入驻OPC社区，确保获得免费注册地址与配套服务。
+      </div>
+    </div>
+    <div class="tl-item tl-green">
+      <div class="tl-title">🤖 第8～30天：AI工具链搭建与MVP开发</div>
+      <div class="tl-time">Week 2～4</div>
+      <div class="tl-desc">
+        搭建AI工具体系（市场调研→产品开发→内容创作→客服→财务）；完成最小可行产品（MVP）；申领算力券、模型券以降低研发成本；参加社区组织的技能培训（OPC夜校等）。
+      </div>
+    </div>
+    <div class="tl-item tl-orange">
+      <div class="tl-title">📣 第31～60天：内测与场景对接</div>
+      <div class="tl-time">Week 5～8</div>
+      <div class="tl-desc">
+        产品内测，收集用户反馈并迭代；通过社区"场景池"对接政府开放场景，争取示范项目资质；参加社区组织的投融资路演；向主管部门提交研发补贴或场景奖励申请。
+      </div>
+    </div>
+    <div class="tl-item tl-purple">
+      <div class="tl-title">🚀 第61～90天：正式推广与规模化运营</div>
+      <div class="tl-time">Week 9～13</div>
+      <div class="tl-desc">
+        正式对外推广，聚焦渠道拓展与自动化运营；申报省级数字经济创新型企业库；完成首个季度纳税申报；评估规模化路径（继续OPC或引进合伙人），确立长期商业模式。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 注意事项 -->
+<div class="section">
+  <div class="notice notice-yellow">
+    <div class="notice-icon">⚠️</div>
+    <div>
+      <strong>重要提示：</strong>以上流程综合整理自各地官方政策文件，各城市申报系统、材料格式、认定标准略有差异，实际操作前请以当地主管部门最新公告为准。成都政策（13条）目前处于征求意见阶段，正式文件发布后请关注更新。
+    </div>
+  </div>
+  <div class="notice notice-green" style="margin-top:12px;">
+    <div class="notice-icon">📞</div>
+    <div>
+      <strong>咨询渠道：</strong>
+      申报咨询：何老师 15201167172 
+      联系地点：梧桐鸿鹄各组委会 
+      
+    </div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

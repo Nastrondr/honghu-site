@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Delete,
   Body,
   Param,
   Query,
@@ -15,6 +16,7 @@ import { CompetitionsService } from './competitions.service';
 import {
   CompetitionQueryDto,
   CreateCompetitionDto,
+  UpdateCompetitionDto,
   CreateTrackDto,
 } from './dto/competitions.dto';
 import { Public, CurrentUser } from '../../common';
@@ -64,7 +66,7 @@ export class CompetitionsController {
   @Put('admin/competitions/:id')
   @ApiBearerAuth()
   @ApiOperation({ summary: '更新赛事（后台）' })
-  update(@Param('id') id: string, @Body() dto: CreateCompetitionDto, @CurrentUser() user: any) {
+  update(@Param('id') id: string, @Body() dto: UpdateCompetitionDto, @CurrentUser() user: any) {
     checkAdminRole(user);
     return this.competitionsService.update(id, dto);
   }
@@ -76,6 +78,15 @@ export class CompetitionsController {
   updateStatus(@Param('id') id: string, @Body() dto: { status: string }, @CurrentUser() user: any) {
     checkAdminRole(user);
     return this.competitionsService.updateStatus(id, dto.status);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('admin/competitions/:id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '删除赛事（后台）' })
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
+    checkAdminRole(user);
+    return this.competitionsService.remove(id);
   }
 
   @Public()

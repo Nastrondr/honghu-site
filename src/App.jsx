@@ -111,7 +111,7 @@ const FrontendLayout = () => {
 function App() {
   return (
     <AuthProvider>
-      <CustomCursor />
+      {false && <CustomCursor />}
       <Router>
         <Routes>
           {/* 前台路由 - 有Header和Footer */}

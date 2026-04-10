@@ -1,15 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { request } from '../../lib/api';
 import {
   CARD_STYLES,
   SPACING,
   TYPOGRAPHY,
   BUTTON_STYLES,
   FORM_STYLES,
-  getStatusTagClass
 } from '../../styles/admin-theme';
-
-// TODO: 接入统计数据接口
-// TODO: 接入导出接口
 
 // ==================== Toast 组件 ====================
 const Toast = ({ message, type, onClose }) => {
@@ -34,86 +31,31 @@ const Toast = ({ message, type, onClose }) => {
   );
 };
 
-// ==================== Mock 数据 ====================
-const mockStatsData = {
-  // 核心指标
-  overview: {
-    totalEnrollments: 1256,
-    totalWorks: 892,
-    pendingEnrollments: 45,
-    reviewingWorks: 128,
-    trends: {
-      enrollments: '+12%',
-      works: '+8%',
-      pending: '-5%',
-      reviewing: '+15%'
-    }
-  },
+// ==================== 核心指标卡片组件 ====================
+const OverviewCard = ({ title, value, trend, trendUp, icon, color, loading }) => {
+  if (loading) {
+    return (
+      <div className={`${CARD_STYLES.base} ${CARD_STYLES.padding}`}>
+        <div className="animate-pulse">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>
+              <div className="h-8 bg-gray-200 rounded w-16"></div>
+            </div>
+            <div className="w-11 h-11 bg-gray-200 rounded-xl"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  // 报名趋势（最近7天）
-  enrollmentTrend: [
-    { date: '12-14', count: 45 },
-    { date: '12-15', count: 62 },
-    { date: '12-16', count: 38 },
-    { date: '12-17', count: 85 },
-    { date: '12-18', count: 72 },
-    { date: '12-19', count: 96 },
-    { date: '12-20', count: 68 }
-  ],
-
-  // 赛道分布
-  trackDistribution: [
-    { name: 'AI应用创新', count: 456, color: 'bg-blue-500' },
-    { name: 'AI医疗', count: 234, color: 'bg-green-500' },
-    { name: 'AI教育', count: 189, color: 'bg-amber-500' },
-    { name: 'AI金融', count: 156, color: 'bg-purple-500' },
-    { name: '其他', count: 98, color: 'bg-gray-400' }
-  ],
-
-  // 状态分布
-  statusDistribution: [
-    { name: '草稿', count: 156, color: 'bg-gray-400' },
-    { name: '已提交', count: 892, color: 'bg-blue-500' },
-    { name: '评审中', count: 128, color: 'bg-purple-500' },
-    { name: '已完成', count: 234, color: 'bg-green-500' }
-  ],
-
-  // 热门赛道排行
-  topTracks: [
-    { name: 'AI应用创新赛道', count: 456 },
-    { name: 'AI医疗赛道', count: 234 },
-    { name: 'AI教育赛道', count: 189 },
-    { name: 'AI金融赛道', count: 156 },
-    { name: 'AI制造赛道', count: 98 }
-  ],
-
-  // 活跃团队排行
-  activeTeams: [
-    { name: 'AI创新先锋队', count: 5 },
-    { name: '智慧医疗小组', count: 4 },
-    { name: '未来教育实验室', count: 4 },
-    { name: '金融科技团队', count: 3 },
-    { name: '智能制造研究所', count: 3 }
-  ]
-};
-
-// 赛事列表
-const competitions = [
-  '2024年梧桐·鸿鹄人工智能应用创新大赛',
-  '2024年海淀区区县赛',
-  '2024年北京大学校园赛',
-  '2024年清华大学校园赛'
-];
-
-// ==================== 核心指标卡片组件（优化版）====================
-const OverviewCard = ({ title, value, trend, trendUp, icon, color }) => {
   return (
     <div className={`${CARD_STYLES.base} ${CARD_STYLES.padding} ${CARD_STYLES.hover}`}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className={`${TYPOGRAPHY.label} mb-2`}>{title}</p>
           <div className="flex items-baseline gap-3">
-            <p className={TYPOGRAPHY.statNumber}>{value.toLocaleString()}</p>
+            <p className={TYPOGRAPHY.statNumber}>{value?.toLocaleString?.() || value || 0}</p>
             {trend && (
               <span className={trendUp ? TYPOGRAPHY.trendUp : TYPOGRAPHY.trendDown}>
                 {trendUp ? '↑' : '↓'} {trend}
@@ -130,7 +72,23 @@ const OverviewCard = ({ title, value, trend, trendUp, icon, color }) => {
 };
 
 // ==================== 折线图组件（报名趋势）====================
-const LineChart = ({ data }) => {
+const LineChart = ({ data, loading }) => {
+  if (loading) {
+    return (
+      <div className="h-52 flex items-center justify-center">
+        <div className="animate-pulse bg-gray-200 rounded-lg w-full h-full"></div>
+      </div>
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-52 flex items-center justify-center text-gray-400">
+        暂无数据
+      </div>
+    );
+  }
+
   const maxValue = Math.max(...data.map(d => d.count));
   const minValue = Math.min(...data.map(d => d.count));
   const range = maxValue - minValue || 1;
@@ -192,7 +150,23 @@ const LineChart = ({ data }) => {
 };
 
 // ==================== 柱状图组件 ====================
-const BarChart = ({ data }) => {
+const BarChart = ({ data, loading }) => {
+  if (loading) {
+    return (
+      <div className="h-44 flex items-center justify-center">
+        <div className="animate-pulse bg-gray-200 rounded-lg w-full h-full"></div>
+      </div>
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-44 flex items-center justify-center text-gray-400">
+        暂无数据
+      </div>
+    );
+  }
+
   const maxValue = Math.max(...data.map(d => d.count));
 
   return (
@@ -216,7 +190,28 @@ const BarChart = ({ data }) => {
 };
 
 // ==================== 饼图组件（赛道分布）====================
-const PieChart = ({ data }) => {
+const PieChart = ({ data, loading }) => {
+  if (loading) {
+    return (
+      <div className="flex items-center gap-6">
+        <div className="w-36 h-36 bg-gray-200 rounded-full animate-pulse"></div>
+        <div className="space-y-2 flex-1">
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-36 text-gray-400">
+        暂无数据
+      </div>
+    );
+  }
+
   const total = data.reduce((sum, item) => sum + item.count, 0);
   let currentAngle = 0;
 
@@ -269,8 +264,24 @@ const PieChart = ({ data }) => {
   );
 };
 
-// ==================== 排行榜组件（优化版）====================
-const RankingList = ({ title, data, icon }) => {
+// ==================== 排行榜组件 ====================
+const RankingList = ({ title, data, icon, loading }) => {
+  if (loading) {
+    return (
+      <div className={`${CARD_STYLES.base} ${CARD_STYLES.padding} h-full flex flex-col`}>
+        <div className="flex items-center gap-2 mb-5">
+          <div className="w-8 h-8 bg-gray-200 rounded-lg animate-pulse"></div>
+          <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
+        </div>
+        <div className="space-y-3">
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="h-8 bg-gray-200 rounded animate-pulse"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`${CARD_STYLES.base} ${CARD_STYLES.padding} h-full flex flex-col`}>
       <div className="flex items-center gap-2 mb-5">
@@ -278,25 +289,29 @@ const RankingList = ({ title, data, icon }) => {
         <h3 className={TYPOGRAPHY.cardTitle}>{title}</h3>
       </div>
       <div className="space-y-1 flex-1">
-        {data.map((item, index) => (
-          <div key={index} className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
-            <div className="flex items-center gap-3 min-w-0">
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 ${
-                index < 3 ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-400'
-              }`}>
-                {index + 1}
-              </span>
-              <span className="text-sm text-gray-700 truncate" title={item.name}>{item.name}</span>
+        {(!data || data.length === 0) ? (
+          <div className="text-center py-8 text-gray-400">暂无数据</div>
+        ) : (
+          data.map((item, index) => (
+            <div key={index} className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 ${
+                  index < 3 ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-400'
+                }`}>
+                  {index + 1}
+                </span>
+                <span className="text-sm text-gray-700 truncate" title={item.name}>{item.name}</span>
+              </div>
+              <span className="text-sm font-semibold text-primary ml-2">{item.count}</span>
             </div>
-            <span className="text-sm font-semibold text-primary ml-2">{item.count}</span>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
 };
 
-// ==================== 数据导出卡片（优化版）====================
+// ==================== 数据导出卡片 ====================
 const ExportCard = ({ onExport, loading }) => {
   const exportItems = [
     {
@@ -381,79 +396,344 @@ const ExportCard = ({ onExport, loading }) => {
   );
 };
 
+// ==================== API 联调区组件 ====================
+const ApiDebugPanel = ({ apiStatus }) => {
+  if (process.env.NODE_ENV !== 'development') return null;
+
+  const endpoints = [
+    { key: 'overview', name: 'Overview', url: 'GET /v1/admin/stats/overview' },
+    { key: 'works', name: 'Works', url: 'GET /v1/admin/stats/works' },
+    { key: 'reviews', name: 'Reviews', url: 'GET /v1/admin/stats/reviews' },
+    { key: 'awards', name: 'Awards', url: 'GET /v1/admin/stats/awards' },
+  ];
+
+  return (
+    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-blue-700">API 联调信息</h3>
+        <span className="text-xs text-blue-500">开发环境可见</span>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {endpoints.map(({ key, name, url }) => (
+          <div key={key} className="bg-white rounded-lg p-3">
+            <p className="text-xs text-gray-400 mb-1">{name}</p>
+            <p className="font-mono text-xs text-gray-800 truncate">{url}</p>
+            <p className={`text-xs font-semibold mt-1 ${
+              apiStatus[key] === 200 ? 'text-green-600' : 
+              apiStatus[key] === 'error' ? 'text-red-600' : 
+              apiStatus[key] === 'loading' ? 'text-blue-600' : 'text-gray-400'
+            }`}>
+              {apiStatus[key] === 'loading' ? '加载中...' : 
+               apiStatus[key] === 'error' ? '错误' : 
+               apiStatus[key] || '-'}
+            </p>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">Users</p>
+          <p className="text-sm font-semibold text-gray-800">{apiStatus.data?.overview?.users ?? '-'}</p>
+        </div>
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">Competitions</p>
+          <p className="text-sm font-semibold text-gray-800">{apiStatus.data?.overview?.competitions ?? '-'}</p>
+        </div>
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">Works</p>
+          <p className="text-sm font-semibold text-gray-800">{apiStatus.data?.overview?.works ?? '-'}</p>
+        </div>
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">Assignments</p>
+          <p className="text-sm font-semibold text-gray-800">{apiStatus.data?.overview?.assignments ?? '-'}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ==================== 主组件 ====================
 const AdminStats = () => {
   const [selectedCompetition, setSelectedCompetition] = useState('all');
   const [timeRange, setTimeRange] = useState('7d');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
+  const [error, setError] = useState(null);
+
+  // 统计数据状态
+  const [statsData, setStatsData] = useState({
+    overview: null,
+    works: null,
+    reviews: null,
+    enrollments: null,
+    awards: null,
+    enrollmentTrend: [],
+    trackDistribution: [],
+    statusDistribution: [],
+    topTracks: [],
+    activeTeams: []
+  });
+
+  // API 状态追踪
+  const [apiStatus, setApiStatus] = useState({
+    overview: '-',
+    works: '-',
+    reviews: '-',
+    enrollments: '-',
+    awards: '-',
+    data: {}
+  });
+
+  // 赛事列表
+  const [competitions, setCompetitions] = useState([]);
 
   // 显示Toast
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
   };
 
+  // 获取统计数据
+  const fetchStats = async () => {
+    setLoading(true);
+    setError(null);
+
+    const params = new URLSearchParams();
+    if (selectedCompetition !== 'all') params.append('competitionId', selectedCompetition);
+    if (timeRange !== 'all') params.append('timeRange', timeRange);
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+
+    try {
+      // 并行请求所有统计数据
+      const [overviewRes, worksRes, reviewsRes, enrollmentsRes, awardsRes] = await Promise.all([
+        request(`/v1/admin/stats/overview${queryString}`),
+        request(`/v1/admin/stats/works${queryString}`),
+        request(`/v1/admin/stats/reviews${queryString}`),
+        request(`/v1/admin/stats/enrollments${queryString}`),
+        request(`/v1/admin/stats/awards${queryString}`)
+      ]);
+
+      // 更新 API 状态
+      setApiStatus({
+        overview: overviewRes.status,
+        works: worksRes.status,
+        reviews: reviewsRes.status,
+        enrollments: enrollmentsRes.status,
+        awards: awardsRes.status,
+        data: {
+          overview: overviewRes.ok && overviewRes.data?.code === 0 ? overviewRes.data.data : null
+        }
+      });
+
+      // 处理 overview 数据
+      let overviewData = null;
+      if (overviewRes.ok && overviewRes.data?.code === 0) {
+        overviewData = overviewRes.data.data;
+      }
+
+      // 处理 works 数据
+      let worksData = null;
+      let trackDistribution = [];
+      let statusDistribution = [];
+      let topTracks = [];
+      if (worksRes.ok && worksRes.data?.code === 0) {
+        worksData = worksRes.data.data;
+        
+        // 转换赛道分布数据
+        if (worksData.byTrack) {
+          const colors = ['bg-blue-500', 'bg-green-500', 'bg-amber-500', 'bg-purple-500', 'bg-gray-400'];
+          trackDistribution = Object.entries(worksData.byTrack).map(([name, count], index) => ({
+            name,
+            count,
+            color: colors[index % colors.length]
+          }));
+          topTracks = trackDistribution
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 5)
+            .map(item => ({ name: item.name, count: item.count }));
+        }
+
+        // 转换状态分布数据
+        if (worksData.byStatus) {
+          const statusColors = {
+            'draft': 'bg-gray-400',
+            'submitted': 'bg-blue-500',
+            'reviewing': 'bg-purple-500',
+            'completed': 'bg-green-500',
+            'pending': 'bg-orange-500'
+          };
+          const statusNames = {
+            'draft': '草稿',
+            'submitted': '已提交',
+            'reviewing': '评审中',
+            'completed': '已完成',
+            'pending': '待审核'
+          };
+          statusDistribution = Object.entries(worksData.byStatus).map(([status, count]) => ({
+            name: statusNames[status] || status,
+            count,
+            color: statusColors[status] || 'bg-gray-400'
+          }));
+        }
+      }
+
+      // 处理 reviews 数据
+      let reviewsData = null;
+      if (reviewsRes.ok && reviewsRes.data?.code === 0) {
+        reviewsData = reviewsRes.data.data;
+      }
+
+      // 处理 enrollments 数据
+      let enrollmentsData = null;
+      if (enrollmentsRes.ok && enrollmentsRes.data?.code === 0) {
+        enrollmentsData = enrollmentsRes.data.data;
+      }
+
+      // 处理 awards 数据
+      let awardsData = null;
+      if (awardsRes.ok && awardsRes.data?.code === 0) {
+        awardsData = awardsRes.data.data;
+      }
+
+      // 报名趋势数据 - 仅使用后端返回的真实数据
+      const enrollmentTrend = overviewData?.trend || [];
+
+      // 活跃团队数据 - 仅使用后端返回的真实数据
+      const activeTeams = worksData?.activeTeams || [];
+
+      setStatsData({
+        overview: overviewData,
+        works: worksData,
+        reviews: reviewsData,
+        enrollments: enrollmentsData,
+        awards: awardsData,
+        enrollmentTrend,
+        trackDistribution,
+        statusDistribution,
+        topTracks,
+        activeTeams
+      });
+
+    } catch (err) {
+      console.error('Fetch stats error:', err);
+      setError('获取统计数据失败');
+      setApiStatus(prev => ({ ...prev, overview: 'error', works: 'error', reviews: 'error', enrollments: 'error', awards: 'error' }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 获取赛事列表
+  const fetchCompetitions = async () => {
+    try {
+      const result = await request('/v1/competitions');
+      if (result.ok && result.data?.code === 0) {
+        setCompetitions(result.data.data || []);
+      }
+    } catch (err) {
+      console.error('Fetch competitions error:', err);
+    }
+  };
+
+  // 初始加载
+  useEffect(() => {
+    fetchCompetitions();
+    fetchStats();
+  }, []);
+
+  // 筛选条件变化时重新加载
+  useEffect(() => {
+    fetchStats();
+  }, [selectedCompetition, timeRange]);
+
   // 处理数据导出
   const handleExport = async (type, title) => {
     setLoading(true);
-    // 模拟loading 0.5s
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setLoading(false);
-    showToast(`${title}成功`, 'success');
-    console.log(`导出数据类型: ${type}`);
+    try {
+      // 模拟导出请求
+      await new Promise(resolve => setTimeout(resolve, 500));
+      showToast(`${title}成功`, 'success');
+      console.log(`导出数据类型: ${type}`);
+    } catch (err) {
+      showToast('导出失败', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 核心指标数据
-  const overviewCards = [
-    {
-      title: '报名总数',
-      value: mockStatsData.overview.totalEnrollments,
-      trend: mockStatsData.overview.trends.enrollments,
-      trendUp: mockStatsData.overview.trends.enrollments.startsWith('+'),
-      color: 'bg-blue-50',
-      icon: (
-        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-      )
-    },
-    {
-      title: '作品总数',
-      value: mockStatsData.overview.totalWorks,
-      trend: mockStatsData.overview.trends.works,
-      trendUp: mockStatsData.overview.trends.works.startsWith('+'),
-      color: 'bg-green-50',
-      icon: (
-        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-        </svg>
-      )
-    },
-    {
-      title: '待审核报名',
-      value: mockStatsData.overview.pendingEnrollments,
-      trend: mockStatsData.overview.trends.pending,
-      trendUp: mockStatsData.overview.trends.pending.startsWith('+'),
-      color: 'bg-orange-50',
-      icon: (
-        <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      )
-    },
-    {
-      title: '评审中作品',
-      value: mockStatsData.overview.reviewingWorks,
-      trend: mockStatsData.overview.trends.reviewing,
-      trendUp: mockStatsData.overview.trends.reviewing.startsWith('+'),
-      color: 'bg-purple-50',
-      icon: (
-        <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-        </svg>
-      )
-    }
-  ];
+  const overviewCards = useMemo(() => {
+    const overview = statsData.overview;
+    const works = statsData.works;
+    const reviews = statsData.reviews;
+    const enrollments = statsData.enrollments;
+
+    return [
+      {
+        title: '赛事总数',
+        value: overview?.competitions || 0,
+        trend: overview?.trends?.competitions || '+0%',
+        trendUp: (overview?.trends?.competitions || '+0%').startsWith('+'),
+        color: 'bg-green-50',
+        icon: (
+          <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+        )
+      },
+      {
+        title: '报名总数',
+        value: enrollments?.total || overview?.enrollments || 0,
+        trend: overview?.trends?.enrollments || '+0%',
+        trendUp: (overview?.trends?.enrollments || '+0%').startsWith('+'),
+        color: 'bg-blue-50',
+        icon: (
+          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        )
+      },
+      {
+        title: '作品总数',
+        value: works?.total || overview?.works || 0,
+        trend: overview?.trends?.works || '+0%',
+        trendUp: (overview?.trends?.works || '+0%').startsWith('+'),
+        color: 'bg-purple-50',
+        icon: (
+          <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+          </svg>
+        )
+      },
+      {
+        title: '待评审',
+        value: reviews?.pending || overview?.assignments - overview?.submittedReviews || 0,
+        trend: overview?.trends?.assignments || '+0%',
+        trendUp: (overview?.trends?.assignments || '+0%').startsWith('+'),
+        color: 'bg-orange-50',
+        icon: (
+          <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+          </svg>
+        )
+      }
+    ];
+  }, [statsData]);
+
+  if (error) {
+    return (
+      <div className={`${SPACING.section} pb-8`}>
+        <div className="text-center py-12">
+          <p className="text-red-500 mb-4">{error}</p>
+          <button 
+            onClick={fetchStats} 
+            className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90"
+          >
+            重试
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`${SPACING.section} pb-8`}>
@@ -466,6 +746,9 @@ const AdminStats = () => {
         <p className={TYPOGRAPHY.pageSubtitle}>查看赛事数据概览与导出业务数据</p>
       </div>
 
+      {/* API 联调区 */}
+      <ApiDebugPanel apiStatus={apiStatus} />
+
       {/* 筛选区 */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div>
@@ -476,8 +759,8 @@ const AdminStats = () => {
             className={`mt-2 ${FORM_STYLES.select} min-w-[220px]`}
           >
             <option value="all">全部赛事</option>
-            {competitions.map((comp, index) => (
-              <option key={index} value={comp}>{comp}</option>
+            {competitions.map((comp) => (
+              <option key={comp.id} value={comp.id}>{comp.name}</option>
             ))}
           </select>
         </div>
@@ -499,7 +782,7 @@ const AdminStats = () => {
       {/* 核心指标卡片 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {overviewCards.map((card, index) => (
-          <OverviewCard key={index} {...card} />
+          <OverviewCard key={index} {...card} loading={loading} />
         ))}
       </div>
 
@@ -511,13 +794,13 @@ const AdminStats = () => {
             <h3 className={TYPOGRAPHY.cardTitle}>报名趋势</h3>
             <span className={TYPOGRAPHY.helper}>最近7天</span>
           </div>
-          <LineChart data={mockStatsData.enrollmentTrend} />
+          <LineChart data={statsData.enrollmentTrend} loading={loading} />
         </div>
 
         {/* 赛道分布 */}
         <div className={`${CARD_STYLES.base} ${CARD_STYLES.padding}`}>
           <h3 className={`${TYPOGRAPHY.cardTitle} mb-4`}>赛道分布</h3>
-          <PieChart data={mockStatsData.trackDistribution} />
+          <PieChart data={statsData.trackDistribution} loading={loading} />
         </div>
       </div>
 
@@ -526,13 +809,13 @@ const AdminStats = () => {
         {/* 状态分布 */}
         <div className={`${CARD_STYLES.base} ${CARD_STYLES.padding}`}>
           <h3 className={`${TYPOGRAPHY.cardTitle} mb-2`}>作品状态分布</h3>
-          <BarChart data={mockStatsData.statusDistribution} />
+          <BarChart data={statsData.statusDistribution} loading={loading} />
         </div>
 
         {/* 热门赛道 */}
         <RankingList
           title="热门赛道"
-          data={mockStatsData.topTracks}
+          data={statsData.topTracks}
           icon={
             <div className="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center">
               <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -540,12 +823,13 @@ const AdminStats = () => {
               </svg>
             </div>
           }
+          loading={loading}
         />
 
         {/* 活跃团队 */}
         <RankingList
           title="活跃团队"
-          data={mockStatsData.activeTeams}
+          data={statsData.activeTeams}
           icon={
             <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
               <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -553,6 +837,7 @@ const AdminStats = () => {
               </svg>
             </div>
           }
+          loading={loading}
         />
       </div>
 

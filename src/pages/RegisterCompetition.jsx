@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { request } from '../lib/api';
 
 const RegisterCompetition = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, fetchCurrentUser } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const competitionIdFromUrl = searchParams.get('competitionId');
 
   const [competitions, setCompetitions] = useState([]);
   const [selectedCompetition, setSelectedCompetition] = useState(null);
   const [enrollment, setEnrollment] = useState(null);
   const [tracks, setTracks] = useState([]);
+  const [tracksLoading, setTracksLoading] = useState(false);
+  const [tracksError, setTracksError] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -45,7 +49,12 @@ const RegisterCompetition = () => {
       if (result.ok && result.data.code === 0) {
         const list = result.data.data?.list || [];
         setCompetitions(list);
-        if (list.length > 0) {
+        
+        // 优先使用 URL 参数中的 competitionId
+        if (competitionIdFromUrl && list.some(c => c.id === competitionIdFromUrl)) {
+          const target = list.find(c => c.id === competitionIdFromUrl);
+          setSelectedCompetition(target);
+        } else if (list.length > 0) {
           setSelectedCompetition(list[0]);
         }
       } else {
@@ -59,13 +68,21 @@ const RegisterCompetition = () => {
   };
 
   const fetchTracks = async (competitionId) => {
+    if (!competitionId) return;
+    setTracksLoading(true);
+    setTracksError('');
     try {
       const result = await request(`/v1/competitions/${competitionId}/tracks`);
       if (result.ok && result.data.code === 0) {
-        setTracks(result.data.data?.list || []);
+        // 后端直接返回数组，不是 { list: [] } 格式
+        setTracks(result.data.data || []);
+      } else {
+        setTracksError(result.data.message || '获取赛道失败');
       }
     } catch (err) {
-      setTracks([]);
+      setTracksError('网络错误，请重试');
+    } finally {
+      setTracksLoading(false);
     }
   };
 
@@ -94,6 +111,11 @@ const RegisterCompetition = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
+      fetchCurrentUser().then(freshUser => {
+        if (freshUser) {
+          console.log('[RegisterCompetition] Fresh user role:', freshUser.currentRole);
+        }
+      });
       fetchCompetitions();
       fetchMyEnrollment();
     }
@@ -153,17 +175,11 @@ const RegisterCompetition = () => {
     }
     setSubmitting(true);
     try {
-      let result;
-      if (enrollment?.id) {
-        result = await request(`/v1/enrollments/${enrollment.id}`, {
-          method: 'PUT',
-          body: JSON.stringify({
-            enrollmentType: formData.participationType,
-            trackId: formData.trackId
-          })
-        });
-      } else {
-        result = await request('/v1/enrollments', {
+      let enrollmentId = enrollment?.id;
+      
+      // 如果没有报名记录，先创建
+      if (!enrollmentId) {
+        const createResult = await request('/v1/enrollments', {
           method: 'POST',
           body: JSON.stringify({
             competitionId: selectedCompetition.id,
@@ -171,12 +187,27 @@ const RegisterCompetition = () => {
             trackId: formData.trackId
           })
         });
+        
+        if (createResult.ok && createResult.data.code === 0) {
+          enrollmentId = createResult.data.data?.id;
+        } else {
+          showToast(createResult.data.message || '创建报名失败');
+          setSubmitting(false);
+          return;
+        }
       }
-      if (result.ok && result.data.code === 0) {
+      
+      // 提交报名（将状态推进到 submitted）
+      const submitResult = await request(`/v1/enrollments/${enrollmentId}/submit`, {
+        method: 'POST',
+        body: JSON.stringify({})
+      });
+      
+      if (submitResult.ok && submitResult.data.code === 0) {
         showToast('报名提交成功');
         fetchMyEnrollment();
       } else {
-        showToast(result.data.message || '提交失败');
+        showToast(submitResult.data.message || '提交失败');
       }
     } catch (err) {
       showToast('网络错误');
@@ -271,26 +302,26 @@ const RegisterCompetition = () => {
               <h3 className="text-sm font-semibold text-blue-700">API 联调信息</h3>
               <span className="text-xs text-blue-500">开发环境可见</span>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
               <div className="bg-white rounded-lg p-3">
                 <p className="text-gray-400 mb-1">赛事接口</p>
                 <p className="font-mono text-gray-800">GET /v1/competitions</p>
               </div>
               <div className="bg-white rounded-lg p-3">
-                <p className="text-gray-400 mb-1">报名接口</p>
-                <p className="font-mono text-gray-800">POST /v1/enrollments</p>
+                <p className="text-gray-400 mb-1">赛道接口</p>
+                <p className="font-mono text-gray-800">GET /v1/competitions/{selectedCompetition?.id}/tracks</p>
               </div>
               <div className="bg-white rounded-lg p-3">
-                <p className="text-gray-400 mb-1">报名状态</p>
-                <p className={`font-semibold ${enrollment ? 'text-green-600' : 'text-yellow-600'}`}>
-                  {enrollment ? getStatusText(applyStatus) : '未报名'}
-                </p>
+                <p className="text-gray-400 mb-1">当前 competitionId</p>
+                <p className="text-gray-800 truncate">{selectedCompetition?.id || '-'}</p>
               </div>
               <div className="bg-white rounded-lg p-3">
-                <p className="text-gray-400 mb-1">HTTP</p>
-                <p className={`font-semibold ${loading ? 'text-yellow-600' : 'text-green-600'}`}>
-                  {loading ? '请求中' : '成功'}
-                </p>
+                <p className="text-gray-400 mb-1">赛道数量</p>
+                <p className="text-gray-800">{tracks.length} 个</p>
+              </div>
+              <div className="bg-white rounded-lg p-3">
+                <p className="text-gray-400 mb-1">当前选中 trackId</p>
+                <p className="text-gray-800 truncate">{formData.trackId || '-'}</p>
               </div>
             </div>
           </div>
@@ -301,6 +332,67 @@ const RegisterCompetition = () => {
         <h1 className="text-3xl font-bold text-neutral-800 mb-4">报名参赛</h1>
         {selectedCompetition && (
           <p className="text-neutral-600">参加「{selectedCompetition.name}」</p>
+        )}
+        
+        {user && (!user.currentRole || user.currentRole === 'registered') && (
+          <div className="mt-6 max-w-lg mx-auto bg-white border border-neutral-200 rounded-xl p-6 shadow-sm">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-.633-1.964-.633-2.732 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+            </div>
+            <h3 className="text-lg font-medium text-neutral-800 mb-2">您尚未具备报名资格</h3>
+            <p className="text-neutral-500 text-sm mb-4">报名需要先完成身份认证，选择以下方式之一：</p>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                onClick={async () => {
+                  try {
+                    const result = await request('/v1/users/me/identity', {
+                      method: 'POST',
+                      body: JSON.stringify({ identityType: 'contestant' }),
+                    });
+                    if (result.ok && result.data.code === 0) {
+                      await fetchCurrentUser();
+                      showToast('已成功开通参赛者身份');
+                    } else {
+                      showToast(result.data.message || '开通失败');
+                    }
+                  } catch (err) {
+                    showToast('网络错误');
+                  }
+                }}
+                className="flex flex-col items-center p-4 border-2 border-neutral-200 rounded-lg hover:border-primary hover:bg-primary/5 transition-colors"
+              >
+                <span className="font-medium text-neutral-800">个人参赛</span>
+                <span className="text-xs text-neutral-500 mt-1">开通参赛者身份</span>
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    const result = await request('/v1/users/me/identity', {
+                      method: 'POST',
+                      body: JSON.stringify({ identityType: 'team_leader' }),
+                    });
+                    if (result.ok && result.data.code === 0) {
+                      await fetchCurrentUser();
+                      showToast('已成功开通队长身份');
+                    } else {
+                      showToast(result.data.message || '开通失败');
+                    }
+                  } catch (err) {
+                    showToast('网络错误');
+                  }
+                }}
+                className="flex flex-col items-center p-4 border-2 border-neutral-200 rounded-lg hover:border-primary hover:bg-primary/5 transition-colors"
+              >
+                <span className="font-medium text-neutral-800">团队参赛</span>
+                <span className="text-xs text-neutral-500 mt-1">开通队长身份</span>
+              </button>
+            </div>
+          </div>
         )}
       </div>
 
@@ -350,8 +442,25 @@ const RegisterCompetition = () => {
 
             <div className="mb-6">
               <label className="block text-sm font-medium text-neutral-700 mb-3">参赛赛道</label>
-              {tracks.length === 0 ? (
-                <p className="text-neutral-400 text-sm">暂无可选赛道</p>
+              {tracksLoading ? (
+                <div className="flex items-center space-x-2 text-neutral-500">
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  <span>加载赛道中...</span>
+                </div>
+              ) : tracksError ? (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-red-600 text-sm mb-2">{tracksError}</p>
+                  <button 
+                    onClick={() => fetchTracks(selectedCompetition?.id)}
+                    className="text-sm bg-primary text-white px-3 py-1 rounded hover:bg-primary/90"
+                  >
+                    重试加载赛道
+                  </button>
+                </div>
+              ) : tracks.length === 0 ? (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <p className="text-yellow-700 text-sm">当前赛事暂无可选赛道</p>
+                </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {tracks.map(track => (
@@ -362,7 +471,10 @@ const RegisterCompetition = () => {
                       className={`py-3 px-4 rounded-lg border transition-all text-left ${formData.trackId === track.id ? 'border-primary bg-primary/5 text-primary' : 'border-neutral-300 hover:border-primary'} ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleTrackChange(track.id)}
                     >
-                      {track.name}
+                      <div className="font-medium">{track.name}</div>
+                      {track.description && (
+                        <div className="text-xs text-neutral-500 mt-1 line-clamp-2">{track.description}</div>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -465,7 +577,7 @@ const RegisterCompetition = () => {
                   <button
                     type="button"
                     onClick={handleSaveDraft}
-                    disabled={submitting}
+                    disabled={submitting || tracks.length === 0}
                     className="flex-1 py-3 px-4 border border-neutral-300 rounded-lg font-medium hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitting ? '保存中...' : '保存草稿'}
@@ -475,7 +587,7 @@ const RegisterCompetition = () => {
                   <button
                     type="button"
                     onClick={handleSubmit}
-                    disabled={submitting}
+                    disabled={submitting || tracks.length === 0 || !formData.trackId}
                     className="flex-1 bg-primary text-white py-3 px-4 rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitting ? '提交中...' : '提交报名'}
@@ -540,7 +652,9 @@ const RegisterCompetition = () => {
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
-                      ) : item.step}
+                      ) : (
+                        item.step
+                      )}
                     </div>
                     <div>
                       <h3 className={`font-medium ${item.status === 'current' ? 'text-primary' : 'text-neutral-700'}`}>{item.title}</h3>

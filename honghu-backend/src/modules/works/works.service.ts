@@ -120,7 +120,9 @@ export class WorksService {
   }
 
   async findMyWorks(userId: string, query: WorkQueryDto & PaginationDto) {
-    const { page = 1, pageSize = 20, competitionId, trackId, status } = query;
+    const page = Number(query.page) || 1;
+    const pageSize = Number(query.pageSize) || 20;
+    const { competitionId, trackId, status } = query;
 
     const teamMemberships = await this.prisma.teamMember.findMany({
       where: { userId, memberStatus: 'active' },
@@ -147,8 +149,8 @@ export class WorksService {
     const [works, total] = await Promise.all([
       this.prisma.work.findMany({
         where,
-        skip: (page - 1) * pageSize,
-        take: pageSize,
+        skip: Number((page - 1) * pageSize) || 0,
+        take: Number(pageSize) || 20,
         orderBy: { updatedAt: 'desc' },
         include: {
           competition: { select: { id: true, name: true, slug: true } },
@@ -378,7 +380,9 @@ export class WorksService {
   }
 
   async adminFindAll(query: WorkQueryDto & PaginationDto) {
-    const { page = 1, pageSize = 20, competitionId, trackId, status } = query;
+    const pageNum = Number(query.page) || 1;
+    const pageSizeNum = Number(query.pageSize) || 20;
+    const { competitionId, trackId, status } = query;
 
     const where: any = {};
 
@@ -386,20 +390,22 @@ export class WorksService {
     if (trackId) where.trackId = trackId;
     if (status) where.status = status;
 
+    const skip = (pageNum - 1) * pageSizeNum;
     const [works, total] = await Promise.all([
       this.prisma.work.findMany({
         where,
-        skip: (page - 1) * pageSize,
-        take: pageSize,
+        skip: Number.isInteger(skip) ? skip : 0,
+        take: Number.isInteger(pageSizeNum) ? pageSizeNum : 20,
         orderBy: { updatedAt: 'desc' },
         include: {
           competition: { select: { id: true, name: true, slug: true } },
           track: { select: { id: true, name: true } },
+          team: { select: { id: true, name: true } },
         },
       }),
       this.prisma.work.count({ where }),
     ]);
 
-    return new PaginatedResponse(works, total, page, pageSize);
+    return new PaginatedResponse(works, total, pageNum, pageSizeNum);
   }
 }

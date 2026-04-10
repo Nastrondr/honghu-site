@@ -10,43 +10,56 @@ const prisma = new PrismaClient();
 @ApiTags('Stats')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('admin', 'super_admin')
+@Roles('operator', 'super_admin')
 @Controller('api/v1/admin/stats')
 export class StatsController {
   @ApiOperation({ summary: 'Overview statistics' })
   @Get('overview')
   async getOverview(@Query('competitionId') competitionId?: string) {
     const where = competitionId ? { competitionId } : {};
+    const reviewWhere = competitionId ? { round: { competitionId } } : {};
 
-    const [users, competitions, works, assignments] = await Promise.all([
+    const [users, competitions, works, enrollments, assignments, submittedReviews] = await Promise.all([
       prisma.user.count(),
       prisma.competition.count(),
       prisma.work.count({ where }),
-      prisma.reviewAssignment.count({ where: competitionId ? { round: { competitionId } } : {} }),
+      prisma.enrollment.count({ where }),
+      prisma.reviewAssignment.count({ where: reviewWhere }),
+      prisma.reviewRecord.count({ where: { ...reviewWhere, status: 'submitted' } }),
     ]);
 
     return {
       users,
       competitions,
       works,
+      enrollments,
       assignments,
+      submittedReviews,
     };
   }
 
-  @ApiOperation({ summary: 'Works statistics by competition' })
+  @ApiOperation({ summary: 'Works statistics' })
   @Get('works')
-  async getWorksStats(@Query('competitionId', ParseUUIDPipe) competitionId: string) {
+  async getWorksStats(@Query('competitionId') competitionId?: string) {
+    const where = competitionId ? { competitionId } : {};
+    const trackWhere = competitionId ? { competitionId } : {};
+
     const [total, byStatus, byTrack] = await Promise.all([
-      prisma.work.count({ where: { competitionId } }),
+      prisma.work.count({ where }),
       prisma.work.groupBy({
         by: ['status'],
-        where: { competitionId },
+        where,
         _count: { status: true },
       }),
-      prisma.work.groupBy({
-        by: ['trackId'],
-        where: { competitionId },
-        _count: { trackId: true },
+      prisma.track.findMany({
+        where: trackWhere,
+        select: {
+          id: true,
+          name: true,
+          _count: {
+            select: { works: true },
+          },
+        },
       }),
     ]);
 
@@ -55,16 +68,11 @@ export class StatsController {
       count: s._count.status,
     }));
 
-    const trackStats = await Promise.all(
-      byTrack.map(async t => {
-        const track = await prisma.track.findUnique({ where: { id: t.trackId } });
-        return {
-          trackId: t.trackId,
-          trackName: track?.name || 'Unknown',
-          count: t._count.trackId,
-        };
-      }),
-    );
+    const trackStats = byTrack.map(t => ({
+      trackId: t.id,
+      trackName: t.name,
+      count: t._count.works,
+    }));
 
     return {
       total,
@@ -73,43 +81,69 @@ export class StatsController {
     };
   }
 
-  @ApiOperation({ summary: 'Reviews statistics by competition' })
+  @ApiOperation({ summary: 'Reviews statistics' })
   @Get('reviews')
-  async getReviewsStats(@Query('competitionId', ParseUUIDPipe) competitionId: string) {
-    const [total, byStatus] = await Promise.all([
-      prisma.reviewAssignment.count({
-        where: { round: { competitionId } },
-      }),
+  async getReviewsStats(@Query('competitionId') competitionId?: string) {
+    const reviewWhere = competitionId ? { round: { competitionId } } : {};
+
+    const [totalAssignments, byStatus, submittedCount, totalRounds] = await Promise.all([
+      prisma.reviewAssignment.count({ where: reviewWhere }),
       prisma.reviewAssignment.groupBy({
         by: ['status'],
-        where: { round: { competitionId } },
+        where: reviewWhere,
         _count: { status: true },
+      }),
+      prisma.reviewRecord.count({
+        where: { ...reviewWhere, status: 'submitted' },
+      }),
+      prisma.reviewRound.count({ 
+        where: competitionId ? { competitionId } : {} 
       }),
     ]);
 
-    const submitted = await prisma.reviewRecord.count({
-      where: {
-        assignment: { round: { competitionId } },
-        status: 'submitted',
-      },
-    });
-
     const avgScore = await prisma.reviewRecord.aggregate({
       where: {
-        assignment: { round: { competitionId } },
+        ...reviewWhere,
         status: 'submitted',
       },
       _avg: { overallScore: true },
     });
 
     return {
-      total,
-      submitted,
+      totalRounds,
+      totalAssignments,
+      submitted: submittedCount,
+      pending: totalAssignments - submittedCount,
       byStatus: byStatus.map(s => ({
         status: s.status,
         count: s._count.status,
       })),
       avgScore: avgScore._avg.overallScore || 0,
+    };
+  }
+
+  @ApiOperation({ summary: 'Enrollment statistics' })
+  @Get('enrollments')
+  async getEnrollmentStats(@Query('competitionId') competitionId?: string) {
+    const where = competitionId ? { competitionId } : {};
+
+    const [total, byStatus] = await Promise.all([
+      prisma.enrollment.count({ where }),
+      prisma.enrollment.groupBy({
+        by: ['status'],
+        where,
+        _count: { status: true },
+      }),
+    ]);
+
+    const statusStats = byStatus.map(s => ({
+      status: s.status,
+      count: s._count.status,
+    }));
+
+    return {
+      total,
+      byStatus: statusStats,
     };
   }
 

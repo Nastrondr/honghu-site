@@ -1,668 +1,245 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import {
-  CARD_STYLES,
-  STATUS_COLORS,
-  BUTTON_STYLES,
-  SPACING,
-  TYPOGRAPHY,
-  TABLE_STYLES,
-  FORM_STYLES,
-  DRAWER_STYLES
-} from '../../styles/admin-theme';
+import { request } from '../../lib/api';
 
-// TODO: 接入新闻列表接口
-// TODO: 接入创建新闻接口
-// TODO: 接入编辑新闻接口
-// TODO: 接入发布/下线接口
-// TODO: 接入删除新闻接口
+const STATUS_MAP = {
+  true: { label: '已发布', color: 'bg-green-50 text-green-600', dot: 'bg-green-400' },
+  false: { label: '草稿', color: 'bg-gray-100 text-gray-600', dot: 'bg-gray-400' },
+};
 
-// ==================== 状态标签组件 ====================
-const StatusTag = ({ status }) => {
-  const statusMap = {
-    '草稿': STATUS_COLORS.draft,
-    '已发布': STATUS_COLORS.success,
-    '已下线': STATUS_COLORS.error
-  };
-  const colors = statusMap[status] || STATUS_COLORS.draft;
+const TYPE_MAP = {
+  'news': { label: '新闻动态', color: 'bg-blue-100 text-blue-700' },
+  'announcement': { label: '公告通知', color: 'bg-amber-100 text-amber-700' },
+  'media': { label: '媒体报道', color: 'bg-purple-100 text-purple-700' },
+};
+
+const StatusTag = ({ isPublished }) => {
+  const config = STATUS_MAP[String(isPublished)] || STATUS_MAP['false'];
   return (
-    <span className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${colors.bg} ${colors.text}`}>
-      {status}
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full ${config.color}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`}></span>
+      {config.label}
     </span>
   );
 };
 
-// ==================== 分类标签组件 ====================
-const CategoryTag = ({ category }) => {
-  const categoryColors = {
-    '新闻动态': 'bg-blue-100 text-blue-700',
-    '公告通知': 'bg-amber-100 text-amber-700',
-    '媒体报道': 'bg-purple-100 text-purple-700'
-  };
+const TypeTag = ({ newsType }) => {
+  const config = TYPE_MAP[newsType] || TYPE_MAP['news'];
   return (
-    <span className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${categoryColors[category] || 'bg-gray-100 text-gray-600'}`}>
-      {category}
+    <span className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${config.color}`}>
+      {config.label}
     </span>
   );
 };
 
-// ==================== 操作下拉菜单 ====================
-const ActionDropdown = ({ news, onPublish, onOffline, onDelete }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef(null);
-
+const Toast = ({ message, type, onClose }) => {
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
   return (
-    <div className="relative" ref={menuRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={BUTTON_STYLES.dropdown}
-      >
-        更多
-        <svg className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-
-      {isOpen && (
-        <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-10">
-          {news.status === '草稿' && (
-            <button
-              onClick={() => { onPublish(news.id); setIsOpen(false); }}
-              className="w-full px-4 py-2 text-sm text-left text-green-600 hover:bg-green-50 transition-colors"
-            >
-              发布
-            </button>
-          )}
-          {news.status === '已下线' && (
-            <button
-              onClick={() => { onPublish(news.id); setIsOpen(false); }}
-              className="w-full px-4 py-2 text-sm text-left text-green-600 hover:bg-green-50 transition-colors"
-            >
-              重新发布
-            </button>
-          )}
-          {news.status === '已发布' && (
-            <button
-              onClick={() => { onOffline(news.id); setIsOpen(false); }}
-              className="w-full px-4 py-2 text-sm text-left text-orange-600 hover:bg-orange-50 transition-colors"
-            >
-              下线
-            </button>
-          )}
-          <button
-            onClick={() => { onDelete(news.id); setIsOpen(false); }}
-            className="w-full px-4 py-2 text-sm text-left text-red-600 hover:bg-red-50 transition-colors"
-          >
-            删除
-          </button>
-        </div>
-      )}
+    <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white text-sm ${
+      type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-primary'
+    }`}>
+      {message}
     </div>
   );
 };
 
-// ==================== 新建/编辑新闻抽屉 ====================
-const NewsFormDrawer = ({ isOpen, onClose, onSave, initialData = null }) => {
-  const isEdit = !!initialData;
-  const [formData, setFormData] = useState({
-    title: '',
-    category: '新闻动态',
-    author: '',
-    publishTime: '',
-    summary: '',
-    content: '',
-    coverImage: null,
-    status: '草稿'
-  });
-
-  useEffect(() => {
-    if (isOpen) {
-      if (initialData) {
-        setFormData(initialData);
-      } else {
-        setFormData({
-          title: '',
-          category: '新闻动态',
-          author: '',
-          publishTime: '',
-          summary: '',
-          content: '',
-          coverImage: null,
-          status: '草稿'
-        });
-      }
-    }
-  }, [isOpen, initialData]);
-
-  if (!isOpen) return null;
-
-  const handleSubmit = (publish = false) => {
-    const data = { ...formData };
-    if (publish) {
-      data.status = '已发布';
-    }
-    onSave(data, isEdit);
-    onClose();
-  };
-
+const ApiDebugPanel = ({ apiStatus, filters, newsCount }) => {
+  if (process.env.NODE_ENV !== 'development') return null;
   return (
-    <>
-      <div className={DRAWER_STYLES.overlay} onClick={onClose} />
-      <div className={DRAWER_STYLES.container}>
-        <div className={DRAWER_STYLES.header}>
-          <h3 className={TYPOGRAPHY.sectionTitle}>{isEdit ? '编辑新闻' : '新建新闻'}</h3>
-          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-blue-700">API 联调信息</h3>
+        <span className="text-xs text-blue-500">开发环境可见</span>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">列表接口</p>
+          <p className="font-mono text-xs text-gray-800 truncate">GET /v1/news</p>
+          <p className={`text-xs font-semibold mt-1 ${
+            apiStatus.list === 200 ? 'text-green-600' :
+            apiStatus.list === 'error' ? 'text-red-600' : 'text-gray-400'
+          }`}>
+            {apiStatus.list === 200 ? `✅ ${newsCount} 条` :
+             apiStatus.list === 'error' ? '❌ 请求失败' : '⏳ 等待中'}
+          </p>
         </div>
-
-        <div className={DRAWER_STYLES.content}>
-          {/* 基础信息 */}
-          <div className={DRAWER_STYLES.section}>
-            <h4 className={DRAWER_STYLES.sectionTitle}>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              基础信息
-            </h4>
-            <div className="space-y-4">
-              <div>
-                <label className={FORM_STYLES.label}>新闻标题</label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="请输入新闻标题"
-                  className={FORM_STYLES.input}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className={FORM_STYLES.label}>新闻分类</label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className={FORM_STYLES.input}
-                  >
-                    <option value="新闻动态">新闻动态</option>
-                    <option value="公告通知">公告通知</option>
-                    <option value="媒体报道">媒体报道</option>
-                  </select>
-                </div>
-                <div>
-                  <label className={FORM_STYLES.label}>作者</label>
-                  <input
-                    type="text"
-                    value={formData.author}
-                    onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                    placeholder="请输入作者"
-                    className={FORM_STYLES.input}
-                  />
-                </div>
-              </div>
-              <div>
-                <label className={FORM_STYLES.label}>发布时间</label>
-                <input
-                  type="datetime-local"
-                  value={formData.publishTime}
-                  onChange={(e) => setFormData({ ...formData, publishTime: e.target.value })}
-                  className={FORM_STYLES.input}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* 内容信息 */}
-          <div className={DRAWER_STYLES.section}>
-            <h4 className={DRAWER_STYLES.sectionTitle}>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              内容信息
-            </h4>
-            <div className="space-y-4">
-              <div>
-                <label className={FORM_STYLES.label}>摘要</label>
-                <textarea
-                  value={formData.summary}
-                  onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
-                  placeholder="请输入新闻摘要..."
-                  rows={3}
-                  className={`${FORM_STYLES.input} resize-none`}
-                />
-              </div>
-              <div>
-                <label className={FORM_STYLES.label}>正文内容</label>
-                <textarea
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  placeholder="请输入新闻正文内容..."
-                  rows={10}
-                  className={`${FORM_STYLES.input} resize-none`}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* 封面图 */}
-          <div className={DRAWER_STYLES.section}>
-            <h4 className={DRAWER_STYLES.sectionTitle}>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              封面图
-            </h4>
-            <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
-              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              </div>
-              <p className="text-sm text-gray-500">点击上传封面图</p>
-              <p className="text-xs text-gray-400 mt-1">支持 JPG、PNG 格式，建议尺寸 800x450</p>
-            </div>
-          </div>
-
-          {/* 状态 */}
-          <div className={DRAWER_STYLES.section}>
-            <h4 className={DRAWER_STYLES.sectionTitle}>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              发布状态
-            </h4>
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="status"
-                  checked={formData.status === '草稿'}
-                  onChange={() => setFormData({ ...formData, status: '草稿' })}
-                  className="w-4 h-4 text-primary"
-                />
-                <span className="text-sm text-gray-700">保存为草稿</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="status"
-                  checked={formData.status === '已发布'}
-                  onChange={() => setFormData({ ...formData, status: '已发布' })}
-                  className="w-4 h-4 text-primary"
-                />
-                <span className="text-sm text-gray-700">立即发布</span>
-              </label>
-            </div>
-          </div>
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">筛选条件</p>
+          <p className="font-mono text-xs text-gray-800">
+            {filters.type === 'all' ? '全部类型' : filters.type} | {filters.isPublished === 'all' ? '全部状态' : filters.isPublished}
+          </p>
         </div>
-
-        <div className={DRAWER_STYLES.footer}>
-          <div className="flex items-center justify-end gap-3">
-            <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-              取消
-            </button>
-            <button
-              onClick={() => handleSubmit(false)}
-              className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors"
-            >
-              保存草稿
-            </button>
-            <button
-              onClick={() => handleSubmit(true)}
-              className="px-4 py-2 text-sm text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors"
-            >
-              {isEdit ? '保存并发布' : '发布新闻'}
-            </button>
-          </div>
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">最近操作</p>
+          <p className={`text-xs font-semibold mt-1 ${
+            apiStatus.lastAction === 'success' ? 'text-green-600' :
+            apiStatus.lastAction === 'error' ? 'text-red-600' :
+            apiStatus.lastAction === 'loading' ? 'text-orange-600' : 'text-gray-400'
+          }`}>
+            {apiStatus.lastAction === 'success' ? '✅ 操作成功' :
+             apiStatus.lastAction === 'error' ? '❌ 操作失败' :
+             apiStatus.lastAction === 'loading' ? '⏳ 处理中...' : '—'}
+          </p>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
-// ==================== 查看新闻抽屉 ====================
-const NewsDetailDrawer = ({ news, isOpen, onClose }) => {
-  if (!isOpen || !news) return null;
-
-  return (
-    <>
-      <div className={DRAWER_STYLES.overlay} onClick={onClose} />
-      <div className={DRAWER_STYLES.container}>
-        <div className={DRAWER_STYLES.header}>
-          <h3 className={TYPOGRAPHY.sectionTitle}>新闻详情</h3>
-          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        <div className={DRAWER_STYLES.content}>
-          {/* 基础信息 */}
-          <div className={DRAWER_STYLES.section}>
-            <h4 className={DRAWER_STYLES.sectionTitle}>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              基础信息
-            </h4>
-            <div className={DRAWER_STYLES.infoBox}>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">新闻标题</span>
-                <span className="text-sm font-medium text-gray-800">{news.title}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">分类</span>
-                <CategoryTag category={news.category} />
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">发布时间</span>
-                <span className="text-sm text-gray-800">{news.publishTime}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">作者</span>
-                <span className="text-sm text-gray-800">{news.author}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-500">状态</span>
-                <StatusTag status={news.status} />
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">浏览量</span>
-                <span className="text-sm text-gray-800">{news.views}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* 摘要 */}
-          <div className={DRAWER_STYLES.section}>
-            <h4 className={DRAWER_STYLES.sectionTitle}>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              摘要
-            </h4>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-700 leading-relaxed">{news.summary || '暂无摘要'}</p>
-            </div>
-          </div>
-
-          {/* 正文内容 */}
-          <div className={DRAWER_STYLES.section}>
-            <h4 className={DRAWER_STYLES.sectionTitle}>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              正文内容
-            </h4>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{news.content || '暂无内容'}</p>
-            </div>
-          </div>
-
-          {/* 封面图 */}
-          <div className={DRAWER_STYLES.section}>
-            <h4 className={DRAWER_STYLES.sectionTitle}>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              封面图
-            </h4>
-            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-              {news.coverImage ? (
-                <div className="aspect-video bg-gray-200 rounded-lg flex items-center justify-center">
-                  <span className="text-gray-400">封面图预览</span>
-                </div>
-              ) : (
-                <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <svg className="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span className="text-sm text-gray-400">暂无封面图</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className={DRAWER_STYLES.footer}>
-          <button onClick={onClose} className="w-full px-4 py-2 text-sm text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors">
-            关闭
-          </button>
-        </div>
-      </div>
-    </>
-  );
-};
-
-// ==================== 主组件 ====================
 const AdminNews = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [selectedNews, setSelectedNews] = useState(null);
+  const [newsList, setNewsList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [toast, setToast] = useState(null);
+  const [apiStatus, setApiStatus] = useState({ list: null, lastAction: null });
 
-  // Mock 数据
-  const [newsList, setNewsList] = useState([
-    {
-      id: 1,
-      title: '2024年梧桐·鸿鹄人工智能应用创新大赛正式启动',
-      category: '公告通知',
-      publishTime: '2024-11-15 10:00',
-      author: '赛事组委会',
-      status: '已发布',
-      views: 1256,
-      summary: '2024年梧桐·鸿鹄人工智能应用创新大赛正式启动，面向全国高校学生开放报名。',
-      content: '2024年梧桐·鸿鹄人工智能应用创新大赛正式启动，面向全国高校学生开放报名。本届大赛旨在推动人工智能技术的创新应用，培养AI领域创新人才。',
-      coverImage: null
-    },
-    {
-      id: 2,
-      title: '赛事报名常见问题解答',
-      category: '新闻动态',
-      publishTime: '2024-11-18 14:30',
-      author: '赛事组委会',
-      status: '已发布',
-      views: 892,
-      summary: '针对近期报名过程中遇到的常见问题，我们整理了详细解答。',
-      content: '针对近期报名过程中遇到的常见问题，我们整理了详细解答，帮助参赛团队顺利完成报名。',
-      coverImage: null
-    },
-    {
-      id: 3,
-      title: '人工智能产业发展趋势报告发布',
-      category: '媒体报道',
-      publishTime: '2024-11-20 09:00',
-      author: '技术编辑部',
-      status: '已发布',
-      views: 2341,
-      summary: '最新人工智能产业发展趋势报告正式发布，涵盖多个细分领域。',
-      content: '最新人工智能产业发展趋势报告正式发布，涵盖计算机视觉、自然语言处理、机器学习等多个细分领域。',
-      coverImage: null
-    },
-    {
-      id: 4,
-      title: '决赛评审规则说明',
-      category: '公告通知',
-      publishTime: '',
-      author: '赛事组委会',
-      status: '草稿',
-      views: 0,
-      summary: '决赛阶段评审规则详细说明。',
-      content: '决赛阶段将采用现场答辩+作品展示的形式进行评审。',
-      coverImage: null
-    },
-    {
-      id: 5,
-      title: '往届优秀作品回顾',
-      category: '新闻动态',
-      publishTime: '2024-10-01 08:00',
-      author: '内容运营',
-      status: '已下线',
-      views: 567,
-      summary: '回顾往届大赛中的优秀作品和创新亮点。',
-      content: '回顾往届大赛中的优秀作品和创新亮点，展示AI技术的无限可能。',
-      coverImage: null
+  const fetchNews = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams();
+      params.append('isPublished', 'false');
+      if (typeFilter !== 'all') params.append('newsType', typeFilter);
+      if (searchQuery) params.append('keyword', searchQuery);
+
+      const result = await request(`/v1/news?${params.toString()}`);
+      if (result.ok && result.data?.code === 0 && result.data.data) {
+        const list = Array.isArray(result.data.data.list) ? result.data.data.list : [];
+        setNewsList(list);
+        setApiStatus(prev => ({ ...prev, list: 200 }));
+      } else {
+        setNewsList([]);
+        setApiStatus(prev => ({ ...prev, list: 'error' }));
+        setError('获取新闻列表失败');
+      }
+    } catch (err) {
+      console.error('Fetch news error:', err);
+      setNewsList([]);
+      setApiStatus(prev => ({ ...prev, list: 'error' }));
+      setError('网络错误，无法获取新闻列表');
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
-  // 筛选逻辑
+  useEffect(() => { fetchNews(); }, [typeFilter]);
+
   const filteredNews = useMemo(() => {
-    return newsList.filter(news => {
-      const searchLower = searchQuery.toLowerCase();
-      const matchSearch = news.title.toLowerCase().includes(searchLower);
-      const matchStatus = statusFilter === 'all' || news.status === statusFilter;
-      const matchCategory = categoryFilter === 'all' || news.category === categoryFilter;
-      return matchSearch && matchStatus && matchCategory;
+    return newsList.filter(n => {
+      const q = searchQuery.toLowerCase();
+      const matchSearch = !q || (n.title || '').toLowerCase().includes(q) || (n.summary || '').toLowerCase().includes(q);
+      const matchStatus = statusFilter === 'all' || String(n.isPublished) === statusFilter;
+      return matchSearch && matchStatus;
     });
-  }, [newsList, searchQuery, statusFilter, categoryFilter]);
+  }, [newsList, searchQuery, statusFilter]);
 
-  // 查看新闻
-  const handleView = (news) => {
-    setSelectedNews(news);
-    setIsDetailOpen(true);
+  const handleAction = async (action, id) => {
+    setApiStatus(prev => ({ ...prev, lastAction: 'loading' }));
+    try {
+      let result;
+      if (action === 'publish') {
+        result = await request(`/v1/admin/news/${id}/publish`, { method: 'PUT' });
+      } else if (action === 'unpublish') {
+        result = await request(`/v1/admin/news/${id}/unpublish`, { method: 'PUT' });
+      } else if (action === 'delete') {
+        if (!confirm('确定要删除这条新闻吗？')) return;
+        result = await request(`/v1/admin/news/${id}`, { method: 'DELETE' });
+      }
+
+      if (result.ok && result.data?.code === 0) {
+        setApiStatus(prev => ({ ...prev, lastAction: 'success' }));
+        setToast({ message: action === 'delete' ? '删除成功' : action === 'publish' ? '发布成功' : '下线成功', type: 'success' });
+        fetchNews();
+      } else {
+        setApiStatus(prev => ({ ...prev, lastAction: 'error' }));
+        setToast({ message: result.data?.message || '操作失败', type: 'error' });
+      }
+    } catch (err) {
+      setApiStatus(prev => ({ ...prev, lastAction: 'error' }));
+      setToast({ message: '网络错误，操作失败', type: 'error' });
+    }
   };
 
-  // 编辑新闻
-  const handleEdit = (news) => {
-    setSelectedNews(news);
-    setIsFormOpen(true);
-  };
-
-  // 新建新闻
   const handleCreate = () => {
-    setSelectedNews(null);
-    setIsFormOpen(true);
+    setToast({ message: '新建新闻功能暂未接入（需要 slug 字段支撑）', type: 'info' });
   };
 
-  // 保存新闻（新建/编辑）
-  const handleSave = (formData, isEdit) => {
-    if (isEdit && selectedNews) {
-      // 编辑
-      setNewsList(prev => prev.map(n => 
-        n.id === selectedNews.id ? { ...formData, id: n.id, views: n.views } : n
-      ));
-    } else {
-      // 新建
-      const newNews = {
-        ...formData,
-        id: Date.now(),
-        views: 0,
-        publishTime: formData.status === '已发布' ? new Date().toLocaleString('zh-CN', { 
-          year: 'numeric', month: '2-digit', day: '2-digit', 
-          hour: '2-digit', minute: '2-digit' 
-        }).replace(/\//g, '-') : ''
-      };
-      setNewsList(prev => [newNews, ...prev]);
-    }
+  const handleEdit = (news) => {
+    setToast({ message: '编辑新闻功能暂未接入（需要 slug 字段支撑）', type: 'info' });
   };
 
-  // 发布新闻
-  const handlePublish = (id) => {
-    setNewsList(prev => prev.map(n => 
-      n.id === id ? { 
-        ...n, 
-        status: '已发布',
-        publishTime: new Date().toLocaleString('zh-CN', { 
-          year: 'numeric', month: '2-digit', day: '2-digit', 
-          hour: '2-digit', minute: '2-digit' 
-        }).replace(/\//g, '-')
-      } : n
-    ));
-  };
-
-  // 下线新闻
-  const handleOffline = (id) => {
-    setNewsList(prev => prev.map(n => 
-      n.id === id ? { ...n, status: '已下线' } : n
-    ));
-  };
-
-  // 删除新闻
-  const handleDelete = (id) => {
-    if (confirm('确定要删除这条新闻吗？')) {
-      setNewsList(prev => prev.filter(n => n.id !== id));
-    }
+  const formatDate = (d) => {
+    if (!d) return '-';
+    try { return new Date(d).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }); }
+    catch { return d; }
   };
 
   return (
-    <div className={SPACING.section}>
-      {/* 页面标题区 */}
+    <div className="space-y-6">
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+      <ApiDebugPanel
+        apiStatus={apiStatus}
+        filters={{ type: typeFilter, isPublished: statusFilter }}
+        newsCount={newsList.length}
+      />
+
       <div>
-        <h2 className={TYPOGRAPHY.pageTitle}>新闻管理</h2>
-        <p className={TYPOGRAPHY.pageSubtitle}>发布、编辑和管理赛事新闻公告</p>
+        <h2 className="text-2xl font-bold text-gray-800">新闻管理</h2>
+        <p className="text-sm text-gray-500 mt-2">发布、编辑和管理赛事新闻公告</p>
       </div>
 
-      {/* 顶部操作区 */}
       <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
         <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
-          {/* 搜索框 */}
           <div>
-            <label className={TYPOGRAPHY.label}>搜索新闻</label>
-            <div className="relative mt-1.5">
+            <label className="block text-xs text-gray-500 mb-1.5">搜索新闻</label>
+            <div className="relative">
               <input
                 type="text"
-                placeholder="请输入新闻标题..."
+                placeholder="搜索标题/摘要..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-0 w-full sm:w-64 bg-white"
+                className="pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary w-full sm:w-64 bg-white"
               />
               <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
           </div>
-
-          {/* 状态筛选 */}
           <div>
-            <label className={TYPOGRAPHY.label}>状态筛选</label>
+            <label className="block text-xs text-gray-500 mb-1.5">类型筛选</label>
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="px-4 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary bg-white min-w-[140px]"
+            >
+              <option value="all">全部类型</option>
+              <option value="news">新闻动态</option>
+              <option value="announcement">公告通知</option>
+              <option value="media">媒体报道</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1.5">状态筛选</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-0 bg-white min-w-[120px] mt-1.5"
+              className="px-4 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary bg-white min-w-[120px]"
             >
               <option value="all">全部状态</option>
-              <option value="草稿">草稿</option>
-              <option value="已发布">已发布</option>
-              <option value="已下线">已下线</option>
-            </select>
-          </div>
-
-          {/* 分类筛选 */}
-          <div>
-            <label className={TYPOGRAPHY.label}>分类筛选</label>
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-4 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-0 bg-white min-w-[120px] mt-1.5"
-            >
-              <option value="all">全部分类</option>
-              <option value="新闻动态">新闻动态</option>
-              <option value="公告通知">公告通知</option>
-              <option value="媒体报道">媒体报道</option>
+              <option value="true">已发布</option>
+              <option value="false">草稿</option>
             </select>
           </div>
         </div>
-
-        {/* 新建新闻按钮 */}
         <button
           onClick={handleCreate}
-          className="flex items-center justify-center gap-2 px-5 py-2.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm hover:shadow"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -671,97 +248,110 @@ const AdminNews = () => {
         </button>
       </div>
 
-      {/* 新闻列表区 */}
-      <div className={TABLE_STYLES.container}>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className={TABLE_STYLES.header}>
+            <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                <th className={TABLE_STYLES.headerCell}>新闻标题</th>
-                <th className={TABLE_STYLES.headerCell}>分类</th>
-                <th className={TABLE_STYLES.headerCell}>发布时间</th>
-                <th className={TABLE_STYLES.headerCell}>作者</th>
-                <th className={TABLE_STYLES.headerCell}>状态</th>
-                <th className={TABLE_STYLES.headerCell}>浏览量</th>
-                <th className={TABLE_STYLES.headerCell}>操作</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">新闻标题</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">类型</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">状态</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">发布时间</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">浏览量</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">操作</th>
               </tr>
             </thead>
-            <tbody className={TABLE_STYLES.divider}>
-              {filteredNews.map((news) => (
-                <tr key={news.id} className={TABLE_STYLES.row}>
-                  <td className={TABLE_STYLES.cell}>
-                    <span className="text-sm font-semibold text-gray-800 line-clamp-1" title={news.title}>
-                      {news.title}
-                    </span>
-                  </td>
-                  <td className={TABLE_STYLES.cell}>
-                    <CategoryTag category={news.category} />
-                  </td>
-                  <td className={TABLE_STYLES.cell}>
-                    <span className="text-sm text-gray-600">{news.publishTime || '-'}</span>
-                  </td>
-                  <td className={TABLE_STYLES.cell}>
-                    <span className="text-sm text-gray-600">{news.author}</span>
-                  </td>
-                  <td className={TABLE_STYLES.cell}>
-                    <StatusTag status={news.status} />
-                  </td>
-                  <td className={TABLE_STYLES.cell}>
-                    <span className="text-sm text-gray-600">{news.views.toLocaleString()}</span>
-                  </td>
-                  <td className={TABLE_STYLES.cell}>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleView(news)}
-                        className={BUTTON_STYLES.secondaryBg}
-                      >
-                        查看
-                      </button>
-                      <button
-                        onClick={() => handleEdit(news)}
-                        className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                      >
-                        编辑
-                      </button>
-                      <ActionDropdown
-                        news={news}
-                        onPublish={handlePublish}
-                        onOffline={handleOffline}
-                        onDelete={handleDelete}
-                      />
-                    </div>
+            <tbody className="divide-y divide-gray-100">
+              {loading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-48 animate-pulse"></div></td>
+                    <td className="px-6 py-4"><div className="h-6 bg-gray-200 rounded w-20 animate-pulse"></div></td>
+                    <td className="px-6 py-4"><div className="h-6 bg-gray-200 rounded w-16 animate-pulse"></div></td>
+                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div></td>
+                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-12 animate-pulse"></div></td>
+                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div></td>
+                  </tr>
+                ))
+              ) : error ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center">
+                    <p className="text-red-500 mb-4">{error}</p>
+                    <button onClick={fetchNews} className="px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary/90">重试</button>
                   </td>
                 </tr>
-              ))}
+              ) : filteredNews.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <p className="text-gray-500">暂无符合条件的新闻</p>
+                  </td>
+                </tr>
+              ) : (
+                filteredNews.map((news) => (
+                  <tr key={news.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-sm font-semibold text-gray-800">{news.title || '-'}</span>
+                        {news.summary && (
+                          <span className="text-xs text-gray-400 truncate max-w-xs">{news.summary}</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <TypeTag newsType={news.newsType} />
+                    </td>
+                    <td className="px-6 py-4">
+                      <StatusTag isPublished={news.isPublished} />
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm text-gray-600">{formatDate(news.publishedAt)}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm text-gray-600">{news.viewCount || 0}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleEdit(news)}
+                          className="px-3 py-1.5 text-sm font-medium text-primary bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors"
+                        >
+                          编辑
+                        </button>
+                        {!news.isPublished ? (
+                          <button
+                            onClick={() => handleAction('publish', news.id)}
+                            className="px-3 py-1.5 text-sm text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                          >
+                            发布
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleAction('unpublish', news.id)}
+                            className="px-3 py-1.5 text-sm text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                          >
+                            下线
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleAction('delete', news.id)}
+                          className="px-3 py-1.5 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          删除
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
-
-        {filteredNews.length === 0 && (
-          <div className="py-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-              </svg>
-            </div>
-            <p className="text-gray-500">暂无符合条件的新闻</p>
-          </div>
-        )}
       </div>
-
-      {/* 抽屉组件 */}
-      <NewsFormDrawer
-        isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
-        onSave={handleSave}
-        initialData={selectedNews}
-      />
-
-      <NewsDetailDrawer
-        news={selectedNews}
-        isOpen={isDetailOpen}
-        onClose={() => setIsDetailOpen(false)}
-      />
     </div>
   );
 };

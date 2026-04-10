@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsBoolean, IsDateString, IsNumber } from 'class-validator';
+import { IsOptional, IsString, IsBoolean, IsDateString, IsNumber, IsArray } from 'class-validator';
 
 export class CompetitionQueryDto {
   @ApiPropertyOptional()
@@ -52,6 +52,11 @@ export class CreateCompetitionDto {
 
   @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
+  status?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsDateString()
   registrationStart?: string;
 
@@ -69,9 +74,21 @@ export class CreateCompetitionDto {
   @IsOptional()
   @IsDateString()
   competitionEnd?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  trackNames?: string[];
 }
 
-export class UpdateCompetitionDto extends CreateCompetitionDto {}
+export class UpdateCompetitionDto extends CreateCompetitionDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  trackNames?: string[];
+}
 
 export class TrackQueryDto {
   @ApiPropertyOptional()

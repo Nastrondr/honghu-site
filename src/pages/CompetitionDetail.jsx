@@ -1,218 +1,143 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import StatusTag from '../components/common/StatusTag';
+import { request } from '../lib/api';
+
+const STATUS_MAP = {
+  'draft': { label: '即将开始', css: 'status-pending' },
+  'active': { label: '进行中', css: 'status-active' },
+  'ended': { label: '已结束', css: 'status-ended' },
+};
+
+const formatDate = (d) => {
+  if (!d) return '-';
+  try {
+    const date = new Date(d);
+    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+  } catch { return d; }
+};
+
+const formatDateRange = (start, end) => {
+  if (!start && !end) return '-';
+  if (start && end) return `${formatDate(start)} - ${formatDate(end)}`;
+  if (start) return `${formatDate(start)} 开始`;
+  return `${formatDate(end)} 结束`;
+};
+
+const EmptySection = ({ title }) => (
+  <div className="text-center py-6 text-sm text-gray-400">
+    <p>{title}信息暂未录入</p>
+  </div>
+);
+
+const ApiDebugPanel = ({ loading, error, competitionId, trackCount }) => {
+  if (process.env.NODE_ENV !== 'development') return null;
+  return (
+    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-blue-700">赛事详情 API 联调信息</h3>
+        <span className="text-xs text-blue-500">开发环境可见</span>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">详情接口</p>
+          <p className="font-mono text-xs text-gray-800 truncate">GET /v1/competitions/:id</p>
+          <p className="text-xs text-gray-400 mt-1">ID: {competitionId || '-'}</p>
+          <p className={`text-xs font-semibold mt-1 ${
+            loading ? 'text-yellow-600' : error ? 'text-red-600' : 'text-green-600'
+          }`}>
+            {loading ? '⏳ 请求中' : error ? '❌ 请求失败' : '✅ 加载成功'}
+          </p>
+        </div>
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">赛道接口</p>
+          <p className="font-mono text-xs text-gray-800 truncate">GET /v1/competitions/:id</p>
+          <p className="text-xs text-gray-400 mt-1">包含 tracks</p>
+          <p className="text-xs font-semibold mt-1 text-green-600">
+            ✅ {trackCount} 个赛道
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const CompetitionDetail = () => {
   const { id } = useParams();
+  const [competition, setCompetition] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [isRewardsOpen, setIsRewardsOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState('timeline');
   const [expandedCriteria, setExpandedCriteria] = useState(0);
-  
-  const competition = {
-    title: '梧桐·鸿鹄人工智能应用创新大赛-武汉纺织大学赛区',
-    status: '进行中',
-    organizer: '武汉纺织大学',
-    date: '2025.4-2026.3',
-    location: '武汉纺织大学',
-    description: '面向全国的人工智能应用创新大赛，鼓励选手开发具有实际应用价值的AI解决方案。',
-    tracks: [
-      {
-        name: '个人赛方向',
-        description: 'AI在学习/工作/生活应用，包括智能学习助手、工作效率工具、生活服务应用等。'
-      },
-      {
-        name: '团队赛方向',
-        description: '12个领域 + 软件硬件结合，包括智能制造、智慧医疗、智慧教育、智慧金融、智慧交通、智慧农业、智慧零售、智慧安防、智慧能源、智慧环保、智慧家居、智慧城市等。'
-      }
-    ],
-    timeline: [
-      {
-        phase: '报名阶段',
-        time: '2024年10月15日 - 2024年11月30日',
-        description: '在线提交报名信息和项目初步方案'
-      },
-      {
-        phase: '初赛评审',
-        time: '2024年12月1日 - 2024年12月15日',
-        description: '专家评审团队对提交的项目进行评审'
-      },
-      {
-        phase: '复赛路演',
-        time: '2024年12月20日 - 2024年12月25日',
-        description: '晋级项目进行线上路演展示'
-      },
-      {
-        phase: '决赛展示',
-        time: '2024年12月31日',
-        description: '总决赛及颁奖仪式'
-      }
-    ],
-    rewards: [
-      {
-        title: '奖项激励',
-        description: '设置金奖、银奖、铜奖和最佳创新奖，总奖金池丰厚'
-      },
-      {
-        title: '算力支持',
-        description: '为参赛团队提供免费的GPU/CPU算力资源'
-      },
-      {
-        title: '导师辅导',
-        description: '邀请行业专家和学术导师提供一对一辅导'
-      },
-      {
-        title: '孵化与合作',
-        description: '优秀项目有机会获得孵化支持和投资对接'
-      }
-    ],
-    resources: [
-      {
-        title: 'GPU/CPU 算力',
-        description: '提供高性能GPU集群，支持大规模模型训练和推理'
-      },
-      {
-        title: '数据资源',
-        description: '提供多领域高质量数据集，为项目开发提供数据基础'
-      },
-      {
-        title: '鸿鹄学堂课程',
-        description: '提供AI技术课程和实战培训，提升参赛选手技术能力'
-      },
-      {
-        title: '实训工具',
-        description: '提供开发工具和环境，简化项目开发和部署流程'
-      }
-    ],
-    mentors: [
-      {
-        name: '张教授',
-        title: '清华大学计算机科学与技术系教授',
-        direction: '人工智能、机器学习',
-        description: '主要研究方向为深度学习和计算机视觉，曾主持多个国家级科研项目'
-      },
-      {
-        name: '李博士',
-        title: '字节跳动AI实验室主任',
-        direction: '自然语言处理、大语言模型',
-        description: '在NLP领域有多年研究经验，发表多篇高水平论文'
-      },
-      {
-        name: '王总监',
-        title: '华为云AI产品总监',
-        direction: 'AI工程化、云服务',
-        description: '专注于AI技术的工程化落地和云服务架构设计'
-      },
-      {
-        name: '陈教授',
-        title: '北京大学信息科学技术学院教授',
-        direction: '智能推荐、数据挖掘',
-        description: '在推荐系统和数据挖掘领域有丰富的研究和实践经验'
-      }
-    ],
-    requirements: {
-      personal: [
-        {
-          title: '参赛资格',
-          description: '个人赛面向所有对AI创新有热情的个人，不限年龄、职业、学历'
-        },
-        {
-          title: '作品要求',
-          description: '作品必须为个人独立完成，不得团队合作'
-        },
-        {
-          title: '技术要求',
-          description: '鼓励使用最新AI技术，确保项目具有创新性和实用性'
-        },
-        {
-          title: '原创要求',
-          description: '参赛作品必须为原创，不得抄袭或盗用他人成果'
+
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    setError('');
+    const fetchCompetition = async () => {
+      try {
+        const result = await request(`/v1/competitions/${id}`);
+        if (result.ok && result.data?.code === 0 && result.data.data) {
+          setCompetition(result.data.data);
+        } else {
+          setError('赛事不存在或加载失败');
         }
-      ],
-      team: [
-        {
-          title: '团队人数',
-          description: '团队赛支持2-5人组队，需指定一名队长'
-        },
-        {
-          title: '成员要求',
-          description: '团队成员可以跨学校、跨专业、跨地区组队'
-        },
-        {
-          title: '作品要求',
-          description: '作品必须为团队集体创作，体现团队协作精神'
-        },
-        {
-          title: '技术要求',
-          description: '鼓励多学科交叉，软件硬件结合，解决实际问题'
-        },
-        {
-          title: '原创要求',
-          description: '参赛作品必须为原创，不得抄袭或盗用他人成果'
-        }
-      ]
-    },
-    submissionRequirements: [
-      {
-        title: '视频格式',
-        description: 'MP4格式，1080p分辨率，画面清晰，声音清楚'
-      },
-      {
-        title: '时长要求',
-        description: '个人赛：3-5分钟；团队赛：5-8分钟'
-      },
-      {
-        title: '文字说明',
-        description: '提交500字以内的作品说明，包括项目背景、技术方案、创新点等'
-      },
-      {
-        title: 'AI工具说明',
-        description: '详细说明使用的AI工具、框架和模型，包括版本信息'
-      },
-      {
-        title: '算力使用记录',
-        description: '提供算力使用情况记录，包括训练时间、资源消耗等'
-      },
-      {
-        title: '提交方式',
-        description: '通过大赛官方平台提交，截止日期前完成所有材料提交'
+      } catch (err) {
+        console.error('Fetch competition error:', err);
+        setError('网络错误，无法加载赛事详情');
+      } finally {
+        setLoading(false);
       }
-    ],
-    evaluationCriteria: [
-      {
-        title: '创新性',
-        description: '项目是否具有新颖的思路和方法，是否有独特的技术创新点'
-      },
-      {
-        title: '实用性',
-        description: '项目是否能解决实际问题，是否具有应用价值和市场潜力'
-      },
-      {
-        title: '技术可行性',
-        description: '技术方案是否合理可行，是否具有可实现性和可扩展性'
-      },
-      {
-        title: '社会价值',
-        description: '项目是否对社会发展、环境保护、民生改善等方面有积极影响'
-      }
-    ],
-    competitionValue: [
-      {
-        title: '能力培养',
-        description: '通过参赛提升AI技术应用能力、创新思维和团队协作能力'
-      },
-      {
-        title: '项目孵化',
-        description: '优秀项目有机会获得孵化支持，对接投资资源，实现商业化落地'
-      },
-      {
-        title: '就业机会',
-        description: '表现优秀的选手有机会获得企业实习和就业推荐机会'
-      }
-    ]
-  };
+    };
+    fetchCompetition();
+  }, [id]);
+
+  const statusConfig = competition?.status
+    ? STATUS_MAP[competition.status] || { label: competition.status, css: 'status-pending' }
+    : { label: '-', css: 'status-pending' };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-6 md:py-12 animate-fadeIn">
+        <ApiDebugPanel loading={true} error="" competitionId={id} trackCount={0} />
+        <div className="bg-white rounded-xl md:rounded-2xl shadow-md p-4 md:p-8 animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-2/3 mb-4"></div>
+          <div className="h-4 bg-gray-100 rounded w-1/2 mb-6"></div>
+          <div className="h-32 bg-gray-100 rounded w-full"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !competition) {
+    return (
+      <div className="container mx-auto px-4 py-6 md:py-12 animate-fadeIn">
+        <ApiDebugPanel loading={false} error={error} competitionId={id} trackCount={0} />
+        <div className="text-center py-16">
+          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <p className="text-red-500 mb-4">{error || '赛事不存在'}</p>
+          <Link to="/competition-center" className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm font-medium">
+            返回赛事列表
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-6 md:py-12 animate-fadeIn">
+      <ApiDebugPanel
+        loading={false}
+        error=""
+        competitionId={id}
+        trackCount={competition.tracks?.length || 0}
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         {/* 左侧主要内容 */}
         <div className="lg:col-span-2">
@@ -220,10 +145,12 @@ const CompetitionDetail = () => {
             {/* 首屏赛事信息卡 */}
             <div className="mb-6 md:mb-8">
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-3 mb-4">
-                <h1 className="text-xl md:text-[26px] font-semibold text-neutral-800 leading-tight">{competition.title}</h1>
-                <StatusTag status={competition.status} className="text-xs" />
+                <h1 className="text-xl md:text-[26px] font-semibold text-neutral-800 leading-tight">
+                  {competition.name || '-'}
+                </h1>
+                <StatusTag status={statusConfig.label} className="text-xs" />
               </div>
-              
+
               {/* 紧凑信息行 */}
               <div className="flex flex-wrap gap-3 md:gap-6 mb-4">
                 <div className="flex items-center gap-1.5">
@@ -231,37 +158,57 @@ const CompetitionDetail = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   <span className="text-xs md:text-sm text-neutral-500">比赛时间</span>
-                  <span className="text-xs md:text-sm text-neutral-800">{competition.date}</span>
+                  <span className="text-xs md:text-sm text-neutral-800">
+                    {formatDateRange(competition.competitionStart, competition.competitionEnd)}
+                  </span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span className="text-xs md:text-sm text-neutral-500">地点</span>
-                  <span className="text-xs md:text-sm text-neutral-800">{competition.location}</span>
-                </div>
+                {competition.registrationEnd && (
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-xs md:text-sm text-neutral-500">报名截止</span>
+                    <span className="text-xs md:text-sm text-neutral-800">
+                      {formatDate(competition.registrationEnd)}
+                    </span>
+                  </div>
+                )}
               </div>
-              
+
               {/* 赛事简介 */}
               <div className="text-sm text-neutral-600 line-clamp-3 md:line-clamp-none">
-                本次大赛旨在推动人工智能技术在各行业的应用落地，鼓励创新思维和实践能力。通过比赛平台，参赛选手可以展示自己的技术实力和创新想法，获得专业指导和资源支持。
+                {competition.description || '暂无赛事简介'}
               </div>
             </div>
-            
+
+            {/* 赛道信息 */}
+            <div className="mb-6 md:mb-8">
+              <h2 className="text-lg md:text-xl font-semibold text-neutral-800 mb-3 md:mb-4">赛道设置</h2>
+              {competition.tracks && competition.tracks.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {competition.tracks.map((track, index) => (
+                    <div key={index} className="bg-gray-50 rounded-lg p-4">
+                      <h3 className="text-sm font-semibold text-neutral-800 mb-1">{track.name || '-'}</h3>
+                      <p className="text-xs text-neutral-500">{track.description || '暂无赛道描述'}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <EmptySection title="赛道" />
+              )}
+            </div>
+
             {/* 赛程安排 - 纵向timeline */}
             <div className="mb-6 md:mb-8">
               <h2 className="text-lg md:text-xl font-semibold text-neutral-800 mb-3 md:mb-4">赛程安排</h2>
-              
-              {/* 移动端：紧凑时间线 */}
               <div className="md:hidden relative pl-4">
                 <div className="absolute left-[5px] top-2 bottom-2 w-0.5 bg-neutral-200"></div>
                 <div className="space-y-3">
                   {[
-                    { phase: '报名阶段', time: '2025.4-5', status: 'completed' },
-                    { phase: '初赛', time: '2025.6', status: 'current' },
-                    { phase: '决赛', time: '2025.9', status: 'pending' },
-                    { phase: '成果支持', time: '2025.10-12', status: 'pending' }
+                    { phase: '报名阶段', time: formatDateRange(competition.registrationStart, competition.registrationEnd), status: competition.status === 'draft' ? 'current' : competition.status === 'active' ? 'completed' : 'completed' },
+                    { phase: '初赛评审', time: '评审阶段', status: competition.status === 'active' ? 'current' : competition.status === 'ended' ? 'completed' : 'pending' },
+                    { phase: '决赛展示', time: '决赛阶段', status: competition.status === 'ended' ? 'completed' : 'pending' },
+                    { phase: '成果支持', time: '后续支持', status: competition.status === 'ended' ? 'completed' : 'pending' }
                   ].map((item, index) => (
                     <div key={index} className="relative flex items-start gap-3">
                       <div className={`relative z-10 w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0 ${
@@ -277,24 +224,20 @@ const CompetitionDetail = () => {
                   ))}
                 </div>
               </div>
-              
-              {/* 桌面端：原有横向布局 */}
               <div className="hidden md:grid grid-cols-4 gap-4">
                 {[
-                  { phase: '报名阶段', time: '2025.4-5', status: 'completed' },
-                  { phase: '初赛', time: '2025.6', status: 'current' },
-                  { phase: '决赛', time: '2025.9', status: 'pending' },
-                  { phase: '成果支持', time: '2025.10-12', status: 'pending' }
+                  { phase: '报名阶段', time: formatDateRange(competition.registrationStart, competition.registrationEnd), status: competition.status === 'draft' ? 'current' : competition.status === 'active' || competition.status === 'ended' ? 'completed' : 'pending' },
+                  { phase: '初赛评审', time: '评审阶段', status: competition.status === 'active' ? 'current' : competition.status === 'ended' ? 'completed' : 'pending' },
+                  { phase: '决赛展示', time: '决赛阶段', status: competition.status === 'ended' ? 'completed' : 'pending' },
+                  { phase: '成果支持', time: '后续支持', status: competition.status === 'ended' ? 'completed' : 'pending' }
                 ].map((item, index) => (
                   <div key={index} className="text-center">
                     <div className={`text-base font-semibold mb-1 ${item.status === 'current' ? 'text-primary' : item.status === 'completed' ? 'text-neutral-800' : 'text-neutral-500'}`}>
                       {item.phase}
                     </div>
-                    <div className="text-sm text-neutral-500 mb-3">
-                      {item.time}
-                    </div>
+                    <div className="text-sm text-neutral-500 mb-3">{item.time}</div>
                     <div className="h-1.5 rounded-full bg-neutral-200 overflow-hidden">
-                      <div 
+                      <div
                         className={`h-full rounded-full transition-all ${item.status === 'completed' ? 'bg-primary w-full' : item.status === 'current' ? 'bg-primary w-2/3' : 'bg-neutral-200 w-0'}`}
                       ></div>
                     </div>
@@ -302,198 +245,101 @@ const CompetitionDetail = () => {
                 ))}
               </div>
             </div>
-            
 
-            {/* 作品提交要求 - 紧凑列表 */}
+            {/* 作品提交要求 */}
             <div className="mb-6 md:mb-8">
               <h2 className="text-lg md:text-xl font-semibold text-neutral-800 mb-3 md:mb-4">作品提交要求</h2>
-              <div className="md:hidden space-y-2">
-                {competition.submissionRequirements.map((req, index) => (
-                  <div key={index} className="flex items-start gap-2">
-                    <div className="w-5 h-5 bg-primary/10 rounded-full flex items-center justify-center text-primary text-xs font-semibold flex-shrink-0 mt-0.5">
-                      {index + 1}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-medium text-neutral-800">{req.title}</h3>
-                      <p className="text-xs text-neutral-500 line-clamp-1">{req.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {/* 桌面端：原有布局 */}
-              <div className="hidden md:block space-y-3">
-                {competition.submissionRequirements.map((req, index) => (
-                  <div key={index} className="flex">
-                    <div className="mr-4">
-                      <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold">
-                        {index + 1}
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="text-base font-medium text-neutral-800 mb-1">{req.title}</h3>
-                      <p className="text-neutral-600 text-sm">{req.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <EmptySection title="作品提交要求" />
             </div>
-            
-            {/* 评审标准 - 折叠面板 */}
+
+            {/* 评审标准 */}
             <div className="mb-6 md:mb-8">
               <h2 className="text-lg md:text-xl font-semibold text-neutral-800 mb-3 md:mb-4">评审标准</h2>
-              
-              {/* 移动端：折叠列表 */}
-              <div className="md:hidden space-y-2">
-                {[
-                  { title: '创新性', shortDesc: '技术方案和应用场景的创新程度', fullDesc: '从技术方案的原创性、应用场景的独特性、解决方案的差异化程度等方面进行综合评估。重点关注是否具有明显的技术突破或商业模式创新。', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
-                  { title: '实用性', shortDesc: '方案落地的可行性和实际价值', fullDesc: '评估作品的实际应用价值和落地可行性，包括市场需求分析、商业模式可行性、技术实现路径清晰度等。', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
-                  { title: '技术实现', shortDesc: 'AI技术应用的深度与广度', fullDesc: '考察AI技术的深度应用，包括算法复杂度、模型创新性、数据处理能力、系统架构合理性等技术维度。', icon: 'M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z' },
-                  { title: '团队协作', shortDesc: '团队分工与资源整合能力', fullDesc: '评估团队成员的背景互补性、分工合理性、协作效率，以及对各方资源的整合利用能力。', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' }
-                ].map((item, index) => (
-                  <div key={index} className="bg-neutral-50 rounded-xl overflow-hidden">
-                    <button
-                      onClick={() => setExpandedCriteria(expandedCriteria === index ? -1 : index)}
-                      className="w-full flex items-center gap-3 p-3 text-left"
-                    >
-                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-medium text-neutral-800">{item.title}</h3>
-                        <p className="text-xs text-neutral-500 line-clamp-1">{item.shortDesc}</p>
-                      </div>
-                      <svg className={`w-4 h-4 text-neutral-400 transition-transform ${expandedCriteria === index ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    {expandedCriteria === index && (
-                      <div className="px-3 pb-3 border-t border-neutral-100">
-                        <p className="text-xs text-neutral-600 pt-2 leading-relaxed">{item.fullDesc}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-              
-              {/* 桌面端：原有布局 */}
-              <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                {competition.evaluationCriteria.map((criterion, index) => (
-                  <div key={index} className="bg-neutral-50 rounded-xl p-6">
-                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mb-3">
-                      {index === 0 && (
-                        <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                      )}
-                      {index === 1 && (
-                        <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      )}
-                      {index === 2 && (
-                        <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                        </svg>
-                      )}
-                      {index === 3 && (
-                        <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                      )}
-                    </div>
-                    <h3 className="text-base font-medium text-neutral-800 mb-2">{criterion.title}</h3>
-                    <p className="text-neutral-600 text-sm">{criterion.description}</p>
-                  </div>
-                ))}
-              </div>
+              <EmptySection title="评审标准" />
             </div>
           </div>
         </div>
-        
+
         {/* 右侧边栏 */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-8 space-y-4 md:space-y-6">
-            {/* 报名卡 */}
-            <div className="bg-[#7463EC] text-white rounded-xl md:rounded-2xl p-5 md:p-8 shadow-lg">
-              <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">立即报名</h3>
-              <p className="mb-4 md:mb-6 text-white/90 text-sm">报名参赛，参与人工智能应用创新实践</p>
-              <Link to="/register-competition" className="w-full bg-white text-[#7463EC] px-5 md:px-6 py-2.5 md:py-3 rounded-lg font-medium hover:bg-neutral-100 transition-colors mb-3 md:mb-4 inline-block text-center text-sm">
-                立即报名
-              </Link>
-              <button className="w-full bg-transparent border border-white text-white px-5 md:px-6 py-2.5 md:py-3 rounded-lg font-medium hover:bg-white/10 transition-colors text-sm">
-                下载参赛说明
-              </button>
-            </div>
-            
-            {/* 参赛指引 */}
-            <div className="bg-white rounded-xl shadow-md p-4 md:p-6">
-              <h3 className="text-base font-medium text-neutral-800 mb-3 md:mb-4">参赛指引</h3>
-              <ul className="space-y-2 md:space-y-3 text-neutral-600 text-sm">
-                <li className="flex items-start">
-                  <svg className="w-4 h-4 mr-2 text-primary mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>填写报名表，选择参赛类型</span>
-                </li>
-                <li className="flex items-start">
-                  <svg className="w-4 h-4 mr-2 text-primary mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>系统自动创建团队</span>
-                </li>
-                <li className="flex items-start">
-                  <svg className="w-4 h-4 mr-2 text-primary mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>开放赛题数据与作品提交</span>
-                </li>
-              </ul>
-            </div>
-            
-            {/* 联系方式 - 紧凑列表 */}
-            <div className="bg-white rounded-xl shadow-md p-4 md:p-6">
-              <h3 className="text-base font-medium text-neutral-800 mb-3 md:mb-4">联系方式</h3>
-              <div className="space-y-2 md:space-y-3">
-                <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  <div className="min-w-0">
-                    <p className="text-xs text-neutral-500">联系人</p>
-                    <p className="text-sm text-neutral-800 truncate">张老师</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                  <div className="min-w-0">
-                    <p className="text-xs text-neutral-500">电话</p>
-                    <p className="text-sm text-neutral-800 truncate">010-12345678</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  <div className="min-w-0">
-                    <p className="text-xs text-neutral-500">邮箱</p>
-                    <p className="text-sm text-neutral-800 truncate">contact@honghu-competition.com</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <div className="min-w-0">
-                    <p className="text-xs text-neutral-500">工作时间</p>
-                    <p className="text-sm text-neutral-800">周一至周五 9:00-18:00</p>
-                  </div>
-                </div>
+        <div className="space-y-6">
+          {/* 立即报名卡片 */}
+          <div className="bg-white rounded-xl md:rounded-2xl shadow-md p-4 md:p-6 sticky top-6">
+            <h3 className="text-lg font-semibold text-neutral-800 mb-4">参赛报名</h3>
+
+            {competition.status === 'ended' ? (
+              <div className="text-center py-4">
+                <p className="text-sm text-neutral-500 mb-3">该赛事报名已结束</p>
+                <Link
+                  to={`/competitions/${competition.id}/results`}
+                  className="block w-full py-3 text-center bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors text-sm font-medium"
+                >
+                  查看比赛结果
+                </Link>
               </div>
+            ) : (
+              <>
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-center gap-2 text-sm text-neutral-600">
+                    <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>报名时间</span>
+                    <span className="ml-auto text-neutral-800">
+                      {formatDateRange(competition.registrationStart, competition.registrationEnd)}
+                    </span>
+                  </div>
+                  {competition.tracks?.length > 0 && (
+                    <div className="flex items-center gap-2 text-sm text-neutral-600">
+                      <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                      </svg>
+                      <span>赛道数量</span>
+                      <span className="ml-auto text-neutral-800">{competition.tracks.length} 个</span>
+                    </div>
+                  )}
+                </div>
+                <Link
+                  to={`/register-competition?competitionId=${competition.id}`}
+                  className="block w-full py-3 text-center bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
+                >
+                  立即报名
+                </Link>
+                <Link
+                  to="/register-competition"
+                  className="block w-full py-3 text-center mt-2 border border-primary text-primary rounded-lg hover:bg-primary/5 transition-colors text-sm font-medium"
+                >
+                  了解参赛形式
+                </Link>
+              </>
+            )}
+
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <h4 className="text-sm font-medium text-neutral-700 mb-2">赛事价值</h4>
+              <EmptySection title="赛事价值" />
             </div>
+          </div>
+
+          {/* 奖项设置 */}
+          <div className="bg-white rounded-xl md:rounded-2xl shadow-md p-4 md:p-6">
+            <div
+              className="flex items-center justify-between cursor-pointer"
+              onClick={() => setIsRewardsOpen(!isRewardsOpen)}
+            >
+              <h3 className="text-lg font-semibold text-neutral-800">奖项设置</h3>
+              <svg
+                className={`w-5 h-5 text-neutral-400 transition-transform ${isRewardsOpen ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+            {isRewardsOpen && (
+              <div className="mt-4 space-y-3">
+                <EmptySection title="奖项设置" />
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -4,11 +4,16 @@ import { useAuth } from '../context/AuthContext';
 import { request } from '../lib/api';
 
 const WorkSubmission = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
   const [checkLoading, setCheckLoading] = useState(true);
-  const [checkError, setCheckError] = useState('');
+
+  // 可用赛事列表
+  const [competitions, setCompetitions] = useState([]);
+  const [tracks, setTracks] = useState([]);
+  const [selectedCompetition, setSelectedCompetition] = useState('');
+  const [selectedTrack, setSelectedTrack] = useState('');
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -16,39 +21,49 @@ const WorkSubmission = () => {
       return;
     }
 
-    const checkUserWorks = async () => {
-      setCheckLoading(true);
-      setCheckError('');
-
+    // 获取可用赛事列表
+    const fetchCompetitions = async () => {
       try {
-        const result = await request('/v1/works/my');
+        const result = await request('/v1/competitions');
         if (result.ok && result.data.code === 0) {
-          const works = result.data.data?.list || [];
-          if (works.length > 0) {
-            navigate(`/works/${works[0].id}`, { replace: true });
-            return;
-          } else {
-            navigate('/my-works', { replace: true });
-            return;
+          const list = result.data.data?.list || [];
+          setCompetitions(list);
+          if (list.length > 0) {
+            setSelectedCompetition(list[0].id);
+            setTracks(list[0].tracks || []);
+            if (list[0].tracks?.length > 0) {
+              setSelectedTrack(list[0].tracks[0].id);
+            }
           }
         }
       } catch (err) {
-        // 继续显示表单
+        console.error('获取赛事列表失败:', err);
       } finally {
         setCheckLoading(false);
       }
     };
 
-    checkUserWorks();
+    fetchCompetitions();
   }, [isAuthenticated]);
 
-  // 作品状态控制 - draft / submitted / under_review / reviewed / awarded
-  const [workStatus, setWorkStatus] = useState('draft');
+  // 赛事切换时更新赛道
+  useEffect(() => {
+    if (selectedCompetition) {
+      const comp = competitions.find(c => c.id === selectedCompetition);
+      if (comp) {
+        setTracks(comp.tracks || []);
+        if (comp.tracks?.length > 0) {
+          setSelectedTrack(comp.tracks[0].id);
+        } else {
+          setSelectedTrack('');
+        }
+      }
+    }
+  }, [selectedCompetition, competitions]);
+
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
   const [notificationType, setNotificationType] = useState('success');
-  const [currentVersion, setCurrentVersion] = useState('V1.2');
-  const [finalVersion, setFinalVersion] = useState('V1.2');
 
   // 文件上传相关状态
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -57,6 +72,7 @@ const WorkSubmission = () => {
 
   // 提交确认弹窗
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // 表单数据
   const [formData, setFormData] = useState({
@@ -66,23 +82,6 @@ const WorkSubmission = () => {
     aiTools: '',
     computeUsage: ''
   });
-
-  // 模拟提交记录数据
-  const [submissions, setSubmissions] = useState([
-    { version: 'V1.0', submitTime: '2024-11-10 10:00', status: '已提交', isFinal: false },
-    { version: 'V1.1', submitTime: '2024-11-12 15:30', status: '已提交', isFinal: false },
-    { version: 'V1.2', submitTime: '2024-11-15 14:30', status: '已提交', isFinal: true }
-  ]);
-
-  // 模拟评分数据（预留）
-  const mockScore = {
-    totalScore: 85,
-    innovation: 88,
-    technology: 82,
-    practicality: 85,
-    presentation: 85,
-    comment: '作品整体表现良好，创新性强，技术实现有一定难度。'
-  };
 
   // 显示通知提示
   const showToast = (message, type = 'success') => {
@@ -99,8 +98,7 @@ const WorkSubmission = () => {
       showToast('请先登录', 'error');
       return;
     }
-    // TODO: 接入作品接口 - 调用保存草稿API
-    showToast('草稿保存成功');
+    showToast('草稿保存成功（本地模拟）');
   };
 
   // 处理文件上传
@@ -154,8 +152,8 @@ const WorkSubmission = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // 提交作品
-  const handleSubmit = () => {
+  // 提交作品 - 创建新作品
+  const handleSubmit = async () => {
     if (!isAuthenticated) {
       showToast('请先登录', 'error');
       return;
@@ -167,18 +165,44 @@ const WorkSubmission = () => {
     setShowConfirmModal(true);
   };
 
-  // 确认提交
-  const confirmSubmit = () => {
-    setWorkStatus('submitted');
-    setShowConfirmModal(false);
-    showToast('作品提交成功');
-  };
+  // 确认提交 - 调用创建作品API
+  const confirmSubmit = async () => {
+    if (!selectedCompetition || !selectedTrack) {
+      showToast('请选择赛事和赛道', 'error');
+      setShowConfirmModal(false);
+      return;
+    }
 
-  // 删除提交记录
-  const handleDeleteSubmission = (index) => {
-    const updated = submissions.filter((_, i) => i !== index);
-    setSubmissions(updated);
-    showToast('提交记录已删除');
+    setSubmitting(true);
+    try {
+      // 创建作品
+      const result = await request('/v1/works', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          competitionId: selectedCompetition,
+          trackId: selectedTrack,
+          userId: user?.id,
+        }),
+      });
+
+      if (result.ok && result.data.code === 0) {
+        const newWork = result.data.data;
+        showToast('作品创建成功');
+        // 跳转到作品详情页继续完善
+        setTimeout(() => {
+          navigate(`/works/${newWork.id}`);
+        }, 1500);
+      } else {
+        showToast(result.data.message || '作品创建失败', 'error');
+      }
+    } catch (err) {
+      showToast('网络错误，请重试', 'error');
+    } finally {
+      setSubmitting(false);
+      setShowConfirmModal(false);
+    }
   };
 
   if (!isAuthenticated) {
@@ -211,65 +235,19 @@ const WorkSubmission = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center">
           <div className="w-12 h-12 border-3 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-500">检查作品状态...</p>
+          <p className="text-gray-500">加载中...</p>
         </div>
       </div>
     );
   }
-
-  // 有作品的用户会在 useEffect 中通过 navigate 跳走
-  // 继续显示表单（无作品用户）
 
   return (
     <div className="container mx-auto px-4 py-8 animate-fadeIn">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-neutral-800 mb-2">作品提交</h1>
-          <p className="text-neutral-600">在规定阶段内完成作品提交</p>
+          <p className="text-neutral-600">创建您的参赛作品</p>
         </div>
-
-        {/* Dev 调试区 */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-            <p className="text-sm text-blue-700 font-semibold">开发模式：有作品用户将自动跳转</p>
-          </div>
-        )}
-
-        {/* 赛事信息卡片 */}
-        <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between">
-            <div className="mb-4 md:mb-0">
-              <h2 className="text-xl font-bold text-neutral-800 mb-2">2024年梧桐·鸿鹄人工智能应用创新大赛</h2>
-              <div className="flex flex-wrap gap-4">
-                <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
-                  初赛提交阶段
-                </span>
-                <span className="text-neutral-600 text-sm">截止时间：2024-11-30 23:59</span>
-              </div>
-            </div>
-            <div className="text-right">
-              <span className={`inline-block px-4 py-2 rounded-full text-sm font-medium ${
-                workStatus === 'draft' ? 'bg-yellow-100 text-yellow-700' :
-                workStatus === 'submitted' ? 'bg-green-100 text-green-700' :
-                'bg-gray-100 text-gray-700'
-              }`}>
-                {workStatus === 'draft' ? '草稿' :
-                 workStatus === 'submitted' ? '已提交' :
-                 workStatus === 'under_review' ? '评审中' :
-                 workStatus === 'reviewed' ? '已评审' : workStatus}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Dev 调试区 */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-            <p className="text-sm text-blue-700">
-              <span className="font-semibold">联调模式：</span>当前为无作品用户，显示作品提交表单
-            </p>
-          </div>
-        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* 左侧：作品信息表单 */}
@@ -278,6 +256,41 @@ const WorkSubmission = () => {
             <div className="bg-white rounded-xl shadow-md p-6">
               <h3 className="text-lg font-bold text-neutral-800 mb-4">基本信息</h3>
               <div className="space-y-4">
+                {/* 赛事选择 */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">选择赛事 *</label>
+                  <select
+                    value={selectedCompetition}
+                    onChange={(e) => setSelectedCompetition(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                  >
+                    {competitions.length === 0 && (
+                      <option value="">暂无可用赛事</option>
+                    )}
+                    {competitions.map(comp => (
+                      <option key={comp.id} value={comp.id}>{comp.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 赛道选择 */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">选择赛道 *</label>
+                  <select
+                    value={selectedTrack}
+                    onChange={(e) => setSelectedTrack(e.target.value)}
+                    disabled={tracks.length === 0}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all disabled:bg-gray-100"
+                  >
+                    {tracks.length === 0 && (
+                      <option value="">请先选择赛事</option>
+                    )}
+                    {tracks.map(track => (
+                      <option key={track.id} value={track.id}>{track.name}</option>
+                    ))}
+                  </select>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-1">作品标题 *</label>
                   <input
@@ -406,108 +419,56 @@ const WorkSubmission = () => {
               </button>
               <button
                 onClick={handleSubmit}
-                className="px-8 py-3 rounded-xl bg-primary text-white font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/30"
+                disabled={submitting}
+                className="px-8 py-3 rounded-xl bg-primary text-white font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/30 disabled:opacity-50"
               >
-                提交作品
+                {submitting ? '提交中...' : '提交作品'}
               </button>
             </div>
           </div>
 
-          {/* 右侧：提交记录 */}
+          {/* 右侧：帮助信息 */}
           <div className="space-y-6">
             <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-lg font-bold text-neutral-800 mb-4">提交记录</h3>
+              <h3 className="text-lg font-bold text-neutral-800 mb-4">提交须知</h3>
+              <div className="space-y-3 text-sm text-neutral-600">
+                <p>1. 请先选择要参加的赛事和赛道</p>
+                <p>2. 填写作品标题和描述</p>
+                <p>3. 上传相关附件（可选）</p>
+                <p>4. 点击提交创建作品</p>
+                <p className="text-primary">提交后可进入作品详情页继续完善版本</p>
+              </div>
+            </div>
 
-              {submissions.length === 0 ? (
-                <p className="text-neutral-400 text-center py-8">暂无提交记录</p>
-              ) : (
-                <div className="space-y-4">
-                  {submissions.map((item, index) => (
-                    <div key={index} className="border border-gray-100 rounded-lg p-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                            item.isFinal
-                              ? 'bg-primary/10 text-primary'
-                              : 'bg-gray-100 text-gray-600'
-                          }`}>
-                            {item.version}
-                          </span>
-                          {item.isFinal && (
-                            <span className="px-2 py-0.5 bg-green-100 text-green-600 text-xs rounded">
-                              最终版
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-xs text-neutral-400">{item.submitTime}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className={`text-sm ${
-                          item.status === '已提交' ? 'text-green-600' :
-                          item.status === '待修改' ? 'text-yellow-600' : 'text-gray-600'
-                        }`}>
-                          {item.status}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+            {/* 赛事信息 */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h3 className="text-lg font-bold text-neutral-800 mb-4">当前赛事</h3>
+              {selectedCompetition ? (
+                <div className="text-sm">
+                  <p className="font-medium text-neutral-800 mb-1">
+                    {competitions.find(c => c.id === selectedCompetition)?.name || '-'}
+                  </p>
+                  <p className="text-neutral-500">
+                    赛道：{tracks.find(t => t.id === selectedTrack)?.name || '-'}
+                  </p>
                 </div>
+              ) : (
+                <p className="text-neutral-400 text-sm">请先选择赛事</p>
               )}
             </div>
 
-            {/* AI 评分 */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-lg font-bold text-neutral-800 mb-4">AI 自评</h3>
-              <div className="text-center py-4">
-                <div className="relative inline-flex items-center justify-center w-32 h-32">
-                  <svg className="w-32 h-32 transform -rotate-90">
-                    <circle
-                      cx="64"
-                      cy="64"
-                      r="56"
-                      stroke="#e5e7eb"
-                      strokeWidth="12"
-                      fill="none"
-                    />
-                    <circle
-                      cx="64"
-                      cy="64"
-                      r="56"
-                      stroke="#10b981"
-                      strokeWidth="12"
-                      fill="none"
-                      strokeDasharray={`${(mockScore.totalScore / 100) * 351.86} 351.86`}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-bold text-neutral-800">{mockScore.totalScore}</span>
-                    <span className="text-xs text-neutral-400">AI评分</span>
-                  </div>
+            {/* 开发调试 */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                <h3 className="text-sm font-bold text-blue-700 mb-2">开发调试</h3>
+                <div className="text-xs text-blue-600 space-y-1">
+                  <p>赛事数：{competitions.length}</p>
+                  <p>赛道数：{tracks.length}</p>
+                  <p>选中赛事：{selectedCompetition || '无'}</p>
+                  <p>选中赛道：{selectedTrack || '无'}</p>
                 </div>
-
-                <div className="mt-6 space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-neutral-600">创新性</span>
-                    <span className="font-medium text-neutral-800">{mockScore.innovation}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-neutral-600">技术实现</span>
-                    <span className="font-medium text-neutral-800">{mockScore.technology}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-neutral-600">实用性</span>
-                    <span className="font-medium text-neutral-800">{mockScore.practicality}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-neutral-600">展示效果</span>
-                    <span className="font-medium text-neutral-800">{mockScore.presentation}</span>
-                  </div>
-                </div>
-
-                <p className="mt-4 text-sm text-neutral-500 italic">{mockScore.comment}</p>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
@@ -518,7 +479,7 @@ const WorkSubmission = () => {
           <div className="bg-white rounded-2xl p-8 max-w-md mx-4 shadow-2xl">
             <h3 className="text-xl font-bold text-neutral-800 mb-4">确认提交</h3>
             <p className="text-neutral-600 mb-6">
-              提交后将无法修改作品内容，请确认所有信息无误后提交。
+              确认创建作品？创建后可进入作品详情页继续完善版本信息。
             </p>
             <div className="flex justify-end gap-4">
               <button
@@ -529,9 +490,10 @@ const WorkSubmission = () => {
               </button>
               <button
                 onClick={confirmSubmit}
-                className="px-6 py-2 rounded-xl bg-primary text-white hover:bg-primary/90 transition-colors"
+                disabled={submitting}
+                className="px-6 py-2 rounded-xl bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50"
               >
-                确认提交
+                {submitting ? '创建中...' : '确认创建'}
               </button>
             </div>
           </div>

@@ -141,7 +141,7 @@ export default function HomeHero() {
   return (
     <section className="relative isolate overflow-hidden min-h-[100vh] md:min-h-[88vh] lg:min-h-[90vh]">
       <HeroBackground />
-      <MouseTrailParticles />
+      {false && <MouseTrailParticles />}
 
       <div className="relative z-10 mx-auto flex min-h-[100vh] md:min-h-[88vh] lg:min-h-[90vh] max-w-5xl items-center justify-center px-4 pt-16 pb-8 md:px-6 md:pt-28 md:pb-24">
         <div className="mx-auto max-w-2xl text-center">

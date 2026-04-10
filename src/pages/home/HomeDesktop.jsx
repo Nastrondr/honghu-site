@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import HomeHero from '../../components/common/HomeHero';
 import ScrollReveal, { ScrollRevealStagger } from '../../components/common/ScrollReveal';
+import { request } from '../../lib/api';
 
 const TrackCard = ({ track, isActive = false }) => {
   const [imageError, setImageError] = useState(false);
@@ -155,13 +156,88 @@ const TrackCarousel = ({ tracks, isDesktop = true }) => {
   );
 };
 
+const STATUS_MAP = {
+  'draft': { label: '即将开始', bg: 'bg-blue-100', text: 'text-blue-700' },
+  'active': { label: '进行中', bg: 'bg-green-100', text: 'text-green-700' },
+  'ended': { label: '已结束', bg: 'bg-gray-100', text: 'text-gray-500' },
+};
+
+const formatDateRange = (start, end) => {
+  if (!start && !end) return '-';
+  const fmt = (d) => {
+    if (!d) return '';
+    try {
+      const date = new Date(d);
+      return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}`;
+    } catch { return ''; }
+  };
+  if (start && end) return `${fmt(start)}-${fmt(end)}`;
+  if (start) return `${fmt(start)} 开始`;
+  return `${fmt(end)} 结束`;
+};
+
+const CompetitionCard = ({ competition }) => {
+  const status = STATUS_MAP[competition.status] || { label: competition.status || '-', bg: 'bg-gray-100', text: 'text-gray-500' };
+  return (
+    <Link
+      to={`/competition/${competition.id}`}
+      className="glass-card rounded-2xl p-6 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col h-full cursor-pointer"
+    >
+      <div className="flex justify-between items-start gap-3 mb-4">
+        <h3 className="text-lg font-semibold text-neutral-800 flex-1 min-w-0">{competition.name || '-'}</h3>
+        <span className={`px-3 py-1 rounded-full text-xs font-medium flex-shrink-0 ${status.bg} ${status.text}`}>
+          {status.label}
+        </span>
+      </div>
+      <div className="text-neutral-600 text-sm mb-4">
+        <div className="flex items-center mb-2">
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          {formatDateRange(competition.competitionStart, competition.competitionEnd)}
+        </div>
+        {competition.description && (
+          <p className="mb-4 line-clamp-2">{competition.description}</p>
+        )}
+      </div>
+      {competition.tracks && competition.tracks.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-auto">
+          {competition.tracks.slice(0, 3).map((track, index) => (
+            <span key={index} className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs">{track.name}</span>
+          ))}
+        </div>
+      )}
+    </Link>
+  );
+};
+
 const HomeDesktop = () => {
+  const [competitions, setCompetitions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCompetitions = async () => {
+      try {
+        const result = await request('/v1/competitions');
+        if (result.ok && result.data?.code === 0 && result.data.data) {
+          const list = Array.isArray(result.data.data.list) ? result.data.data.list : [];
+          setCompetitions(list);
+        }
+      } catch (err) {
+        console.error('Fetch competitions error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCompetitions();
+  }, []);
+
   return (
     <div className="min-h-screen">
       {/* Hero 首屏 */}
       <HomeHero />
 
-      {/* 一、大赛核心亮点 */}
+      {/* 一，大赛核心亮点 */}
       <section className="py-20">
         <div className="container mx-auto px-4 max-w-7xl">
           <ScrollReveal type="title">
@@ -296,95 +372,23 @@ const HomeDesktop = () => {
           
           {/* 赛事卡片 */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Link to="/competition/1" className="glass-card rounded-2xl p-6 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col h-full cursor-pointer">
-              <div className="flex justify-between items-start gap-3 mb-4">
-                <h3 className="text-lg font-semibold text-neutral-800 flex-1 min-w-0">2025年梧桐·鸿鹄人工智能应用创新大赛</h3>
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 flex-shrink-0">进行中</span>
-              </div>
-              <div className="text-neutral-600 text-sm mb-4">
-                <div className="flex items-center mb-2">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  2025.4-2026.3
+            {loading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="glass-card rounded-2xl p-6 animate-pulse">
+                  <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+                  <div className="h-4 bg-gray-100 rounded w-full mb-2"></div>
+                  <div className="h-4 bg-gray-100 rounded w-1/2"></div>
                 </div>
-                <div className="flex items-center mb-4">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  武汉纺织大学
-                </div>
-                <p className="mb-4 line-clamp-2">
-                  面向全国的人工智能应用创新大赛，鼓励选手开发具有实际应用价值的AI解决方案。
-                </p>
+              ))
+            ) : competitions.length === 0 ? (
+              <div className="col-span-3 text-center py-12 text-gray-400">
+                <p>暂无赛事数据</p>
               </div>
-              <div className="flex flex-wrap gap-2 mt-auto">
-                <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs">人工智能</span>
-                <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs">创新应用</span>
-                <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs">全国赛</span>
-              </div>
-            </Link>
-            
-            <Link to="/competition/2" className="glass-card rounded-2xl p-6 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col h-full cursor-pointer">
-              <div className="flex justify-between items-start gap-3 mb-4">
-                <h3 className="text-lg font-semibold text-neutral-800 flex-1 min-w-0">2025年梧桐·鸿鹄AI算法挑战赛</h3>
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 flex-shrink-0">即将开始</span>
-              </div>
-              <div className="text-neutral-600 text-sm mb-4">
-                <div className="flex items-center mb-2">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  2025.3-2025.6
-                </div>
-                <div className="flex items-center mb-4">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  线上
-                </div>
-                <p className="mb-4 line-clamp-2">
-                  专注于AI算法优化的技术挑战赛，考验选手的算法设计和实现能力。
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2 mt-auto">
-                <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs">算法</span>
-                <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs">AI</span>
-                <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs">技术挑战</span>
-              </div>
-            </Link>
-            
-            <Link to="/competition/3" className="glass-card rounded-2xl p-6 group hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col h-full cursor-pointer">
-              <div className="flex justify-between items-start gap-3 mb-4">
-                <h3 className="text-lg font-semibold text-neutral-800 flex-1 min-w-0">2025年梧桐·鸿鹄区县AI应用创新大赛</h3>
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 flex-shrink-0">进行中</span>
-              </div>
-              <div className="text-neutral-600 text-sm mb-4">
-                <div className="flex items-center mb-2">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  2025.1-2025.4
-                </div>
-                <div className="flex items-center mb-4">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  线下
-                </div>
-                <p className="mb-4 line-clamp-2">
-                  面向各区县的人工智能应用创新大赛，鼓励选手开发适合本地场景的AI解决方案。
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2 mt-auto">
-                <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs">人工智能</span>
-                <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs">区县应用</span>
-                <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs">地方赛</span>
-              </div>
-            </Link>
+            ) : (
+              competitions.slice(0, 3).map((competition) => (
+                <CompetitionCard key={competition.id} competition={competition} />
+              ))
+            )}
           </div>
           
           <div className="text-center mt-12">

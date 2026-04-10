@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026年全国OPC最新政策汇总</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f0f4f8;
+    color: #2d3748;
+    padding: 24px;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+
+  /* 头部 */
+  .header {
+    background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 50%, #3182ce 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 36px 40px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    right: -60px; top: -60px;
+    width: 280px; height: 280px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    right: 60px; bottom: -40px;
+    width: 180px; height: 180px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+  .header p { font-size: 14px; opacity: 0.85; }
+  .header .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    margin-top: 12px;
+  }
+
+  /* 卡片 */
+  .card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 18px 24px;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .card-header .icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  /* 国家政策卡片 */
+  .nat .card-header { background: #ebf8ff; color: #1a365d; }
+  .nat .card-header .icon { background: #bee3f8; }
+
+  /* 省级政策卡片 */
+  .prov .card-header { background: #f0fff4; color: #1c4532; }
+  .prov .card-header .icon { background: #c6f6d5; }
+
+  /* 城市政策卡片 */
+  .city .card-header { background: #fef3c7; color: #744210; }
+  .city .card-header .icon { background: #fde68a; }
+
+  /* 表格 */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  th {
+    background: #f7fafc;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #4a5568;
+    border-bottom: 2px solid #e2e8f0;
+    white-space: nowrap;
+  }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #edf2f7;
+    vertical-align: top;
+    line-height: 1.7;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f7fafc; }
+
+  /* 标签 */
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 2px 2px 2px 0;
+  }
+  .tag-blue { background: #ebf8ff; color: #2b6cb0; }
+  .tag-green { background: #f0fff4; color: #276749; }
+  .tag-orange { background: #fffaf0; color: #c05621; }
+  .tag-purple { background: #faf5ff; color: #6b46c1; }
+  .tag-red { background: #fff5f5; color: #c53030; }
+  .tag-teal { background: #e6fffa; color: #2c7a7b; }
+
+  /* 金额高亮 */
+  .money {
+    color: #c53030;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .money-max {
+    color: #744210;
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  /* 地区列 */
+  .region {
+    font-weight: 700;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+
+  /* 要点列表 */
+  .points { list-style: none; padding: 0; }
+  .points li {
+    padding: 3px 0;
+    padding-left: 16px;
+    position: relative;
+    color: #4a5568;
+  }
+  .points li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: #a0aec0;
+    font-size: 12px;
+    top: 5px;
+  }
+
+  /* 来源信息 */
+  .source {
+    font-size: 12px;
+    color: #a0aec0;
+    margin-top: 4px;
+  }
+
+  /* 统计区 */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    text-align: center;
+  }
+  .stat-number {
+    font-size: 32px;
+    font-weight: 800;
+    color: #2b6cb0;
+    line-height: 1.2;
+  }
+  .stat-label {
+    font-size: 13px;
+    color: #718096;
+    margin-top: 6px;
+  }
+
+  /* 底部 */
+  .footer {
+    text-align: center;
+    color: #a0aec0;
+    font-size: 12px;
+    padding: 16px;
+  }
+
+  /* 分级说明 */
+  .level-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .level-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- 头部 -->
+  <div class="header">
+    <h1>📋 2026年全国OPC（一人公司）最新政策汇总</h1>
+    <p>整理自政府官方发布、权威媒体报道 | 涵盖国家层面 + 省级 + 重点城市政策</p>
+    <span class="badge">📅 更新至 2026年3月25日</span>
+  </div>
+
+  <!-- 统计 -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-number">20+</div>
+      <div class="stat-label">出台政策的城市/地区</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" style="color:#276749;">2512万</div>
+      <div class="stat-label">单企最高可叠加奖补（成都）</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" style="color:#c05621;">100万</div>
+      <div class="stat-label">武汉初创OPC最高资助</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" style="color:#6b46c1;">100个</div>
+      <div class="stat-label">广东2028年目标OPC社区数</div>
+    </div>
+  </div>
+
+  <!-- ① 国家层面政策 -->
+  <div class="card nat">
+    <div class="card-header">
+      <div class="icon">🏛️</div>
+      一、国家层面政策基础（全国统一适用）
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:160px;">政策层面</th>
+          <th style="width:180px;">政策依据</th>
+          <th>核心内容</th>
+          <th style="width:160px;">适用范围</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="region">公司法修订<br><span class="source">2024年7月施行</span></td>
+          <td><span class="tag tag-blue">新《公司法》</span></td>
+          <td>
+            <ul class="points">
+              <li>注册资本取消最低限制，全程认缴制，出资期限自主约定</li>
+              <li>无需提交验资报告，电子化注册通办，最快1个工作日完成</li>
+              <li>一人有限公司可作为其他公司股东，突破原有限制</li>
+              <li>全国超1000万家OPC受益于制度松绑</li>
+            </ul>
+          </td>
+          <td><span class="tag tag-blue">全国</span></td>
+        </tr>
+        <tr>
+          <td class="region">增值税优惠<br><span class="source">持续有效</span></td>
+          <td><span class="tag tag-blue">税收优惠政策</span></td>
+          <td>
+            <ul class="points">
+              <li>月销售额10万元以下免征增值税</li>
+              <li>小规模纳税人征收率1%（含OPC）</li>
+            </ul>
+          </td>
+          <td><span class="tag tag-blue">全国</span></td>
+        </tr>
+        <tr>
+          <td class="region">企业所得税<br><span class="source">小微优惠</span></td>
+          <td><span class="tag tag-blue">企业所得税法</span></td>
+          <td>
+            <ul class="points">
+              <li>年应纳税所得额≤300万元，实际税负低至<span class="money">5%</span></li>
+              <li>小微企业研发费用加计扣除比例100%</li>
+            </ul>
+          </td>
+          <td><span class="tag tag-blue">全国</span></td>
+        </tr>
+        <tr>
+          <td class="region">政府工作报告<br><span class="source">2026年</span></td>
+          <td><span class="tag tag-blue">国务院部署</span></td>
+          <td>
+            <ul class="points">
+              <li>首次提出"打造智能经济新形态，深化拓展'人工智能+'"</li>
+              <li>AI+OPC被明确纳入国家战略层面的政策支持</li>
+            </ul>
+          </td>
+          <td><span class="tag tag-blue">全国</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ② 省级政策 -->
+  <div class="card prov">
+    <div class="card-header">
+      <div class="icon">🗺️</div>
+      二、省级政策（重点省份）
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:120px;">发布省份</th>
+          <th style="width:200px;">政策文件</th>
+          <th style="width:120px;">发布时间</th>
+          <th>核心目标与举措</th>
+          <th style="width:160px;">重点数据</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="region" style="color:#276749;">广东省</td>
+          <td>
+            《广东省支持人工智能OPC创新发展行动方案（2026—2028年）》
+            <div class="source">省发展改革委印发</div>
+          </td>
+          <td>2026年3月16日<br><span class="tag tag-green">全国首个省级方案</span></td>
+          <td>
+            <strong>六大方面、18条重点任务：</strong>
+            <ul class="points">
+              <li>①基础能力：强化算力"一张网"，建公共模型服务平台（免费接口）</li>
+              <li>②空间载体：建设OPC生态社区，提供低成本办公区+算力补贴</li>
+              <li>③场景开放：构建"场景池"，覆盖短剧、电商、知识付费、软件开发等</li>
+              <li>④融资支持：发挥省创投基金矩阵，重点投向OPC高成长企业</li>
+              <li>⑤人才引育：港澳及海外AI人才绿色通道，校企联合实训基地</li>
+              <li>⑥跨境拓展：支持通过横琴/前海/南沙/河套开拓葡语国家、东南亚市场</li>
+            </ul>
+          </td>
+          <td>
+            <div><span class="tag tag-green">2026年目标</span></div>
+            10个引领性OPC社区<br>
+            一批年营收<span class="money">超千万</span>企业
+            <br><br>
+            <div><span class="tag tag-green">2028年目标</span></div>
+            <span class="money">100</span>个OPC社区<br>
+            <span class="money">1000</span>家标杆企业<br>
+            <span class="money">1万</span>名创新人才
+          </td>
+        </tr>
+        <tr>
+          <td class="region" style="color:#276749;">湖北省</td>
+          <td>
+            《关于支持OPC（一人公司）新模式加快发展若干措施》
+            <div class="source">湖北省数据局印发</div>
+          </td>
+          <td>2026年3月<br><span class="tag tag-green">10条措施</span></td>
+          <td>
+            <ul class="points">
+              <li>①数据供给：省公共数据平台设"OPC专区"，开放高质量数据资源</li>
+              <li>②场景开放：数字化转型、智慧社区、数智文旅等领域向OPC开放</li>
+              <li>③算力支撑：发放省级<strong>算力券</strong>补贴，探索"模型券""token券"新型支持</li>
+              <li>④融资服务："数易贷"数据资产信用贷款倾斜，推广投贷联动模式</li>
+              <li>⑤能力提升：支持AI工具应用、智能体开发专项培训+认证机制</li>
+              <li>⑥低成本入驻：园区工位低至<strong>350元/工位</strong></li>
+              <li>⑦一站式服务：政务网集成注册、补贴申领一键办理</li>
+            </ul>
+          </td>
+          <td>
+            接入"楚天"AI公共服务平台<br>
+            接入"东湖大模型"<br><br>
+            工位：<span class="money">350元</span>/工位
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ③ 重点城市政策 -->
+  <div class="card city">
+    <div class="card-header">
+      <div class="icon">🏙️</div>
+      三、重点城市政策对比
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:110px;">城市/地区</th>
+          <th style="width:130px;">发布时间</th>
+          <th style="width:220px;">空间载体支持</th>
+          <th style="width:220px;">资金/算力补贴</th>
+          <th>其他核心措施</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="region" style="color:#744210;">
+            武汉市
+            <div class="source">湖北</div>
+          </td>
+          <td>
+            2026年2月15日
+            <br><span class="tag tag-orange">资金最强</span>
+          </td>
+          <td>
+            <ul class="points">
+              <li>各区挖掘≥100个典型应用场景</li>
+              <li>东西湖区迪马数智天地园区低成本入驻</li>
+            </ul>
+          </td>
+          <td>
+            <ul class="points">
+              <li>初创OPC最高资助 <span class="money">100万元</span></li>
+              <li>创业担保贷款最高 <span class="money">500万元</span></li>
+              <li>算力费用补贴 <span class="money">50%</span></li>
+              <li>各区每年≥2000卡时免费算力</li>
+            </ul>
+          </td>
+          <td>
+            <ul class="points">
+              <li>全市每年开放≥100个应用场景</li>
+              <li>联合头部企业共建AI工具平台</li>
+              <li>一站式财税、知产申报服务</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td class="region" style="color:#744210;">
+            成都市
+            <div class="source">四川</div>
+          </td>
+          <td>
+            2026年3月23日
+            <br><span class="tag tag-orange">奖补最高</span><br>
+            <span class="tag tag-red">征求意见稿</span>
+          </td>
+          <td>
+            <ul class="points">
+              <li>成都科创生态岛等区域布局OPC创新空间</li>
+              <li>建设面向OPC孵化器、加速器</li>
+            </ul>
+          </td>
+          <td>
+            <ul class="points">
+              <li>产品研发补贴（研发投入30%）最高 <span class="money">500万</span></li>
+              <li>算力补贴（实际支出50%）年度最高 <span class="money">500万</span></li>
+              <li>融资贴息（利息50%）年度最高 <span class="money">200万</span></li>
+              <li>应用场景示范奖励最高 <span class="money">200万</span></li>
+              <li>成果转化支持年度总额最高 <span class="money">300万</span></li>
+              <li>上市奖励一次性最高 <span class="money">1000万</span></li>
+              <li>多项叠加累计最高 <span class="money-max">2512万元</span></li>
+            </ul>
+          </td>
+          <td>
+            <ul class="points">
+              <li>人才引进安家补贴最高50万元</li>
+              <li>知识产权奖励：发明专利每项10万</li>
+              <li>高校联合OPC社区组建产学研联合体</li>
+              <li>投资OPC机构风险补偿最高100万</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td class="region" style="color:#744210;">
+            深圳市
+            <div class="source">广东</div>
+          </td>
+          <td>
+            2026年1月15日
+            <br><span class="tag tag-orange">生态最全</span>
+          </td>
+          <td>
+            <ul class="points">
+              <li>目标2027年底建成≥10家OPC社区</li>
+              <li>"一张桌→一间室→一层楼"阶梯式空间</li>
+              <li>宝安区"大公坊AI硬件OPC·hub"</li>
+            </ul>
+          </td>
+          <td>
+            <ul class="points">
+              <li>发放"训力券""模型券""语料券"</li>
+              <li>依托深圳算力资源降低研发成本</li>
+            </ul>
+          </td>
+          <td>
+            <ul class="points">
+              <li>"上下楼就是上下游"硬件供应链优势</li>
+              <li>《深圳市打造人工智能OPC创业生态引领地行动计划（2026—2027年）》</li>
+              <li>建设AI工具平台生态体系</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td class="region" style="color:#744210;">
+            北京海淀区
+            <div class="source">北京</div>
+          </td>
+          <td>
+            2026年2月11日
+          </td>
+          <td>
+            <ul class="points">
+              <li>中关村AI北纬社区推出OPC计划</li>
+              <li>提供<span class="money">10万平方米</span>承载区</li>
+              <li>精装办公室+共享会客厅+人才公寓</li>
+              <li>"拎包入驻"模式</li>
+            </ul>
+          </td>
+          <td>
+            <ul class="points">
+              <li>联合头部企业共建AI工具平台</li>
+              <li>开设"OPC夜校"提升技能</li>
+            </ul>
+          </td>
+          <td>
+            <ul class="points">
+              <li>一站式财税代理、知识产权申报</li>
+              <li>依托中关村科技创新生态</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td class="region" style="color:#744210;">
+            北京亦庄
+            <div class="source">北京经开区</div>
+          </td>
+          <td>
+            2026年2月2日
+          </td>
+          <td>
+            <ul class="points">
+              <li>国家信创园"模数OPC社区"</li>
+              <li>播客录音棚、绿幕摄影棚等硬件</li>
+              <li>"5A"要素体系（工具/加速/协同/服务/生态）</li>
+            </ul>
+          </td>
+          <td>
+            <ul class="points">
+              <li>发放算力券、数据券</li>
+              <li>人才认定以"智能体贡献量"为标准</li>
+              <li>最高奖励 <span class="money">50万元</span></li>
+            </ul>
+          </td>
+          <td>
+            <ul class="points">
+              <li>打造"模数OPC社区"品牌</li>
+              <li>以智能体贡献量衡量人才价值</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td class="region" style="color:#744210;">
+            上海临港
+            <div class="source">上海</div>
+          </td>
+          <td>
+            2026年2月2日
+            <br><span class="tag tag-orange">制度最新</span>
+          </td>
+          <td>
+            <ul class="points">
+              <li>"超级个体288计划"</li>
+              <li>"零界魔方"OPC社区</li>
+              <li><strong>办公+住宿双免政策</strong></li>
+            </ul>
+          </td>
+          <td>
+            <ul class="points">
+              <li>通过"优先投资权"与创业者共担风险</li>
+              <li>数据跨境流动政策支持</li>
+            </ul>
+          </td>
+          <td>
+            <ul class="points">
+              <li>跨境数据便利化：支持OPC开展跨境电商直播</li>
+              <li>利用临港自贸区政策优势，制度创新</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td class="region" style="color:#744210;">
+            苏州工业园区
+            <div class="source">江苏</div>
+          </td>
+          <td>
+            2025年11月28日
+            <br><span class="tag tag-orange">起步最早</span>
+          </td>
+          <td>
+            <ul class="points">
+              <li>依托独墅湖科教创新区</li>
+              <li>打造"OPC创业首选城市"</li>
+            </ul>
+          </td>
+          <td>
+            <ul class="points">
+              <li>7天完成工商登记</li>
+              <li>3个月匹配政策支持</li>
+            </ul>
+          </td>
+          <td>
+            <ul class="points">
+              <li>全周期创业服务生态</li>
+              <li>整合高校人才资源，产业生态完善</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td class="region" style="color:#744210;">
+            广州南沙
+            <div class="source">广东</div>
+          </td>
+          <td>
+            2026年Q1
+          </td>
+          <td>
+            <ul class="points">
+              <li>粤港澳大湾区创新中心布局</li>
+              <li>场景发布厅供需对接</li>
+            </ul>
+          </td>
+          <td>
+            <ul class="points">
+              <li>省级算力补贴+南沙区专项政策叠加</li>
+            </ul>
+          </td>
+          <td>
+            <ul class="points">
+              <li>支持对接葡语国家和东南亚海外市场</li>
+              <li>创投基金接力支持机制</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td class="region" style="color:#744210;">
+            杭州上城区
+            <div class="source">浙江</div>
+          </td>
+          <td>
+            2026年Q1
+          </td>
+          <td>
+            <ul class="points">
+              <li>数字经济优势区域重点布局</li>
+              <li>打造OPC集聚区</li>
+            </ul>
+          </td>
+          <td>
+            <ul class="points">
+              <li>区级专项补贴支持</li>
+              <li>数字新基建资源共享</li>
+            </ul>
+          </td>
+          <td>
+            <ul class="points">
+              <li>依托阿里巴巴数字经济生态</li>
+              <li>知识付费、数字文创场景丰富</li>
+            </ul>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ④ 政策主题横向对比 -->
+  <div class="card">
+    <div class="card-header" style="background:#faf5ff; color:#44337a; border-bottom:1px solid #e9d8fd;">
+      <div class="icon" style="background:#e9d8fd;">📊</div>
+      四、各地政策核心支持维度横向对比
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>政策维度</th>
+          <th>北京（海淀+亦庄）</th>
+          <th>上海（临港）</th>
+          <th>深圳</th>
+          <th>武汉</th>
+          <th>成都</th>
+          <th>广东省（整体）</th>
+          <th>湖北省（整体）</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>最高资金支持</strong></td>
+          <td>50万元人才奖励</td>
+          <td>风险共担投资</td>
+          <td>多类型算力券</td>
+          <td><span class="money">100万</span>初创资助</td>
+          <td><span class="money">2512万</span>叠加奖补</td>
+          <td>省级基金矩阵</td>
+          <td>数易贷+算力券</td>
+        </tr>
+        <tr>
+          <td><strong>算力支持</strong></td>
+          <td>✅ 算力券+数据券</td>
+          <td>✅ 数据跨境资源</td>
+          <td>✅ 训力券/模型券/语料券</td>
+          <td>✅ 2000卡时/年免费</td>
+          <td>✅ 50%算力费补贴</td>
+          <td>✅ 绿色算力"一张网"</td>
+          <td>✅ 省级算力券+token券</td>
+        </tr>
+        <tr>
+          <td><strong>空间支持</strong></td>
+          <td>10万㎡承载区</td>
+          <td>办公+住宿双免</td>
+          <td>阶梯式空间</td>
+          <td>低成本工位</td>
+          <td>科创岛专属空间</td>
+          <td>OPC生态社区</td>
+          <td>350元/工位</td>
+        </tr>
+        <tr>
+          <td><strong>场景开放</strong></td>
+          <td>中关村AI生态</td>
+          <td>跨境电商直播</td>
+          <td>硬件供应链场景</td>
+          <td>每年≥100个场景</td>
+          <td>场景示范奖励</td>
+          <td>覆盖5大场景类型</td>
+          <td>数智文旅/数字转型</td>
+        </tr>
+        <tr>
+          <td><strong>融资支持</strong></td>
+          <td>生态链接</td>
+          <td>投资权风险共担</td>
+          <td>创投生态</td>
+          <td>500万担保贷款</td>
+          <td>贷款贴息50%</td>
+          <td>多级基金矩阵</td>
+          <td>投贷联动+投保联动</td>
+        </tr>
+        <tr>
+          <td><strong>人才政策</strong></td>
+          <td>OPC夜校技能培训</td>
+          <td>跨境人才便利</td>
+          <td>创业生态支撑</td>
+          <td>培训+技能提升</td>
+          <td>安家补贴50万</td>
+          <td>海外人才绿色通道</td>
+          <td>专题培训+认证</td>
+        </tr>
+        <tr>
+          <td><strong>注册便利化</strong></td>
+          <td>一站式服务</td>
+          <td>制度创新</td>
+          <td>快速登记</td>
+          <td>一站式办理</td>
+          <td>一站式申请</td>
+          <td>营业执照电子化</td>
+          <td>政务网一键办理</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ⑤ 注意事项 -->
+  <div class="card">
+    <div class="card-header" style="background:#fff5f5; color:#742a2a; border-bottom:1px solid #fed7d7;">
+      <div class="icon" style="background:#fed7d7;">⚠️</div>
+      五、重要提示与注意事项
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:180px;">注意事项</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>政策时效</td>
+          <td>部分城市政策处于征求意见阶段（如成都），最终实施细则以正式发文为准</td>
+        </tr>
+        <tr>
+          <td>申请条件</td>
+          <td>各项补贴均设有具体申请条件（注册地、经营年限、业务方向等），需向当地主管部门确认</td>
+        </tr>
+        <tr>
+          <td>叠加限制</td>
+          <td>同一事项通常不得重复申请国家、省、市三级补贴，需关注叠加限制条款</td>
+        </tr>
+        <tr>
+          <td>OPC定义</td>
+          <td>政策中的OPC均指《公司法》规定的"一人有限责任公司"，与个体工商户、合伙企业有本质区别</td>
+        </tr>
+        <tr>
+          <td>信息来源</td>
+          <td>数据整理自：广东省发改委官网、武汉市政府网、湖北省数据局、成都市经信局、辛巴达智能、中国经营报等权威渠道</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    📌 本表格整理自政府官方发布及权威媒体报道 | 数据截至 2026年3月25日 | 如需申请政策，请以当地主管部门最新公告为准
+  </div>
+
+</div>
+</body>
+</html>

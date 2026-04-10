@@ -11,6 +11,30 @@ const ENROLLMENT_STATUSES = ['draft', 'submitted', 'pending_review', 'approved',
 export class EnrollmentService {
   constructor(private prisma: PrismaService) {}
 
+  async checkEligibility(userId: string): Promise<{ eligible: boolean; reason?: string; type?: 'individual' | 'team' }> {
+    const userRoles = await this.prisma.userRole.findMany({
+      where: { userId, status: 'active' },
+      select: { role: true },
+    });
+    const hasContestantRole = userRoles.some((r: any) => r.role === 'contestant');
+
+    const myTeams = await this.prisma.team.findMany({
+      where: { leaderId: userId, status: { not: 'dissolved' } },
+      select: { id: true },
+    });
+    const hasTeamLeadership = myTeams.length > 0;
+
+    if (hasContestantRole) {
+      return { eligible: true, type: 'individual' };
+    }
+
+    if (hasTeamLeadership) {
+      return { eligible: true, type: 'team' };
+    }
+
+    return { eligible: false, reason: '您需要先开通参赛者身份或创建团队才能报名' };
+  }
+
   async create(userId: string, dto: CreateEnrollmentDto) {
     const competition = await this.prisma.competition.findUnique({
       where: { id: dto.competitionId },

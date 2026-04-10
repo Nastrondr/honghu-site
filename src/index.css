@@ -60,13 +60,13 @@ body {
 
 @media (min-width: 1025px) {
   body {
-    cursor: none;
+    cursor: auto;
   }
-  
+
   a, button, [role="button"], .cursor-pointer {
     cursor: pointer;
   }
-  
+
   input, textarea, select, [contenteditable="true"] {
     cursor: auto;
   }

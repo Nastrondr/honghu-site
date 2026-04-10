@@ -52,10 +52,9 @@ export class ReviewService {
     return round;
   }
 
-  async findRounds(competitionId?: string) {
-    const where = competitionId ? { competitionId } : {};
+  async findRounds(competitionId: string) {
     return this.prisma.reviewRound.findMany({
-      where,
+      where: { competitionId },
       orderBy: { roundOrder: 'asc' },
       include: {
         competition: { select: { id: true, name: true } },
@@ -272,25 +271,6 @@ export class ReviewService {
     const pending = total - submitted - draft;
 
     return { total, submitted, draft, pending, assignments };
-  }
-
-  async findReviewers() {
-    return this.prisma.user.findMany({
-      where: {
-        userRoles: {
-          some: {
-            role: 'reviewer',
-            status: 'active'
-          }
-        }
-      },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        currentRole: true
-      }
-    });
   }
 }
 

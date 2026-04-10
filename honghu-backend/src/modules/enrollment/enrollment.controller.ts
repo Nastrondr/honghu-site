@@ -19,17 +19,6 @@ import { Public, CurrentUser } from '../../common';
 const CONTESTANT_ROLES = ['contestant', 'team_leader'];
 const ADMIN_ROLES = ['operator', 'super_admin'];
 
-function checkContestantRole(user: any) {
-  if (!user) {
-    throw new ForbiddenException('请先登录');
-  }
-  const hasRole = CONTESTANT_ROLES.includes(user.currentRole) || 
-    (user.roles && user.roles.some((r: string) => CONTESTANT_ROLES.includes(r)));
-  if (!hasRole) {
-    throw new ForbiddenException('只有参赛者或队长才能报名');
-  }
-}
-
 function checkAdminRole(user: any) {
   if (!user) {
     throw new ForbiddenException('请先登录');
@@ -51,8 +40,11 @@ export class EnrollmentController {
   @ApiBearerAuth()
   @ApiOperation({ summary: '发起报名（参赛者/队长）' })
   @ApiResponse({ status: 201, description: '创建报名成功' })
-  create(@Body() dto: CreateEnrollmentDto, @CurrentUser() user: any) {
-    checkContestantRole(user);
+  async create(@Body() dto: CreateEnrollmentDto, @CurrentUser() user: any) {
+    const eligibility = await this.enrollmentService.checkEligibility(user.id);
+    if (!eligibility.eligible) {
+      throw new ForbiddenException(eligibility.reason);
+    }
     return this.enrollmentService.create(user.id, dto);
   }
 
@@ -61,8 +53,11 @@ export class EnrollmentController {
   @ApiBearerAuth()
   @ApiOperation({ summary: '提交报名' })
   @ApiResponse({ status: 200, description: '提交成功' })
-  submit(@Param('id') id: string, @Body() dto: SubmitEnrollmentDto, @CurrentUser() user: any) {
-    checkContestantRole(user);
+  async submit(@Param('id') id: string, @Body() dto: SubmitEnrollmentDto, @CurrentUser() user: any) {
+    const eligibility = await this.enrollmentService.checkEligibility(user.id);
+    if (!eligibility.eligible) {
+      throw new ForbiddenException(eligibility.reason);
+    }
     return this.enrollmentService.submit(user.id, id, dto);
   }
 
@@ -71,8 +66,11 @@ export class EnrollmentController {
   @ApiBearerAuth()
   @ApiOperation({ summary: '撤回报名' })
   @ApiResponse({ status: 200, description: '撤回成功' })
-  withdraw(@Param('id') id: string, @CurrentUser() user: any) {
-    checkContestantRole(user);
+  async withdraw(@Param('id') id: string, @CurrentUser() user: any) {
+    const eligibility = await this.enrollmentService.checkEligibility(user.id);
+    if (!eligibility.eligible) {
+      throw new ForbiddenException(eligibility.reason);
+    }
     return this.enrollmentService.withdraw(user.id, id);
   }
 

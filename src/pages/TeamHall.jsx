@@ -24,6 +24,10 @@ const TeamHall = () => {
     trackId: ''
   });
 
+  // 可用赛事列表
+  const [competitions, setCompetitions] = useState([]);
+  const [tracks, setTracks] = useState([]);
+
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [joinCode, setJoinCode] = useState('');
@@ -75,8 +79,45 @@ const TeamHall = () => {
   useEffect(() => {
     if (isAuthenticated) {
       fetchMyTeams();
+      fetchCompetitions();
     }
   }, [isAuthenticated]);
+
+  // 获取可用赛事列表
+  const fetchCompetitions = async () => {
+    try {
+      const result = await request('/v1/competitions');
+      if (result.ok && result.data.code === 0) {
+        const list = result.data.data?.list || [];
+        setCompetitions(list);
+        if (list.length > 0) {
+          setCreateTeamForm(prev => ({
+            ...prev,
+            competitionId: list[0].id,
+            trackId: list[0].tracks?.[0]?.id || ''
+          }));
+          setTracks(list[0].tracks || []);
+        }
+      }
+    } catch (err) {
+      console.error('获取赛事列表失败:', err);
+    }
+  };
+
+  // 赛事切换时更新赛道
+  useEffect(() => {
+    if (createTeamForm.competitionId) {
+      const comp = competitions.find(c => c.id === createTeamForm.competitionId);
+      if (comp) {
+        setTracks(comp.tracks || []);
+        if (comp.tracks?.length > 0) {
+          setCreateTeamForm(prev => ({ ...prev, trackId: comp.tracks[0].id }));
+        } else {
+          setCreateTeamForm(prev => ({ ...prev, trackId: '' }));
+        }
+      }
+    }
+  }, [createTeamForm.competitionId, competitions]);
 
   const handleCopyInviteCode = () => {
     if (currentTeam?.inviteCode) {
@@ -343,7 +384,42 @@ const TeamHall = () => {
               <h3 className="text-lg font-semibold text-neutral-800 mb-6">创建新团队</h3>
               <form onSubmit={handleCreateTeam} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">团队名称</label>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">选择赛事 *</label>
+                  <select
+                    value={createTeamForm.competitionId}
+                    onChange={(e) => setCreateTeamForm(prev => ({ ...prev, competitionId: e.target.value }))}
+                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                    required
+                  >
+                    {competitions.length === 0 && (
+                      <option value="">暂无可用赛事</option>
+                    )}
+                    {competitions.map(comp => (
+                      <option key={comp.id} value={comp.id}>{comp.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">选择赛道 *</label>
+                  <select
+                    value={createTeamForm.trackId}
+                    onChange={(e) => setCreateTeamForm(prev => ({ ...prev, trackId: e.target.value }))}
+                    disabled={tracks.length === 0}
+                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors disabled:bg-gray-100"
+                    required
+                  >
+                    {tracks.length === 0 && (
+                      <option value="">请先选择赛事</option>
+                    )}
+                    {tracks.map(track => (
+                      <option key={track.id} value={track.id}>{track.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">团队名称 *</label>
                   <input
                     type="text"
                     value={createTeamForm.name}
@@ -361,12 +437,12 @@ const TeamHall = () => {
                     rows={3}
                     className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
                     placeholder="请简要描述您的团队"
-                    required
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+                  disabled={!createTeamForm.competitionId || !createTeamForm.trackId}
+                  className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
                 >
                   创建团队
                 </button>
