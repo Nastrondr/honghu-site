@@ -500,29 +500,35 @@ const AdminStats = () => {
     const queryString = params.toString() ? `?${params.toString()}` : '';
 
     try {
-      // 并行请求所有统计数据
-      const [overviewRes, worksRes, reviewsRes, enrollmentsRes] = await Promise.all([
+      // 并行请求所有统计数据，每个请求独立处理错误
+      const [overviewRes, worksRes, reviewsRes, enrollmentsRes] = await Promise.allSettled([
         request(`/v1/admin/stats/overview${queryString}`),
         request(`/v1/admin/stats/works${queryString}`),
         request(`/v1/admin/stats/reviews${queryString}`),
         request(`/v1/admin/stats/enrollments${queryString}`)
       ]);
 
+      // 处理每个响应，即使失败也不影响其他请求
+      const overview = overviewRes.status === 'fulfilled' ? overviewRes.value : { ok: false, status: 500 };
+      const works = worksRes.status === 'fulfilled' ? worksRes.value : { ok: false, status: 500 };
+      const reviews = reviewsRes.status === 'fulfilled' ? reviewsRes.value : { ok: false, status: 500 };
+      const enrollments = enrollmentsRes.status === 'fulfilled' ? enrollmentsRes.value : { ok: false, status: 500 };
+
       // 更新 API 状态
       setApiStatus({
-        overview: overviewRes.status,
-        works: worksRes.status,
-        reviews: reviewsRes.status,
-        enrollments: enrollmentsRes.status,
+        overview: overview.ok ? overview.status : 'error',
+        works: works.ok ? works.status : 'error',
+        reviews: reviews.ok ? reviews.status : 'error',
+        enrollments: enrollments.ok ? enrollments.status : 'error',
         data: {
-          overview: overviewRes.ok && overviewRes.data?.code === 0 ? overviewRes.data.data : null
+          overview: overview.ok && overview.data?.code === 0 ? overview.data.data : null
         }
       });
 
       // 处理 overview 数据
       let overviewData = null;
-      if (overviewRes.ok && overviewRes.data?.code === 0) {
-        overviewData = overviewRes.data.data;
+      if (overview.ok && overview.data?.code === 0) {
+        overviewData = overview.data.data;
       }
 
       // 处理 works 数据
@@ -530,8 +536,8 @@ const AdminStats = () => {
       let trackDistribution = [];
       let statusDistribution = [];
       let topTracks = [];
-      if (worksRes.ok && worksRes.data?.code === 0) {
-        worksData = worksRes.data.data;
+      if (works.ok && works.data?.code === 0) {
+        worksData = works.data.data;
         
         // 转换赛道分布数据
         if (worksData.byTrack) {
@@ -573,14 +579,14 @@ const AdminStats = () => {
 
       // 处理 reviews 数据
       let reviewsData = null;
-      if (reviewsRes.ok && reviewsRes.data?.code === 0) {
-        reviewsData = reviewsRes.data.data;
+      if (reviews.ok && reviews.data?.code === 0) {
+        reviewsData = reviews.data.data;
       }
 
       // 处理 enrollments 数据
       let enrollmentsData = null;
-      if (enrollmentsRes.ok && enrollmentsRes.data?.code === 0) {
-        enrollmentsData = enrollmentsRes.data.data;
+      if (enrollments.ok && enrollments.data?.code === 0) {
+        enrollmentsData = enrollments.data.data;
       }
 
       // 报名趋势数据 - 仅使用后端返回的真实数据
