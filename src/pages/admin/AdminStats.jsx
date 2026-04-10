@@ -404,7 +404,7 @@ const ApiDebugPanel = ({ apiStatus }) => {
     { key: 'overview', name: 'Overview', url: 'GET /v1/admin/stats/overview' },
     { key: 'works', name: 'Works', url: 'GET /v1/admin/stats/works' },
     { key: 'reviews', name: 'Reviews', url: 'GET /v1/admin/stats/reviews' },
-    { key: 'awards', name: 'Awards', url: 'GET /v1/admin/stats/awards' },
+    { key: 'enrollments', name: 'Enrollments', url: 'GET /v1/admin/stats/enrollments' },
   ];
 
   return (
@@ -466,7 +466,6 @@ const AdminStats = () => {
     works: null,
     reviews: null,
     enrollments: null,
-    awards: null,
     enrollmentTrend: [],
     trackDistribution: [],
     statusDistribution: [],
@@ -480,7 +479,6 @@ const AdminStats = () => {
     works: '-',
     reviews: '-',
     enrollments: '-',
-    awards: '-',
     data: {}
   });
 
@@ -503,12 +501,11 @@ const AdminStats = () => {
 
     try {
       // 并行请求所有统计数据
-      const [overviewRes, worksRes, reviewsRes, enrollmentsRes, awardsRes] = await Promise.all([
+      const [overviewRes, worksRes, reviewsRes, enrollmentsRes] = await Promise.all([
         request(`/v1/admin/stats/overview${queryString}`),
         request(`/v1/admin/stats/works${queryString}`),
         request(`/v1/admin/stats/reviews${queryString}`),
-        request(`/v1/admin/stats/enrollments${queryString}`),
-        request(`/v1/admin/stats/awards${queryString}`)
+        request(`/v1/admin/stats/enrollments${queryString}`)
       ]);
 
       // 更新 API 状态
@@ -517,7 +514,6 @@ const AdminStats = () => {
         works: worksRes.status,
         reviews: reviewsRes.status,
         enrollments: enrollmentsRes.status,
-        awards: awardsRes.status,
         data: {
           overview: overviewRes.ok && overviewRes.data?.code === 0 ? overviewRes.data.data : null
         }
@@ -587,12 +583,6 @@ const AdminStats = () => {
         enrollmentsData = enrollmentsRes.data.data;
       }
 
-      // 处理 awards 数据
-      let awardsData = null;
-      if (awardsRes.ok && awardsRes.data?.code === 0) {
-        awardsData = awardsRes.data.data;
-      }
-
       // 报名趋势数据 - 仅使用后端返回的真实数据
       const enrollmentTrend = overviewData?.trend || [];
 
@@ -604,7 +594,6 @@ const AdminStats = () => {
         works: worksData,
         reviews: reviewsData,
         enrollments: enrollmentsData,
-        awards: awardsData,
         enrollmentTrend,
         trackDistribution,
         statusDistribution,
@@ -615,7 +604,7 @@ const AdminStats = () => {
     } catch (err) {
       console.error('Fetch stats error:', err);
       setError('获取统计数据失败');
-      setApiStatus(prev => ({ ...prev, overview: 'error', works: 'error', reviews: 'error', enrollments: 'error', awards: 'error' }));
+      setApiStatus(prev => ({ ...prev, overview: 'error', works: 'error', reviews: 'error', enrollments: 'error' }));
     } finally {
       setLoading(false);
     }
