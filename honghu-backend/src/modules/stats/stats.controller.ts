@@ -147,12 +147,15 @@ export class StatsController {
     };
   }
 
-  @ApiOperation({ summary: 'Awards statistics by competition' })
+  @ApiOperation({ summary: 'Awards statistics' })
   @Get('awards')
-  async getAwardsStats(@Query('competitionId', ParseUUIDPipe) competitionId: string) {
+  async getAwardsStats(@Query('competitionId') competitionId?: string) {
+    const where = competitionId ? { competitionId } : {};
+    const workWhere = competitionId ? { competitionId, awardId: { not: null } } : { awardId: { not: null } };
+    
     const [totalAwards, awardedWorks] = await Promise.all([
-      prisma.award.count({ where: { competitionId } }),
-      prisma.work.count({ where: { competitionId, awardId: { not: null } } }),
+      prisma.award.count({ where }),
+      prisma.work.count({ where: workWhere }),
     ]);
 
     const byLevel = await prisma.award.groupBy({
