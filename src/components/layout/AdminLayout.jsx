@@ -1,10 +1,36 @@
-import React, { useState } from 'react';
-import { Link, useLocation, Outlet } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import MobileAdminReminder from '../common/MobileAdminReminder';
 
 const AdminLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(true);
+
+  useEffect(() => {
+    const adminAuth = localStorage.getItem('adminAuthenticated');
+    const currentRole = localStorage.getItem('currentRole');
+    if (adminAuth !== 'true' || currentRole !== 'admin') {
+      setIsAuthorized(false);
+      navigate('/admin/login');
+    }
+  }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
+    localStorage.removeItem('adminAuthenticated');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('currentRole');
+    navigate('/admin/login');
+  };
+
+  if (!isAuthorized) {
+    return null;
+  }
 
   // 侧边栏菜单配置
   const menuItems = [
@@ -174,7 +200,7 @@ const AdminLayout = () => {
                   <p className="font-medium text-gray-800">系统管理员</p>
                   <p className="text-xs text-gray-500">admin@honghu-ai.com</p>
                 </div>
-                <button className="ml-2 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                <button onClick={handleLogout} className="ml-2 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>

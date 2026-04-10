@@ -8,7 +8,9 @@ const Header = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, currentRole } = useAuth();
+
+  const isContestant = currentRole === 'user' && user && (user.roles?.includes('contestant') || user.roles?.includes('team_leader') || user.primaryRole === 'contestant' || user.primaryRole === 'team_leader');
 
   const isHomePage = location.pathname === '/';
 
@@ -54,7 +56,9 @@ const Header = () => {
         { type: 'header', label: '新闻' },
         { path: '/news?category=notice', label: '通知公告' },
         { path: '/news?category=progress', label: '赛程动态' },
-        { path: '/news?category=result', label: '获奖名单', badge: '新' },
+        { type: 'divider' },
+        { type: 'header', label: '结果公示' },
+        { path: '/competition-center?status=已结束', label: '查看赛事结果' },
       ]
     },
     { path: '/partners', label: '合作单位' },
@@ -202,10 +206,17 @@ const Header = () => {
                     </span>
                   }
                   items={[
-                    { path: '/dashboard', label: '个人中心' },
-                    { path: '/team-hall', label: '我的团队' },
-                    { path: '/competition-data', label: '赛题数据' },
-                    { path: '/my-works', label: '我的作品' },
+                    ...(isContestant ? [
+                      { path: '/dashboard', label: '个人中心' },
+                      { path: '/my-works', label: '我的作品' },
+                      { path: '/team-hall', label: '我的团队' },
+                      { path: '/register-competition', label: '我的报名' },
+                      { path: '/notifications', label: '通知中心' },
+                    ] : currentRole === 'admin' ? [
+                      { path: '/admin/dashboard', label: '管理后台' },
+                    ] : currentRole === 'reviewer' ? [
+                      { path: '/reviewer/dashboard', label: '评审后台' },
+                    ] : []),
                     { type: 'divider' },
                     { path: '#', label: '退出登录', onClick: handleLogout },
                   ]}
@@ -279,13 +290,33 @@ const Header = () => {
               <div className="border-t border-neutral-200 dark:border-neutral-700 mt-2 pt-2">
                 {isAuthenticated ? (
                   <>
-                    <Link
-                      to="/dashboard"
-                      className="block px-4 py-3 text-sm text-neutral-700 hover:bg-neutral-50 dark:text-neutral-200 dark:hover:bg-neutral-800"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      个人中心
-                    </Link>
+                    {isContestant && (
+                      <Link
+                        to="/dashboard"
+                        className="block px-4 py-3 text-sm text-neutral-700 hover:bg-neutral-50 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        个人中心
+                      </Link>
+                    )}
+                    {currentRole === 'admin' && (
+                      <Link
+                        to="/admin/dashboard"
+                        className="block px-4 py-3 text-sm text-neutral-700 hover:bg-neutral-50 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        管理后台
+                      </Link>
+                    )}
+                    {currentRole === 'reviewer' && (
+                      <Link
+                        to="/reviewer/dashboard"
+                        className="block px-4 py-3 text-sm text-neutral-700 hover:bg-neutral-50 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        评审后台
+                      </Link>
+                    )}
                     <button
                       onClick={() => {
                         handleLogout();

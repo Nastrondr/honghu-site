@@ -26,11 +26,12 @@ const ReviewerLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('[DEBUG] handleSubmit called, formData:', formData);
     setError('');
     setIsLoading(true);
 
     try {
-      // 调用真实登录接口
+      console.log('[DEBUG] Making request to /v1/auth/login');
       const result = await request('/v1/auth/login', {
         method: 'POST',
         body: JSON.stringify({
@@ -38,27 +39,36 @@ const ReviewerLogin = () => {
           password: formData.password
         })
       });
+      console.log('[DEBUG] Request result:', result);
 
       if (result.ok && result.data.code === 0) {
         const userData = result.data.data;
+        console.log('[DEBUG] Login success, userData:', userData);
         
-        // 检查用户是否有 reviewer 角色
         const roles = userData.user?.roles || userData.roles || [];
         const hasReviewerRole = roles.includes('reviewer') || 
                                 userData.user?.primaryRole === 'reviewer' || 
                                 userData.user?.currentRole === 'reviewer';
+        console.log('[DEBUG] roles:', roles, 'hasReviewerRole:', hasReviewerRole);
         if (!hasReviewerRole) {
           setError('该账号没有评审权限');
           setIsLoading(false);
           return;
         }
 
-        // 存储 token 和用户信息
         localStorage.setItem('accessToken', userData.accessToken);
-        login(userData);
-        
+        localStorage.setItem('reviewerToken', userData.accessToken);
+        localStorage.setItem('user', JSON.stringify(userData.user || userData));
+        localStorage.setItem('reviewerUser', JSON.stringify(userData.user || userData));
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('reviewerAuthenticated', 'true');
+        localStorage.setItem('currentRole', 'reviewer');
+        console.log('[DEBUG] Token stored, calling login()');
+        login(userData.user || userData, userData.accessToken, 'reviewer');
+        console.log('[DEBUG] Calling navigate to /reviewer/dashboard');
         navigate('/reviewer/dashboard');
       } else {
+        console.log('[DEBUG] Login failed, result:', result);
         setError(result.data.message || '登录失败，请检查账号密码');
       }
     } catch (err) {

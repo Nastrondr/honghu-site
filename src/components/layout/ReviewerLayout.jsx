@@ -2,15 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import MobileAdminReminder from '../common/MobileAdminReminder';
 
-// 检查是否已登录
-const isAuthenticated = () => {
-  return !!localStorage.getItem('reviewer_token');
+// 检查是否已登录评审员
+const isReviewerAuthenticated = () => {
+  const reviewerAuth = localStorage.getItem('reviewerAuthenticated');
+  const currentRole = localStorage.getItem('currentRole');
+  const token = localStorage.getItem('reviewerToken') || localStorage.getItem('accessToken');
+  if (!token) return false;
+  if (reviewerAuth !== 'true' || currentRole !== 'reviewer') return false;
+  return true;
 };
 
-// 获取评审专家信息
 const getReviewerInfo = () => {
-  const info = localStorage.getItem('reviewer_info');
-  return info ? JSON.parse(info) : null;
+  const userStr = localStorage.getItem('reviewerUser') || localStorage.getItem('user');
+  if (!userStr) return null;
+  try {
+    const userData = JSON.parse(userStr);
+    return userData.user || userData;
+  } catch {
+    return null;
+  }
 };
 
 const ReviewerLayout = () => {
@@ -21,7 +31,7 @@ const ReviewerLayout = () => {
 
   // 权限检查
   useEffect(() => {
-    if (!isAuthenticated()) {
+    if (!isReviewerAuthenticated()) {
       navigate('/reviewer-login', { replace: true });
       return;
     }
@@ -57,13 +67,18 @@ const ReviewerLayout = () => {
 
   // 退出登录
   const handleLogout = () => {
-    localStorage.removeItem('reviewer_token');
-    localStorage.removeItem('reviewer_info');
+    localStorage.removeItem('reviewerToken');
+    localStorage.removeItem('reviewerUser');
+    localStorage.removeItem('reviewerAuthenticated');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('currentRole');
     navigate('/reviewer-login');
   };
 
   // 如果未登录，不渲染内容
-  if (!isAuthenticated()) {
+  if (!isReviewerAuthenticated()) {
     return null;
   }
 

@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Star, Settings } from 'lucide-react';
-
-// TODO: 接入管理员登录接口
-// TODO: 接入后台权限校验
+import { request } from '../../lib/api';
 
 const AdminLogin = () => {
   const [formData, setFormData] = useState({
@@ -29,29 +27,53 @@ const AdminLogin = () => {
     setError('');
     setIsLoading(true);
 
-    // TODO: 接入真实管理员登录接口
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      // 调用真实登录接口
+      const response = await request('/v1/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: formData.account,
+          password: formData.password
+        })
+      });
 
-    // mock 验证
-    if (formData.account && formData.password) {
-      console.log('管理员登录成功:', formData.account);
-      
-      // 存储管理员登录状态和角色信息
-      const adminInfo = {
-        name: formData.account,
-        role: 'admin',
-        email: formData.account + '@honghu-ai.com'
-      };
-      localStorage.setItem('admin_token', 'mock_token_' + Date.now());
-      localStorage.setItem('admin_info', JSON.stringify(adminInfo));
-      
-      // 同时设置到 AuthContext 使用的格式，以便弹窗组件能识别
+      console.log('登录响应:', response);
+      console.log('响应数据:', response.data);
+
+      const responseData = response.data?.data;
+      const { accessToken, user } = responseData;
+
+      if (!user) {
+        setError('登录响应数据异常，请检查后端服务');
+        setIsLoading(false);
+        return;
+      }
+
+      // 检查用户是否有管理员权限
+      const allowedRoles = ['operator', 'super_admin'];
+      const hasAdminRole = user.roles?.some(role => allowedRoles.includes(role));
+
+      if (!hasAdminRole) {
+        setError('您没有管理员权限，无法登录后台');
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('管理员登录成功:', user.email);
+
+      // 存储 token 和用户信息（使用角色特定的前缀）
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('adminToken', accessToken);
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('adminUser', JSON.stringify(user));
       localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('user', JSON.stringify(adminInfo));
-      
+      localStorage.setItem('adminAuthenticated', 'true');
+      localStorage.setItem('currentRole', 'admin');
+
       navigate('/admin/dashboard');
-    } else {
-      setError('请输入管理员账号和密码');
+    } catch (err) {
+      console.error('登录失败:', err);
+      setError(err.response?.data?.message || '登录失败，请检查账号密码');
     }
 
     setIsLoading(false);
