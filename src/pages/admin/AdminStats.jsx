@@ -499,7 +499,6 @@ const AdminStats = () => {
 
     const params = new URLSearchParams();
     if (selectedCompetition !== 'all') params.append('competitionId', selectedCompetition);
-    if (timeRange !== 'all') params.append('timeRange', timeRange);
     const queryString = params.toString() ? `?${params.toString()}` : '';
 
     try {
