@@ -2,14 +2,23 @@ const BASE_URL = '/api';
 
 function getToken() {
   const currentRole = localStorage.getItem('currentRole');
+  const adminToken = localStorage.getItem('adminToken');
+  const reviewerToken = localStorage.getItem('reviewerToken');
+  const accessToken = localStorage.getItem('accessToken');
   
+  // 优先使用角色对应的 token
   if (currentRole === 'admin') {
-    return localStorage.getItem('adminToken') || localStorage.getItem('accessToken');
+    return adminToken || accessToken;
   }
   if (currentRole === 'reviewer') {
-    return localStorage.getItem('reviewerToken') || localStorage.getItem('accessToken');
+    return reviewerToken || accessToken;
   }
-  return localStorage.getItem('accessToken');
+  // 如果没有设置角色但有 adminToken，说明是管理员
+  if (adminToken) {
+    return adminToken;
+  }
+  // 否则使用通用 token
+  return accessToken || reviewerToken;
 }
 
 async function request(url, options = {}) {
