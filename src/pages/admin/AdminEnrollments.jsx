@@ -1,177 +1,138 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { request } from '../../lib/api';
 
-// TODO: 接入报名列表接口 GET /api/admin/enrollments
-// TODO: 接入报名审核接口 PUT /api/admin/enrollments/:id/review
-// TODO: 接入名单导出接口
+const STATUS_MAP = {
+  'draft': { label: '草稿', color: 'bg-gray-100 text-gray-600', dot: 'bg-gray-400' },
+  'submitted': { label: '已提交', color: 'bg-blue-50 text-blue-600', dot: 'bg-blue-400' },
+  'pending_review': { label: '待审核', color: 'bg-orange-100 text-orange-700', dot: 'bg-orange-500', pulse: true },
+  'approved': { label: '已通过', color: 'bg-green-50 text-green-600', dot: 'bg-green-400' },
+  'rejected': { label: '已驳回', color: 'bg-red-50 text-red-400', dot: 'bg-red-300' },
+  'need_more_material': { label: '待补件', color: 'bg-blue-50 text-blue-600', dot: 'bg-blue-400' },
+  'withdrawn': { label: '已撤回', color: 'bg-gray-100 text-gray-500', dot: 'bg-gray-400' },
+};
 
-// 审核状态标签组件 - 优化视觉权重
 const StatusTag = ({ status }) => {
-  const statusConfig = {
-    '待审核': { 
-      bg: 'bg-orange-100', 
-      text: 'text-orange-700',
-      border: 'border-orange-200',
-      dot: 'bg-orange-500',
-      label: '待审核',
-      emphasis: true
-    },
-    '已通过': { 
-      bg: 'bg-green-50', 
-      text: 'text-green-600',
-      border: 'border-green-100',
-      dot: 'bg-green-400',
-      label: '已通过',
-      emphasis: false
-    },
-    '已驳回': { 
-      bg: 'bg-red-50', 
-      text: 'text-red-400',
-      border: 'border-red-100',
-      dot: 'bg-red-300',
-      label: '已驳回',
-      emphasis: false
-    },
-    '待补件': { 
-      bg: 'bg-blue-50', 
-      text: 'text-blue-600',
-      border: 'border-blue-100',
-      dot: 'bg-blue-400',
-      label: '待补件',
-      emphasis: false
-    },
-    '草稿': { 
-      bg: 'bg-gray-100', 
-      text: 'text-gray-500',
-      border: 'border-gray-200',
-      dot: 'bg-gray-400',
-      label: '草稿',
-      emphasis: false
-    }
-  };
-  const config = statusConfig[status] || statusConfig['待审核'];
+  const config = STATUS_MAP[status] || { label: status || '-', color: 'bg-gray-100 text-gray-600', dot: 'bg-gray-400' };
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full border ${config.bg} ${config.text} ${config.border} ${config.emphasis ? 'shadow-sm' : ''}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${config.dot} ${config.emphasis ? 'animate-pulse' : ''}`}></span>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full border ${config.color}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${config.dot} ${config.pulse ? 'animate-pulse' : ''}`}></span>
       {config.label}
     </span>
   );
 };
 
-// 审核操作下拉菜单组件
-const ReviewDropdown = ({ enrollment, onApprove, onReject, onRequestSupplement, onViewDetail }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef(null);
+const ActionButtons = ({ enrollment, onView, onApprove }) => {
+  const canReview = enrollment.status === 'submitted' || enrollment.status === 'pending_review' || enrollment.status === 'need_more_material';
+  const canRevoke = enrollment.status === 'approved';
+  const canReapprove = enrollment.status === 'rejected';
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // 根据状态决定显示哪些操作
-  const getMenuItems = () => {
-    const items = [];
-    
-    if (enrollment.status === '待审核') {
-      items.push(
-        { type: 'approve', label: '通过', color: 'text-primary', bg: 'hover:bg-primary/5' },
-        { type: 'reject', label: '驳回', color: 'text-red-500', bg: 'hover:bg-red-50' },
-        { type: 'supplement', label: '补件', color: 'text-blue-600', bg: 'hover:bg-blue-50' }
-      );
-    } else if (enrollment.status === '待补件') {
-      items.push(
-        { type: 'approve', label: '通过', color: 'text-primary', bg: 'hover:bg-primary/5' },
-        { type: 'reject', label: '驳回', color: 'text-red-500', bg: 'hover:bg-red-50' }
-      );
-    } else if (enrollment.status === '已驳回') {
-      items.push(
-        { type: 'approve', label: '重新通过', color: 'text-primary', bg: 'hover:bg-primary/5' }
-      );
-    } else if (enrollment.status === '已通过') {
-      items.push(
-        { type: 'reject', label: '撤回并驳回', color: 'text-red-500', bg: 'hover:bg-red-50' }
-      );
-    }
-    
-    return items;
+  const handleReviewClick = () => {
+    onView(enrollment, 'review');
   };
 
-  const menuItems = getMenuItems();
-
-  const handleItemClick = (type) => {
-    setIsOpen(false);
-    if (type === 'approve') {
-      onApprove(enrollment.id);
-    } else if (type === 'reject') {
-      onViewDetail(enrollment); // 打开详情进行驳回
-    } else if (type === 'supplement') {
-      onViewDetail(enrollment); // 打开详情进行补件
-    }
+  const handleViewClick = () => {
+    onView(enrollment, 'view');
   };
 
-  // 如果没有任何操作，不显示下拉菜单
-  if (menuItems.length === 0) {
-    return null;
-  }
+  const handleQuickApprove = () => {
+    onApprove(enrollment.id);
+  };
 
   return (
-    <div className="relative" ref={menuRef}>
+    <div className="flex items-center gap-2">
+      {/* 查看详情按钮 - 始终显示 */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-primary bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors"
+        onClick={handleViewClick}
+        className="px-3 py-1.5 text-sm text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
       >
-        审核
-        <svg className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+        查看详情
       </button>
 
-      {isOpen && (
-        <div className="absolute right-0 top-full mt-1 w-28 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-10">
-          {menuItems.map((item, index) => (
-            <button
-              key={index}
-              onClick={() => handleItemClick(item.type)}
-              className={`w-full px-4 py-2 text-sm text-left ${item.color} ${item.bg} transition-colors`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+      {/* 审核按钮 - 待审核/已提交/待补件状态显示 */}
+      {canReview && (
+        <button
+          onClick={handleReviewClick}
+          className="px-3 py-1.5 text-sm font-medium text-primary bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors"
+        >
+          审核
+        </button>
+      )}
+
+      {/* 重新通过按钮 - 已驳回状态显示 */}
+      {canReapprove && (
+        <button
+          onClick={handleQuickApprove}
+          className="px-3 py-1.5 text-sm font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+        >
+          重新通过
+        </button>
+      )}
+
+      {/* 撤销通过按钮 - 已通过状态显示 */}
+      {canRevoke && (
+        <button
+          onClick={handleReviewClick}
+          className="px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+        >
+          撤销通过
+        </button>
       )}
     </div>
   );
 };
 
-// 详情抽屉组件
-const DetailDrawer = ({ enrollment, isOpen, onClose, onApprove, onReject, onRequestSupplement }) => {
+const DetailDrawer = ({ enrollment, isOpen, onClose, onApprove, onReject, onNeedMore, initialAction = 'view' }) => {
   const [actionType, setActionType] = useState(null);
   const [remark, setRemark] = useState('');
+
+  // 根据 initialAction 和状态决定显示什么操作
+  useEffect(() => {
+    if (initialAction === 'review') {
+      // 审核模式：待审核/已提交/待补件状态
+      if (['submitted', 'pending_review', 'need_more_material'].includes(enrollment?.status)) {
+        setActionType(null); // 显示操作按钮区
+      }
+    } else if (initialAction === 'revoke') {
+      // 撤销模式：已通过状态，直接显示驳回输入框
+      if (enrollment?.status === 'approved') {
+        setActionType('reject');
+      }
+    }
+  }, [initialAction, enrollment?.status]);
+
+  // 关闭时重置状态
+  useEffect(() => {
+    if (!isOpen) {
+      setActionType(null);
+      setRemark('');
+    }
+  }, [isOpen]);
 
   if (!isOpen || !enrollment) return null;
 
   const handleAction = () => {
-    if (actionType === 'reject') {
-      onReject(enrollment.id, remark);
-    } else if (actionType === 'supplement') {
-      onRequestSupplement(enrollment.id, remark);
-    }
+    if (actionType === 'reject') onReject(enrollment.id, remark);
+    else if (actionType === 'needMore') onNeedMore(enrollment.id, remark);
     setActionType(null);
     setRemark('');
   };
 
-  const handleApprove = () => {
-    onApprove(enrollment.id);
-    onClose();
+  const handleApprove = () => { onApprove(enrollment.id); };
+
+  const formatDate = (d) => {
+    if (!d) return '-';
+    try { return new Date(d).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }); }
+    catch { return d; }
   };
+
+  // 判断是否可以进行审核操作
+  const canReview = ['submitted', 'pending_review', 'need_more_material'].includes(enrollment.status);
+  // 判断是否可以撤销通过（需要填写原因）
+  const canRevoke = enrollment.status === 'approved';
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/30 z-40 transition-opacity" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/30 z-40" onClick={onClose} />
       <div className="fixed right-0 top-0 h-full w-full max-w-lg bg-white shadow-xl z-50 flex flex-col">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h3 className="text-lg font-semibold text-gray-800">报名详情</h3>
@@ -181,7 +142,6 @@ const DetailDrawer = ({ enrollment, isOpen, onClose, onApprove, onReject, onRequ
             </svg>
           </button>
         </div>
-
         <div className="flex-1 overflow-y-auto px-6 py-6">
           <div className="mb-6">
             <h4 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
@@ -192,36 +152,32 @@ const DetailDrawer = ({ enrollment, isOpen, onClose, onApprove, onReject, onRequ
             </h4>
             <div className="space-y-3 bg-gray-50 rounded-lg p-4">
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500">{enrollment.participationType === '团队' ? '团队名称' : '姓名'}</span>
-                <span className="text-sm font-medium text-gray-800">{enrollment.applicantName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">手机号</span>
-                <span className="text-sm text-gray-800">{enrollment.phone}</span>
+                <span className="text-sm text-gray-500">参赛者</span>
+                <span className="text-sm font-medium text-gray-800">{enrollment.user?.username || '-'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">邮箱</span>
-                <span className="text-sm text-gray-800">{enrollment.email}</span>
+                <span className="text-sm text-gray-800">{enrollment.user?.email || '-'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500">学校/机构</span>
-                <span className="text-sm text-gray-800">{enrollment.organization}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">专业/职位</span>
-                <span className="text-sm text-gray-800">{enrollment.major}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">参赛方式</span>
-                <span className="text-sm text-gray-800">{enrollment.participationType}</span>
+                <span className="text-sm text-gray-500">赛事</span>
+                <span className="text-sm text-gray-800">{enrollment.competition?.name || '-'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">赛道</span>
-                <span className="text-sm text-gray-800">{enrollment.track}</span>
+                <span className="text-sm text-gray-800">{enrollment.track?.name || '-'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500">报名时间</span>
-                <span className="text-sm text-gray-800">{enrollment.submitTime}</span>
+                <span className="text-sm text-gray-500">报名类型</span>
+                <span className="text-sm text-gray-800">{enrollment.enrollmentType === 'team' ? '团队' : '个人'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-500">状态</span>
+                <StatusTag status={enrollment.status} />
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-500">提交时间</span>
+                <span className="text-sm text-gray-800">{formatDate(enrollment.submittedAt || enrollment.createdAt)}</span>
               </div>
             </div>
           </div>
@@ -229,41 +185,7 @@ const DetailDrawer = ({ enrollment, isOpen, onClose, onApprove, onReject, onRequ
           <div className="mb-6">
             <h4 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
               <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              报名说明
-            </h4>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-700 leading-relaxed">{enrollment.description || '暂无说明'}</p>
-            </div>
-          </div>
-
-          <div className="mb-6">
-            <h4 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              资格材料
-            </h4>
-            <div className="space-y-2">
-              {enrollment.documents?.map((doc, index) => (
-                <div key={index} className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
-                  <div className="flex items-center gap-3">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
-                    <span className="text-sm text-gray-700">{doc.name}</span>
-                  </div>
-                  <button className="text-xs text-primary hover:text-primary/80 font-medium">下载</button>
-                </div>
-              )) || <p className="text-sm text-gray-400">暂无材料</p>}
-            </div>
-          </div>
-
-          <div className="mb-6">
-            <h4 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
               审核记录
             </h4>
@@ -272,20 +194,10 @@ const DetailDrawer = ({ enrollment, isOpen, onClose, onApprove, onReject, onRequ
                 <span className="text-sm text-gray-500">当前状态</span>
                 <StatusTag status={enrollment.status} />
               </div>
-              {enrollment.reviewRemark && (
+              {enrollment.reviewComment && (
                 <div className="pt-3 border-t border-gray-200">
                   <span className="text-sm text-gray-500 block mb-1">审核意见</span>
-                  <p className="text-sm text-gray-700">{enrollment.reviewRemark}</p>
-                </div>
-              )}
-              {enrollment.hasSupplement && (
-                <div className="pt-3 border-t border-gray-200">
-                  <span className="text-sm text-blue-600 flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    已要求补件
-                  </span>
+                  <p className="text-sm text-gray-700">{enrollment.reviewComment}</p>
                 </div>
               )}
             </div>
@@ -304,18 +216,13 @@ const DetailDrawer = ({ enrollment, isOpen, onClose, onApprove, onReject, onRequ
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
               />
               <div className="flex items-center justify-end gap-2 mt-3">
-                <button
-                  onClick={() => { setActionType(null); setRemark(''); }}
-                  className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  取消
-                </button>
+                <button onClick={() => { setActionType(null); setRemark(''); }} className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">取消</button>
                 <button
                   onClick={handleAction}
-                  disabled={!remark.trim()}
+                  disabled={!remark.trim() && actionType === 'reject'}
                   className={`px-3 py-1.5 text-sm text-white rounded-lg transition-colors ${
-                    actionType === 'reject' 
-                      ? 'bg-red-500 hover:bg-red-600 disabled:bg-red-300' 
+                    actionType === 'reject'
+                      ? 'bg-red-500 hover:bg-red-600 disabled:bg-red-300'
                       : 'bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300'
                   }`}
                 >
@@ -326,34 +233,30 @@ const DetailDrawer = ({ enrollment, isOpen, onClose, onApprove, onReject, onRequ
           )}
         </div>
 
-        {!actionType && enrollment.status !== '已通过' && (
+        {/* 底部操作按钮区 */}
+        {!actionType && (
           <div className="border-t border-gray-100 px-6 py-4 bg-gray-50">
-            <div className="flex items-center justify-end gap-3">
-              <button
-                onClick={() => setActionType('supplement')}
-                className="px-4 py-2 text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
-              >
-                要求补件
-              </button>
-              <button
-                onClick={() => setActionType('reject')}
-                className="px-4 py-2 text-sm text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
-              >
-                驳回
-              </button>
-              <button
-                onClick={handleApprove}
-                className="px-4 py-2 text-sm font-medium text-white bg-green-500 hover:bg-green-600 rounded-lg transition-colors"
-              >
-                审核通过
-              </button>
-            </div>
-          </div>
-        )}
-
-        {!actionType && enrollment.status === '已通过' && (
-          <div className="border-t border-gray-100 px-6 py-4 bg-green-50">
-            <p className="text-sm text-green-700 text-center">该报名已通过审核</p>
+            {canReview && (
+              // 待审核/已提交/待补件状态：显示完整审核操作
+              <div className="flex items-center justify-end gap-3">
+                <button onClick={() => setActionType('needMore')} className="px-4 py-2 text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">要求补件</button>
+                <button onClick={() => setActionType('reject')} className="px-4 py-2 text-sm text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">驳回</button>
+                <button onClick={handleApprove} className="px-4 py-2 text-sm font-medium text-white bg-green-500 hover:bg-green-600 rounded-lg transition-colors">审核通过</button>
+              </div>
+            )}
+            {canRevoke && (
+              // 已通过状态：显示撤销通过操作
+              <div className="flex items-center justify-end gap-3">
+                <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">关闭</button>
+                <button onClick={() => setActionType('reject')} className="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors">撤销通过</button>
+              </div>
+            )}
+            {!canReview && !canRevoke && (
+              // 其他状态：只显示关闭按钮
+              <div className="flex items-center justify-end">
+                <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">关闭</button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -361,277 +264,264 @@ const DetailDrawer = ({ enrollment, isOpen, onClose, onApprove, onReject, onRequ
   );
 };
 
+const Toast = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+  return (
+    <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white text-sm ${
+      type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-primary'
+    }`}>
+      {message}
+    </div>
+  );
+};
+
+const ApiDebugPanel = ({ apiStatus, reviewStatus, filters, enrollmentCount }) => {
+  if (process.env.NODE_ENV !== 'development') return null;
+  return (
+    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-blue-700">API 联调信息</h3>
+        <span className="text-xs text-blue-500">开发环境可见</span>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">列表接口</p>
+          <p className="font-mono text-xs text-gray-800 truncate">GET /v1/admin/enrollments</p>
+          <p className={`text-xs font-semibold mt-1 ${
+            apiStatus.list === 200 ? 'text-green-600' :
+            apiStatus.list === 'error' ? 'text-red-600' : 'text-gray-400'
+          }`}>
+            {apiStatus.list === 200 ? `✅ ${enrollmentCount} 条` :
+             apiStatus.list === 'error' ? '❌ 请求失败' : '⏳ 等待中'}
+          </p>
+        </div>
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">筛选条件</p>
+          <p className="font-mono text-xs text-gray-800">
+            {filters.status === 'all' ? '全部状态' : filters.status} | {filters.competitionId || '全部赛事'}
+          </p>
+        </div>
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">最近审核</p>
+          <p className={`text-xs font-semibold mt-1 ${
+            reviewStatus === 'success' ? 'text-green-600' :
+            reviewStatus === 'error' ? 'text-red-600' :
+            reviewStatus === 'loading' ? 'text-orange-600' : 'text-gray-400'
+          }`}>
+            {reviewStatus === 'success' ? '✅ 审核成功' :
+             reviewStatus === 'error' ? '❌ 审核失败' :
+             reviewStatus === 'loading' ? '⏳ 审核中...' : '—'}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const AdminEnrollments = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [competitionFilter, setCompetitionFilter] = useState('all');
-  const [participationFilter, setParticipationFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [activeTab, setActiveTab] = useState('all');
+  const [competitionFilter, setCompetitionFilter] = useState('all');
+  const [enrollments, setEnrollments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [toast, setToast] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedEnrollment, setSelectedEnrollment] = useState(null);
+  const [reviewAction, setReviewAction] = useState(null);
+  const [apiStatus, setApiStatus] = useState({ list: null });
+  const [reviewStatus, setReviewStatus] = useState(null);
 
-  const [enrollments, setEnrollments] = useState([
-    {
-      id: 1,
-      applicantName: '张明',
-      teamName: null,
-      competitionName: '2024年梧桐·鸿鹄人工智能应用创新大赛',
-      participationType: '个人',
-      track: 'AI应用创新赛道',
-      submitTime: '2024-11-15 14:30',
-      status: '待审核',
-      phone: '138****1234',
-      email: 'zhangming@example.com',
-      organization: '清华大学',
-      major: '计算机科学与技术',
-      description: '希望参加AI应用创新赛道，开发一个基于大语言模型的智能助手项目。',
-      documents: [{ name: '学生证.pdf', size: '2.3MB' }, { name: '项目简介.docx', size: '1.1MB' }],
-      reviewRemark: '',
-      hasSupplement: false
-    },
-    {
-      id: 2,
-      applicantName: null,
-      teamName: 'AI创新先锋队',
-      competitionName: '2024年梧桐·鸿鹄人工智能应用创新大赛',
-      participationType: '团队',
-      track: 'AI应用创新赛道',
-      submitTime: '2024-11-15 10:20',
-      status: '已通过',
-      phone: '139****5678',
-      email: 'aiteam@example.com',
-      organization: '北京大学',
-      major: '人工智能研究院',
-      description: '团队由5名成员组成，专注于计算机视觉和自然语言处理领域。',
-      documents: [{ name: '团队信息表.pdf', size: '1.5MB' }, { name: '项目计划书.pdf', size: '3.2MB' }],
-      reviewRemark: '材料齐全，通过审核',
-      hasSupplement: false
-    },
-    {
-      id: 3,
-      applicantName: '李华',
-      teamName: null,
-      competitionName: '2024年清华大学校园赛',
-      participationType: '个人',
-      track: 'AI创意赛道',
-      submitTime: '2024-11-14 16:45',
-      status: '已驳回',
-      phone: '137****9012',
-      email: 'lihua@example.com',
-      organization: '清华大学',
-      major: '软件工程',
-      description: '对AI创意赛道很感兴趣，希望展示创意项目。',
-      documents: [{ name: '学生证.pdf', size: '2.1MB' }],
-      reviewRemark: '缺少项目简介材料，请补充后重新提交',
-      hasSupplement: false
-    },
-    {
-      id: 4,
-      applicantName: null,
-      teamName: '智慧未来小组',
-      competitionName: '2024年海淀区区县赛',
-      participationType: '团队',
-      track: 'AI教育赛道',
-      submitTime: '2024-11-14 09:15',
-      status: '待补件',
-      phone: '136****3456',
-      email: 'future@example.com',
-      organization: '海淀区第一中学',
-      major: '高中部',
-      description: '团队致力于开发AI教育辅助工具，帮助中学生更好地学习编程。',
-      documents: [{ name: '团队报名表.pdf', size: '1.8MB' }],
-      reviewRemark: '请补充指导教师推荐信',
-      hasSupplement: true
-    },
-    {
-      id: 5,
-      applicantName: '王芳',
-      teamName: null,
-      competitionName: '2024年北京大学校园赛',
-      participationType: '个人',
-      track: 'AI应用创新赛道',
-      submitTime: '2024-11-13 20:00',
-      status: '待审核',
-      phone: '135****7890',
-      email: 'wangfang@example.com',
-      organization: '北京大学',
-      major: '数据科学',
-      description: '希望将数据科学与AI应用结合，开发创新项目。',
-      documents: [{ name: '学生证.pdf', size: '2.0MB' }, { name: '项目提案.pdf', size: '2.5MB' }],
-      reviewRemark: '',
-      hasSupplement: false
-    },
-    {
-      id: 6,
-      applicantName: '陈杰',
-      teamName: null,
-      competitionName: '2024年梧桐·鸿鹄人工智能应用创新大赛',
-      participationType: '个人',
-      track: 'AI医疗赛道',
-      submitTime: '2024-11-12 11:30',
-      status: '草稿',
-      phone: '134****2468',
-      email: 'chenjie@example.com',
-      organization: '中科院计算所',
-      major: '医学影像处理',
-      description: '专注于AI在医疗影像诊断领域的应用研究。',
-      documents: [],
-      reviewRemark: '',
-      hasSupplement: false
+  const fetchEnrollments = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams();
+      if (statusFilter !== 'all') params.append('status', statusFilter);
+      if (competitionFilter !== 'all') params.append('competitionId', competitionFilter);
+
+      const result = await request(`/v1/admin/enrollments${params.toString() ? '?' + params.toString() : ''}`);
+      if (result.ok && result.data?.code === 0 && result.data.data) {
+        const list = Array.isArray(result.data.data.list) ? result.data.data.list : [];
+        setEnrollments(list);
+        setApiStatus(prev => ({ ...prev, list: 200 }));
+      } else {
+        setEnrollments([]);
+        setApiStatus(prev => ({ ...prev, list: 'error' }));
+        setError('获取报名列表失败');
+      }
+    } catch (err) {
+      console.error('Fetch enrollments error:', err);
+      setEnrollments([]);
+      setApiStatus(prev => ({ ...prev, list: 'error' }));
+      setError('网络错误，无法获取报名列表');
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
-  const competitions = ['全部赛事', ...new Set(enrollments.map(e => e.competitionName))];
-
-  // 状态排序权重：待审核 > 待补件 > 已通过 > 已驳回 > 草稿
-  const statusOrder = { '待审核': 1, '待补件': 2, '已通过': 3, '已驳回': 4, '草稿': 5 };
+  useEffect(() => { fetchEnrollments(); }, [statusFilter, competitionFilter]);
 
   const filteredEnrollments = useMemo(() => {
-    let result = enrollments.filter(enrollment => {
-      const searchLower = searchQuery.toLowerCase();
-      const matchSearch = 
-        enrollment.applicantName?.toLowerCase().includes(searchLower) ||
-        enrollment.teamName?.toLowerCase().includes(searchLower) ||
-        enrollment.competitionName.toLowerCase().includes(searchLower);
-      const matchCompetition = competitionFilter === 'all' || enrollment.competitionName === competitionFilter;
-      const matchParticipation = participationFilter === 'all' || enrollment.participationType === participationFilter;
-      const matchStatus = statusFilter === 'all' || enrollment.status === statusFilter;
-      const matchTab = activeTab === 'all' || enrollment.status === activeTab;
-      return matchSearch && matchCompetition && matchParticipation && matchStatus && matchTab;
+    return enrollments.filter(e => {
+      const q = searchQuery.toLowerCase();
+      const matchSearch = !q ||
+        (e.user?.username || '').toLowerCase().includes(q) ||
+        (e.user?.email || '').toLowerCase().includes(q) ||
+        (e.competition?.name || '').toLowerCase().includes(q) ||
+        (e.track?.name || '').toLowerCase().includes(q);
+      return matchSearch;
     });
+  }, [enrollments, searchQuery]);
 
-    // 按状态排序：待审核排最前
-    result.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
-    
-    return result;
-  }, [enrollments, searchQuery, competitionFilter, participationFilter, statusFilter, activeTab]);
+  const handleApprove = async (id) => {
+    setReviewStatus('loading');
+    try {
+      const result = await request(`/v1/admin/enrollments/${id}/approve`, { method: 'PUT', body: JSON.stringify({}) });
+      if (result.ok && result.data?.code === 0) {
+        setReviewStatus('success');
+        setToast({ message: '审核通过成功', type: 'success' });
+        setIsDrawerOpen(false);
+        fetchEnrollments();
+      } else {
+        setReviewStatus('error');
+        setToast({ message: result.data?.message || '审核通过失败', type: 'error' });
+      }
+    } catch (err) {
+      setReviewStatus('error');
+      setToast({ message: '网络错误，审核失败', type: 'error' });
+    }
+  };
 
-  const tabItems = [
-    { key: 'all', label: '全部', count: enrollments.length },
-    { key: '待审核', label: '待审核', count: enrollments.filter(e => e.status === '待审核').length },
-    { key: '已通过', label: '已通过', count: enrollments.filter(e => e.status === '已通过').length },
-    { key: '已驳回', label: '已驳回', count: enrollments.filter(e => e.status === '已驳回').length },
-    { key: '待补件', label: '待补件', count: enrollments.filter(e => e.status === '待补件').length }
-  ];
+  const handleReject = async (id, comment) => {
+    if (!comment?.trim()) {
+      setToast({ message: '请输入驳回原因', type: 'error' });
+      return;
+    }
+    setReviewStatus('loading');
+    try {
+      const result = await request(`/v1/admin/enrollments/${id}/reject`, { method: 'PUT', body: JSON.stringify({ comment }) });
+      if (result.ok && result.data?.code === 0) {
+        setReviewStatus('success');
+        setToast({ message: '已驳回', type: 'success' });
+        setIsDrawerOpen(false);
+        fetchEnrollments();
+      } else {
+        setReviewStatus('error');
+        setToast({ message: result.data?.message || '驳回失败', type: 'error' });
+      }
+    } catch (err) {
+      setReviewStatus('error');
+      setToast({ message: '网络错误，驳回失败', type: 'error' });
+    }
+  };
 
-  const handleViewDetail = (enrollment) => {
-    setSelectedEnrollment(enrollment);
+  const handleNeedMore = async (id, comment) => {
+    setReviewStatus('loading');
+    try {
+      const result = await request(`/v1/admin/enrollments/${id}/need-more-material`, { method: 'PUT', body: JSON.stringify({ comment: comment || '' }) });
+      if (result.ok && result.data?.code === 0) {
+        setReviewStatus('success');
+        setToast({ message: '已要求补件', type: 'success' });
+        setIsDrawerOpen(false);
+        fetchEnrollments();
+      } else {
+        setReviewStatus('error');
+        setToast({ message: result.data?.message || '操作失败', type: 'error' });
+      }
+    } catch (err) {
+      setReviewStatus('error');
+      setToast({ message: '网络错误，操作失败', type: 'error' });
+    }
+  };
+
+  const handleViewDetail = async (enrollment, action) => {
+    setReviewAction(action);
     setIsDrawerOpen(true);
+
+    // 如果没有完整详情，先获取详情
+    if (!enrollment.competition || !enrollment.user) {
+      try {
+        const result = await request(`/v1/admin/enrollments/${enrollment.id}`);
+        if (result.ok && result.data?.code === 0 && result.data.data) {
+          setSelectedEnrollment(result.data.data);
+        } else {
+          setSelectedEnrollment(enrollment);
+        }
+      } catch (err) {
+        setSelectedEnrollment(enrollment);
+      }
+    } else {
+      setSelectedEnrollment(enrollment);
+    }
   };
 
-  const handleApprove = (id) => {
-    setEnrollments(prev => prev.map(e => 
-      e.id === id ? { ...e, status: '已通过', reviewRemark: '审核通过' } : e
-    ));
+  const handleDrawerClose = () => {
     setIsDrawerOpen(false);
+    setReviewAction(null);
+    fetchEnrollments();
   };
 
-  const handleReject = (id, remark) => {
-    setEnrollments(prev => prev.map(e => 
-      e.id === id ? { ...e, status: '已驳回', reviewRemark: remark } : e
-    ));
-    setIsDrawerOpen(false);
-  };
-
-  const handleRequestSupplement = (id, remark) => {
-    setEnrollments(prev => prev.map(e => 
-      e.id === id ? { ...e, status: '待补件', reviewRemark: remark, hasSupplement: true } : e
-    ));
-    setIsDrawerOpen(false);
-  };
-
-  const handleExport = () => {
-    alert('导出功能开发中...\n将导出当前筛选条件下的报名名单');
-  };
-
-  const getDisplayName = (enrollment) => {
-    return enrollment.participationType === '团队' 
-      ? enrollment.teamName 
-      : enrollment.applicantName;
+  const formatDate = (d) => {
+    if (!d) return '-';
+    try { return new Date(d).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }); }
+    catch { return d; }
   };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-800">报名审核</h2>
-        <p className="text-sm text-gray-500 mt-2">审核个人/团队报名申请，处理补件与驳回</p>
-      </div>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-      {/* 轻筛选 Tabs */}
-      <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-        {tabItems.map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-              activeTab === tab.key
-                ? 'bg-primary text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            {tab.label}
-            <span className={`ml-1.5 text-xs ${activeTab === tab.key ? 'text-white/80' : 'text-gray-400'}`}>
-              ({tab.count})
-            </span>
-          </button>
-        ))}
+      <ApiDebugPanel
+        apiStatus={apiStatus}
+        reviewStatus={reviewStatus}
+        filters={{ status: statusFilter, competitionId: competitionFilter }}
+        enrollmentCount={enrollments.length}
+      />
+
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800">报名管理</h2>
+        <p className="text-sm text-gray-500 mt-2">审核报名资格，管理参赛者信息</p>
       </div>
 
       <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
         <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
           <div>
-            <label className="block text-xs text-gray-500 mb-1.5">搜索姓名/团队/赛事</label>
+            <label className="block text-xs text-gray-500 mb-1.5">搜索</label>
             <div className="relative">
               <input
                 type="text"
-                placeholder="请输入搜索内容..."
+                placeholder="搜索参赛者/赛事/赛道..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-0 w-full sm:w-64 bg-white"
+                className="pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary w-full sm:w-64 bg-white"
               />
               <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
           </div>
-
           <div>
-            <label className="block text-xs text-gray-500 mb-1.5">赛事筛选</label>
+            <label className="block text-xs text-gray-500 mb-1.5">状态筛选</label>
             <select
-              value={competitionFilter}
-              onChange={(e) => setCompetitionFilter(e.target.value)}
-              className="px-4 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-0 bg-white min-w-[160px]"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-4 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary bg-white min-w-[140px]"
             >
-              <option value="all">全部赛事</option>
-              {competitions.filter(c => c !== '全部赛事').map((comp, index) => (
-                <option key={index} value={comp}>{comp}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs text-gray-500 mb-1.5">参赛方式</label>
-            <select
-              value={participationFilter}
-              onChange={(e) => setParticipationFilter(e.target.value)}
-              className="px-4 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-0 bg-white min-w-[120px]"
-            >
-              <option value="all">全部</option>
-              <option value="个人">个人</option>
-              <option value="团队">团队</option>
+              <option value="all">全部状态</option>
+              <option value="pending_review">待审核</option>
+              <option value="approved">已通过</option>
+              <option value="rejected">已驳回</option>
+              <option value="need_more_material">待补件</option>
+              <option value="draft">草稿</option>
+              <option value="submitted">已提交</option>
+              <option value="withdrawn">已撤回</option>
             </select>
           </div>
         </div>
-
-        <button
-          onClick={handleExport}
-          className="flex items-center justify-center gap-2 px-5 py-2.5 border-2 border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:border-primary hover:text-primary transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-          </svg>
-          导出名单
-        </button>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -639,89 +529,93 @@ const AdminEnrollments = () => {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">报名人/团队</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">赛事信息</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">参赛方式</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">提交时间</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">参赛者</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">赛事</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">赛道</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">类型</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">状态</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">提交时间</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredEnrollments.map((enrollment) => (
-                <tr 
-                  key={enrollment.id} 
-                  className="hover:bg-blue-50/30 transition-colors group"
-                >
-                  <td className="px-6 py-5">
-                    <span className="text-sm font-semibold text-gray-800">{getDisplayName(enrollment)}</span>
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-sm font-medium text-gray-800 line-clamp-1" title={enrollment.competitionName}>
-                        {enrollment.competitionName}
-                      </span>
-                      <span className="text-xs text-gray-500">赛道：{enrollment.track}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded ${
-                      enrollment.participationType === '团队' 
-                        ? 'bg-purple-100 text-purple-700' 
-                        : 'bg-blue-100 text-blue-700'
-                    }`}>
-                      {enrollment.participationType}
-                    </span>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span className="text-sm text-gray-600">{enrollment.submitTime}</span>
-                  </td>
-                  <td className="px-6 py-5">
-                    <StatusTag status={enrollment.status} />
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => handleViewDetail(enrollment)}
-                        className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-                      >
-                        查看
-                      </button>
-                      
-                      <ReviewDropdown
-                        enrollment={enrollment}
-                        onApprove={handleApprove}
-                        onReject={handleReject}
-                        onRequestSupplement={handleRequestSupplement}
-                        onViewDetail={handleViewDetail}
-                      />
-                    </div>
+              {loading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div></td>
+                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-32 animate-pulse"></div></td>
+                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div></td>
+                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div></td>
+                    <td className="px-6 py-4"><div className="h-6 bg-gray-200 rounded w-16 animate-pulse"></div></td>
+                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div></td>
+                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div></td>
+                  </tr>
+                ))
+              ) : error ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center">
+                    <p className="text-red-500 mb-4">{error}</p>
+                    <button onClick={fetchEnrollments} className="px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary/90">重试</button>
                   </td>
                 </tr>
-              ))}
+              ) : filteredEnrollments.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <p className="text-gray-500">暂无符合条件的报名</p>
+                  </td>
+                </tr>
+              ) : (
+                filteredEnrollments.map((enrollment) => (
+                  <tr key={enrollment.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-sm font-semibold text-gray-800">{enrollment.user?.username || '-'}</span>
+                        <span className="text-xs text-gray-400">{enrollment.user?.email || '-'}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm text-gray-600">{enrollment.competition?.name || '-'}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm text-gray-600">{enrollment.track?.name || '-'}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm text-gray-600">{enrollment.enrollmentType === 'team' ? '团队' : '个人'}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <StatusTag status={enrollment.status} />
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm text-gray-600">{formatDate(enrollment.submittedAt || enrollment.createdAt)}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <ActionButtons
+                        enrollment={enrollment}
+                        onView={handleViewDetail}
+                        onApprove={handleApprove}
+                      />
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
-        
-        {filteredEnrollments.length === 0 && (
-          <div className="py-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <p className="text-gray-500">暂无符合条件的报名记录</p>
-          </div>
-        )}
       </div>
 
       <DetailDrawer
         enrollment={selectedEnrollment}
         isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
+        onClose={handleDrawerClose}
         onApprove={handleApprove}
         onReject={handleReject}
-        onRequestSupplement={handleRequestSupplement}
+        onNeedMore={handleNeedMore}
+        initialAction={reviewAction}
       />
     </div>
   );

@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { request } from '../../lib/api';
 import {
-  CARD_STYLES,
   SPACING,
   TYPOGRAPHY,
   TABLE_STYLES,
@@ -10,23 +10,128 @@ import {
   BUTTON_STYLES
 } from '../../styles/admin-theme';
 
+// ==================== API 联调区组件 ====================
+const ApiDebugPanel = ({ apiStatus, filters }) => {
+  if (process.env.NODE_ENV !== 'development') return null;
+
+  return (
+    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-blue-700">API 联调信息</h3>
+        <span className="text-xs text-blue-500">开发环境可见</span>
+      </div>
+      
+      {/* 第一行：轮次和评委接口 */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">轮次接口</p>
+          <p className="font-mono text-xs text-gray-800 truncate">GET /v1/admin/review-rounds</p>
+          <p className={`text-xs font-semibold mt-1 ${
+            apiStatus.rounds === 200 ? 'text-green-600' : 
+            apiStatus.rounds === 'error' ? 'text-red-600' : 'text-gray-400'
+          }`}>
+            {apiStatus.rounds || '-'}
+          </p>
+        </div>
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">轮次数量</p>
+          <p className="text-sm font-semibold text-gray-800">{apiStatus.roundCount ?? '-'}</p>
+        </div>
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">评委接口</p>
+          <p className="font-mono text-xs text-gray-800 truncate">GET /v1/admin/reviewers</p>
+          <p className={`text-xs font-semibold mt-1 ${
+            apiStatus.reviewers === 200 ? 'text-green-600' : 
+            apiStatus.reviewers === 'error' ? 'text-red-600' : 
+            apiStatus.reviewers === 'not-found' ? 'text-orange-600' : 'text-gray-400'
+          }`}>
+            {apiStatus.reviewers || '-'}
+          </p>
+        </div>
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">评委数量</p>
+          <p className="text-sm font-semibold text-gray-800">{apiStatus.reviewerCount ?? '-'}</p>
+        </div>
+      </div>
+
+      {/* 第二行：分配和筛选 */}
+      <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">分配保存接口</p>
+          <p className="font-mono text-xs text-gray-800 truncate">POST /v1/admin/review-rounds/:id/assignments</p>
+          <p className={`text-xs font-semibold mt-1 ${
+            apiStatus.saveAssignment === 200 ? 'text-green-600' : 
+            apiStatus.saveAssignment === 'error' ? 'text-red-600' : 'text-gray-400'
+          }`}>
+            {apiStatus.saveAssignment || '-'}
+          </p>
+        </div>
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">分配数量</p>
+          <p className="text-sm font-semibold text-gray-800">{apiStatus.assignmentCount ?? '-'}</p>
+        </div>
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">筛选条件</p>
+          <p className="text-xs text-gray-800 truncate">
+            赛事: {filters.competitionId || '全部'}
+          </p>
+        </div>
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-xs text-gray-400 mb-1">当前轮次ID</p>
+          <p className="text-xs text-gray-800 truncate">{filters.roundId || '-'}</p>
+        </div>
+      </div>
+
+      {/* 进度数据 */}
+      {apiStatus.progress && (
+        <div className="mt-3 grid grid-cols-3 gap-3">
+          <div className="bg-white rounded-lg p-3">
+            <p className="text-xs text-gray-400 mb-1">总分配</p>
+            <p className="text-sm font-semibold text-gray-800">{apiStatus.progress.total || 0}</p>
+          </div>
+          <div className="bg-white rounded-lg p-3">
+            <p className="text-xs text-gray-400 mb-1">已提交</p>
+            <p className="text-sm font-semibold text-green-600">{apiStatus.progress.submitted || 0}</p>
+          </div>
+          <div className="bg-white rounded-lg p-3">
+            <p className="text-xs text-gray-400 mb-1">待评分</p>
+            <p className="text-sm font-semibold text-orange-600">{apiStatus.progress.pending || 0}</p>
+          </div>
+        </div>
+      )}
+
+      {/* 接口缺失警告 */}
+      {apiStatus.reviewers === 'not-found' && (
+        <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+          <p className="text-xs text-orange-600">
+            <span className="font-semibold">⚠️ 后端接口缺失：</span>
+            未找到 GET /v1/admin/reviewers 接口，评委列表功能暂时不可用。
+            需要后端添加此接口或提供按角色筛选的用户列表接口。
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ==================== 状态标签组件 ====================
 const StatusTag = ({ status }) => {
+  const statusMap = {
+    'draft': '草稿',
+    'active': '进行中',
+    'completed': '已完成',
+    'cancelled': '已取消'
+  };
   return (
     <span className={getStatusTagClass(status)}>
-      {status}
+      {statusMap[status] || status}
     </span>
   );
 };
 
-// TODO: 接入评审任务列表接口
-// TODO: 接入评委分配接口
-// TODO: 接入评审进度接口
-// TODO: 接入评审轮次创建接口
-
 // ==================== Toast 组件 ====================
 const Toast = ({ message, type, onClose }) => {
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setTimeout(onClose, 2000);
     return () => clearTimeout(timer);
   }, [onClose]);
@@ -47,332 +152,111 @@ const Toast = ({ message, type, onClose }) => {
   );
 };
 
-// ==================== 轮次标签组件（统一标签样式）====================
-const RoundTag = ({ round }) => {
-  const roundColors = {
-    '初审': 'bg-blue-50 text-blue-600 border border-blue-100',
-    '复审': 'bg-purple-50 text-purple-600 border border-purple-100',
-    '决赛': 'bg-amber-50 text-amber-600 border border-amber-100'
-  };
-  return (
-    <span className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${roundColors[round] || 'bg-gray-100 text-gray-600'}`}>
-      {round}
-    </span>
-  );
-};
-
-// ==================== 评委进度组件（优化版）====================
-const ReviewerProgress = ({ completed, total }) => {
-  const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
-  return (
-    <div className="flex flex-col gap-2 min-w-[90px]">
-      <div className="flex items-baseline gap-1">
-        <span className="text-lg font-bold text-gray-800">{completed}</span>
-        <span className="text-sm text-gray-400">/{total}</span>
-      </div>
-      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-primary rounded-full transition-all duration-500"
-          style={{ width: `${percent}%` }}
-        />
-      </div>
-    </div>
-  );
-};
-
-// ==================== 操作下拉菜单（优化版）====================
-const ActionDropdown = ({ work, onViewDetail, onAssign, onViewProgress, showToast }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleAction = (action) => {
-    setIsOpen(false);
-    action();
-  };
-
-  return (
-    <div className="relative" ref={menuRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`${BUTTON_STYLES.dropdown} ${isOpen ? 'bg-gray-100' : ''}`}
-      >
-        更多
-        <svg className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-
-      {isOpen && (
-        <div className="absolute right-0 top-full mt-1 w-36 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-10 animate-fade-in">
-          {work.status !== '待分配' && (
-            <button
-              onClick={() => handleAction(() => { onViewProgress(work); showToast('查看评审进度', 'info'); })}
-              className="w-full px-4 py-2.5 text-sm text-left text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              查看进度
-            </button>
-          )}
-          <button
-            onClick={() => handleAction(() => { onAssign(work); showToast('打开分配评审', 'info'); })}
-            className="w-full px-4 py-2.5 text-sm text-left text-primary hover:bg-primary/5 transition-colors"
-          >
-            {work.status === '待分配' ? '分配评审' : '重新分配'}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// ==================== 新建评审轮次抽屉（优化版）====================
-const CreateRoundDrawer = ({ isOpen, onClose, onCreate, competitions, showToast }) => {
-  const [formData, setFormData] = useState({
-    roundName: '初审',
-    competition: '',
-    roundOrder: 1,
-    startTime: '',
-    endTime: '',
-    reviewerCount: 3,
-    allowRepeat: false,
-    remark: ''
-  });
-
-  useEffect(() => {
-    if (isOpen) {
-      setFormData({
-        roundName: '初审',
-        competition: competitions[0] || '',
-        roundOrder: 1,
-        startTime: '',
-        endTime: '',
-        reviewerCount: 3,
-        allowRepeat: false,
-        remark: ''
-      });
-    }
-  }, [isOpen, competitions]);
-
-  if (!isOpen) return null;
-
-  const handleSubmit = () => {
-    onCreate(formData);
-    showToast('评审轮次创建成功', 'success');
-    onClose();
-  };
-
-  return (
-    <>
-      <div className={DRAWER_STYLES.overlay} onClick={onClose} />
-      <div className={DRAWER_STYLES.container}>
-        <div className={DRAWER_STYLES.header}>
-          <h3 className={TYPOGRAPHY.sectionTitle}>新建评审轮次</h3>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        <div className={DRAWER_STYLES.content}>
-          <div className={DRAWER_STYLES.section}>
-            <h4 className={DRAWER_STYLES.sectionTitle}>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              基础信息
-            </h4>
-            <div className="space-y-4">
-              <div>
-                <label className={FORM_STYLES.label}>轮次名称</label>
-                <select
-                  value={formData.roundName}
-                  onChange={(e) => setFormData({ ...formData, roundName: e.target.value })}
-                  className={FORM_STYLES.input}
-                >
-                  <option value="初审">初审</option>
-                  <option value="复审">复审</option>
-                  <option value="决赛">决赛</option>
-                </select>
-              </div>
-              <div>
-                <label className={FORM_STYLES.label}>所属赛事</label>
-                <select
-                  value={formData.competition}
-                  onChange={(e) => setFormData({ ...formData, competition: e.target.value })}
-                  className={FORM_STYLES.input}
-                >
-                  {competitions.map((comp, index) => (
-                    <option key={index} value={comp}>{comp}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={FORM_STYLES.label}>轮次顺序</label>
-                <input
-                  type="number"
-                  min={1}
-                  value={formData.roundOrder}
-                  onChange={(e) => setFormData({ ...formData, roundOrder: parseInt(e.target.value) || 1 })}
-                  className={FORM_STYLES.input}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className={DRAWER_STYLES.section}>
-            <h4 className={DRAWER_STYLES.sectionTitle}>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              时间配置
-            </h4>
-            <div className="space-y-4">
-              <div>
-                <label className={FORM_STYLES.label}>开始时间</label>
-                <input
-                  type="datetime-local"
-                  value={formData.startTime}
-                  onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                  className={FORM_STYLES.input}
-                />
-              </div>
-              <div>
-                <label className={FORM_STYLES.label}>截止时间</label>
-                <input
-                  type="datetime-local"
-                  value={formData.endTime}
-                  onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                  className={FORM_STYLES.input}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className={DRAWER_STYLES.section}>
-            <h4 className={DRAWER_STYLES.sectionTitle}>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              评审规则
-            </h4>
-            <div className="space-y-4">
-              <div>
-                <label className={FORM_STYLES.label}>每个作品需要评委数量</label>
-                <input
-                  type="number"
-                  min={1}
-                  value={formData.reviewerCount}
-                  onChange={(e) => setFormData({ ...formData, reviewerCount: parseInt(e.target.value) || 1 })}
-                  className={FORM_STYLES.input}
-                />
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <label className={FORM_STYLES.label}>是否允许重复评审</label>
-                <button
-                  onClick={() => setFormData({ ...formData, allowRepeat: !formData.allowRepeat })}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    formData.allowRepeat ? 'bg-primary' : 'bg-gray-200'
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      formData.allowRepeat ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                  />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className={DRAWER_STYLES.section}>
-            <h4 className={DRAWER_STYLES.sectionTitle}>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              备注说明
-            </h4>
-            <textarea
-              value={formData.remark}
-              onChange={(e) => setFormData({ ...formData, remark: e.target.value })}
-              placeholder="请输入备注说明..."
-              rows={3}
-              className={FORM_STYLES.textarea}
-            />
-          </div>
-        </div>
-
-        <div className={DRAWER_STYLES.footer}>
-          <div className="flex items-center justify-end gap-3">
-            <button onClick={onClose} className={BUTTON_STYLES.secondary}>
-              取消
-            </button>
-            <button
-              onClick={handleSubmit}
-              className={BUTTON_STYLES.primary}
-            >
-              创建轮次
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-};
-
-// ==================== 分配评审弹窗（优化版）====================
-const AssignReviewerModal = ({ work, isOpen, onClose, onAssign, showToast }) => {
+// ==================== 分配评审弹窗 ====================
+const AssignReviewerModal = ({ round, isOpen, onClose, onAssign, showToast, onApiStatusUpdate }) => {
+  const [selectedWorks, setSelectedWorks] = useState([]);
   const [selectedReviewers, setSelectedReviewers] = useState([]);
-
-  const availableReviewers = [
-    { id: 1, name: '王教授', organization: '清华大学计算机系' },
-    { id: 2, name: '李研究员', organization: '中科院自动化所' },
-    { id: 3, name: '张博士', organization: '北京大学AI研究院' },
-    { id: 4, name: '陈专家', organization: '华为AI实验室' },
-    { id: 5, name: '刘教授', organization: '浙江大学计算机学院' },
-    { id: 6, name: '赵研究员', organization: '腾讯AI Lab' },
-    { id: 7, name: '钱教授', organization: '上海交大计算机系' },
-  ];
+  const [works, setWorks] = useState([]);
+  const [reviewers, setReviewers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [reviewersLoading, setReviewersLoading] = useState(false);
+  const [reviewersError, setReviewersError] = useState(null);
 
   useEffect(() => {
-    if (isOpen && work?.reviewers) {
-      const existingIds = work.reviewers.map((r, idx) => idx + 1);
-      setSelectedReviewers(existingIds);
+    if (isOpen && round) {
+      fetchWorksAndReviewers();
     }
-  }, [isOpen, work]);
+  }, [isOpen, round]);
 
-  if (!isOpen || !work) return null;
+  const fetchWorksAndReviewers = async () => {
+    setReviewersLoading(true);
+    setReviewersError(null);
+    
+    try {
+      // 获取作品列表
+      const worksRes = await request(`/v1/admin/works?competitionId=${round.competitionId}&status=submitted`);
+      if (worksRes.ok && worksRes.data?.code === 0) {
+        setWorks(worksRes.data.data?.list || []);
+      }
 
-  const handleToggleReviewer = (reviewerId) => {
-    if (selectedReviewers.includes(reviewerId)) {
-      setSelectedReviewers(prev => prev.filter(id => id !== reviewerId));
-    } else {
-      setSelectedReviewers(prev => [...prev, reviewerId]);
+      // 尝试获取评委列表
+      try {
+        const reviewersRes = await request(`/v1/admin/reviewers?competitionId=${round.competitionId}`);
+        if (reviewersRes.ok && reviewersRes.data?.code === 0) {
+          setReviewers(reviewersRes.data.data || []);
+          onApiStatusUpdate?.({ reviewers: 200, reviewerCount: reviewersRes.data.data?.length || 0 });
+        } else if (reviewersRes.status === 404) {
+          setReviewersError('not-found');
+          onApiStatusUpdate?.({ reviewers: 'not-found', reviewerCount: 0 });
+        } else {
+          setReviewersError('error');
+          onApiStatusUpdate?.({ reviewers: 'error', reviewerCount: 0 });
+        }
+      } catch (reviewerErr) {
+        console.error('Fetch reviewers error:', reviewerErr);
+        setReviewersError('not-found');
+        onApiStatusUpdate?.({ reviewers: 'not-found', reviewerCount: 0 });
+      }
+    } catch (err) {
+      console.error('Fetch works error:', err);
+    } finally {
+      setReviewersLoading(false);
     }
   };
 
-  const handleSave = () => {
-    onAssign(work.id, selectedReviewers);
-    showToast('评委分配成功', 'success');
-    setSelectedReviewers([]);
-    onClose();
+  if (!isOpen || !round) return null;
+
+  const handleSave = async () => {
+    if (selectedWorks.length === 0) {
+      showToast('请选择作品', 'error');
+      return;
+    }
+    if (selectedReviewers.length === 0 && reviewers.length > 0) {
+      showToast('请选择评委', 'error');
+      return;
+    }
+    if (reviewers.length === 0) {
+      showToast('评委列表接口不可用，无法保存分配', 'error');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const assignments = [];
+      selectedWorks.forEach(workId => {
+        selectedReviewers.forEach(reviewerId => {
+          assignments.push({ workId, reviewerId });
+        });
+      });
+
+      const result = await request(`/v1/admin/review-rounds/${round.id}/assignments`, {
+        method: 'POST',
+        body: JSON.stringify({ assignments })
+      });
+
+      if (result.ok && result.data?.code === 0) {
+        showToast('评委分配成功', 'success');
+        onApiStatusUpdate?.({ saveAssignment: 200 });
+        onAssign();
+        onClose();
+      } else {
+        onApiStatusUpdate?.({ saveAssignment: 'error' });
+        showToast(result.data?.message || '分配失败', 'error');
+      }
+    } catch (err) {
+      onApiStatusUpdate?.({ saveAssignment: 'error' });
+      showToast('分配失败', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" onClick={onClose} />
-      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-2xl shadow-2xl z-50">
-        <div className={DRAWER_STYLES.header}>
-          <h3 className={TYPOGRAPHY.sectionTitle}>分配评审</h3>
+      <div className="fixed inset-0 bg-black/30 z-40" onClick={onClose} />
+      <div className="fixed right-0 top-0 h-full w-full max-w-lg bg-white shadow-xl z-50 flex flex-col">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-800">分配评审</h3>
           <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -380,54 +264,105 @@ const AssignReviewerModal = ({ work, isOpen, onClose, onAssign, showToast }) => 
           </button>
         </div>
 
-        <div className="px-6 py-5">
-          <div className="mb-5 p-4 bg-gray-50 rounded-xl">
-            <span className={TYPOGRAPHY.label}>当前作品</span>
-            <p className="text-sm font-semibold text-gray-800 mt-2">{work.workName}</p>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs text-gray-500">当前轮次：</span>
-              <RoundTag round={work.currentRound} />
-            </div>
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          <div className="mb-6 p-4 bg-gray-50 rounded-xl">
+            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">当前轮次</span>
+            <p className="text-sm font-semibold text-gray-800 mt-2">{round.roundName}</p>
+            <p className="text-xs text-gray-500 mt-1">赛事: {round.competition?.name}</p>
+            <p className="text-xs text-gray-400 mt-1">轮次ID: {round.id}</p>
           </div>
 
-          <div className="mb-5">
+          {/* 作品选择 */}
+          <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <span className={TYPOGRAPHY.label}>可选评委</span>
-              <span className="text-xs text-gray-500">已选择 {selectedReviewers.length} 人</span>
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">选择作品</span>
+              <span className="text-xs text-gray-500">已选择 {selectedWorks.length} 个</span>
             </div>
-            <div className="border border-gray-200 rounded-xl max-h-64 overflow-y-auto">
-              {availableReviewers.map(reviewer => (
-                <label
-                  key={reviewer.id}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors"
-                >
+            <div className="border border-gray-200 rounded-xl max-h-40 overflow-y-auto">
+              {works.map(work => (
+                <label key={work.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0">
                   <input
                     type="checkbox"
-                    checked={selectedReviewers.includes(reviewer.id)}
-                    onChange={() => handleToggleReviewer(reviewer.id)}
+                    checked={selectedWorks.includes(work.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedWorks(prev => [...prev, work.id]);
+                      } else {
+                        setSelectedWorks(prev => prev.filter(id => id !== work.id));
+                      }
+                    }}
                     className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
                   />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-800">{reviewer.name}</p>
-                    <p className="text-xs text-gray-500">{reviewer.organization}</p>
-                  </div>
+                  <span className="text-sm text-gray-700 truncate">{work.title}</span>
                 </label>
               ))}
+              {works.length === 0 && (
+                <p className="px-4 py-3 text-sm text-gray-400">暂无可用作品</p>
+              )}
+            </div>
+          </div>
+
+          {/* 评委选择 */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">选择评委</span>
+              <span className="text-xs text-gray-500">已选择 {selectedReviewers.length} 人</span>
+            </div>
+            <div className="border border-gray-200 rounded-xl max-h-40 overflow-y-auto">
+              {reviewersLoading ? (
+                <div className="px-4 py-3">
+                  <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                </div>
+              ) : reviewersError === 'not-found' ? (
+                <div className="px-4 py-4 text-center">
+                  <p className="text-sm text-orange-600 mb-1">⚠️ 后端接口缺失</p>
+                  <p className="text-xs text-gray-500">未找到 GET /v1/admin/reviewers 接口</p>
+                  <p className="text-xs text-gray-400 mt-1">需要后端添加评委列表接口</p>
+                </div>
+              ) : reviewers.length > 0 ? (
+                reviewers.map(reviewer => (
+                  <label key={reviewer.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0">
+                    <input
+                      type="checkbox"
+                      checked={selectedReviewers.includes(reviewer.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedReviewers(prev => [...prev, reviewer.id]);
+                        } else {
+                          setSelectedReviewers(prev => prev.filter(id => id !== reviewer.id));
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-700 truncate">{reviewer.name || reviewer.username}</p>
+                      <p className="text-xs text-gray-400 truncate">{reviewer.email}</p>
+                    </div>
+                  </label>
+                ))
+              ) : (
+                <p className="px-4 py-3 text-sm text-gray-400">暂无可用评委</p>
+              )}
             </div>
           </div>
         </div>
 
-        <div className={DRAWER_STYLES.footer}>
+        <div className="border-t border-gray-100 px-6 py-4 bg-gray-50">
           <div className="flex items-center justify-end gap-3">
-            <button onClick={onClose} className={BUTTON_STYLES.secondary}>
+            <button 
+              onClick={onClose} 
+              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors" 
+              disabled={loading}
+            >
               取消
             </button>
             <button
               onClick={handleSave}
-              disabled={selectedReviewers.length === 0}
-              className={`${BUTTON_STYLES.primary} ${selectedReviewers.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={loading || selectedWorks.length === 0 || reviewers.length === 0 || (reviewers.length > 0 && selectedReviewers.length === 0)}
+              className={`px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              保存分配
+              {loading ? '保存中...' : '保存分配'}
             </button>
           </div>
         </div>
@@ -436,20 +371,91 @@ const AssignReviewerModal = ({ work, isOpen, onClose, onAssign, showToast }) => 
   );
 };
 
-// ==================== 查看进度弹窗（优化版）====================
-const ProgressModal = ({ work, isOpen, onClose }) => {
-  if (!isOpen || !work) return null;
+// ==================== 轮次详情抽屉（整合进度和详情） ====================
+const RoundDetailDrawer = ({ round, isOpen, onClose, onAssign, showToast }) => {
+  const [activeTab, setActiveTab] = useState('overview'); // overview | assignments | progress
+  const [progress, setProgress] = useState(null);
+  const [assignments, setAssignments] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const progressPercent = work.totalReviewers > 0
-    ? Math.round((work.completedReviewers / work.totalReviewers) * 100)
+  useEffect(() => {
+    if (isOpen && round) {
+      fetchRoundData();
+    }
+  }, [isOpen, round]);
+
+  const fetchRoundData = async () => {
+    setLoading(true);
+    try {
+      // 并行获取进度和分配情况
+      const [progressRes, assignmentsRes] = await Promise.all([
+        request(`/v1/admin/review-rounds/${round.id}/progress`),
+        request(`/v1/admin/review-rounds/${round.id}/assignments`)
+      ]);
+
+      if (progressRes.ok && progressRes.data?.code === 0) {
+        setProgress(progressRes.data.data);
+      }
+
+      if (assignmentsRes.ok && assignmentsRes.data?.code === 0) {
+        setAssignments(assignmentsRes.data.data || []);
+      }
+    } catch (err) {
+      console.error('Fetch round data error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAssignClick = () => {
+    onClose();
+    onAssign(round);
+  };
+
+  if (!isOpen || !round) return null;
+
+  const progressPercent = progress?.total > 0
+    ? Math.round((progress.submitted / progress.total) * 100)
     : 0;
+
+  // 分配状态判断（与列表保持一致）
+  const assignmentCount = assignments.length;
+  const uniqueWorks = new Set(assignments.map(a => a.workId)).size;
+  const uniqueReviewers = new Set(assignments.map(a => a.reviewerId)).size;
+
+  const hasAssignments = progress?.total > 0;
+  const hasSubmitted = progress?.submitted > 0;
+  const isAllSubmitted = hasAssignments && progress.submitted === progress.total;
+
+  let assignmentStatus = 'none';
+  if (!hasAssignments) {
+    assignmentStatus = 'none';
+  } else if (isAllSubmitted) {
+    assignmentStatus = 'completed';
+  } else if (hasSubmitted) {
+    assignmentStatus = 'in_progress';
+  } else {
+    assignmentStatus = 'assigned';
+  }
+
+  const statusConfig = {
+    'none': { label: '未分配', color: 'bg-gray-100 text-gray-600', desc: '需要分配作品和评委' },
+    'assigned': { label: '已分配', color: 'bg-blue-100 text-blue-700', desc: '等待评审员评分' },
+    'in_progress': { label: '评审中', color: 'bg-amber-100 text-amber-700', desc: '已有评审员提交评分' },
+    'completed': { label: '评审完成', color: 'bg-green-100 text-green-700', desc: '所有评分已提交' }
+  };
+  const currentStatus = statusConfig[assignmentStatus];
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" onClick={onClose} />
-      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl shadow-2xl z-50">
-        <div className={DRAWER_STYLES.header}>
-          <h3 className={TYPOGRAPHY.sectionTitle}>评审进度</h3>
+      <div className="fixed inset-0 bg-black/30 z-40" onClick={onClose} />
+      <div className="fixed right-0 top-0 h-full w-full max-w-2xl bg-white shadow-xl z-50 flex flex-col">
+        {/* 头部 */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800">{round.roundName}</h3>
+            <p className="text-xs text-gray-500 mt-0.5">{round.competition?.name}</p>
+          </div>
           <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -457,152 +463,250 @@ const ProgressModal = ({ work, isOpen, onClose }) => {
           </button>
         </div>
 
-        <div className="px-6 py-5">
-          <div className="mb-5">
-            <p className="text-sm font-semibold text-gray-800">{work.workName}</p>
-            <p className="text-xs text-gray-500 mt-1">{work.teamName}</p>
-          </div>
-
-          <div className="mb-5">
-            <div className="flex items-center justify-between text-sm mb-3">
-              <span className="text-gray-600">总体进度</span>
-              <span className="font-semibold text-gray-800">{work.completedReviewers}/{work.totalReviewers}</span>
-            </div>
-            <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
-            </div>
-            <p className="text-xs text-gray-500 mt-2">{progressPercent}% 已完成</p>
-          </div>
-
-          <div className="space-y-2">
-            {work.reviewers?.map((reviewer, index) => (
-              <div key={index} className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
-                <span className="text-sm text-gray-700">{reviewer.name}</span>
-                <StatusTag status={reviewer.status} />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="px-6 py-4 bg-gray-50 rounded-b-2xl">
-          <button onClick={onClose} className="w-full px-4 py-2.5 text-sm text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors">
-            关闭
+        {/* Tab 导航 */}
+        <div className="flex border-b border-gray-100">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+              activeTab === 'overview'
+                ? 'text-primary border-b-2 border-primary'
+                : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            概览
           </button>
-        </div>
-      </div>
-    </>
-  );
-};
-
-// ==================== 详情抽屉（优化版）====================
-const DetailDrawer = ({ work, isOpen, onClose }) => {
-  if (!isOpen || !work) return null;
-
-  const progressPercent = work.totalReviewers > 0
-    ? Math.round((work.completedReviewers / work.totalReviewers) * 100)
-    : 0;
-
-  return (
-    <>
-      <div className={DRAWER_STYLES.overlay} onClick={onClose} />
-      <div className={DRAWER_STYLES.container}>
-        <div className={DRAWER_STYLES.header}>
-          <h3 className={TYPOGRAPHY.sectionTitle}>评审详情</h3>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+          <button
+            onClick={() => setActiveTab('assignments')}
+            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+              activeTab === 'assignments'
+                ? 'text-primary border-b-2 border-primary'
+                : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            分配情况 ({assignmentCount})
+          </button>
+          <button
+            onClick={() => setActiveTab('progress')}
+            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+              activeTab === 'progress'
+                ? 'text-primary border-b-2 border-primary'
+                : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            评审进度
           </button>
         </div>
 
-        <div className={DRAWER_STYLES.content}>
-          <div className={DRAWER_STYLES.section}>
-            <h4 className={DRAWER_STYLES.sectionTitle}>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              基础信息
-            </h4>
-            <div className={DRAWER_STYLES.infoBox}>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">作品名称</span>
-                <span className="text-sm font-semibold text-gray-800">{work.workName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">团队名称</span>
-                <span className="text-sm text-gray-700">{work.teamName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">所属赛事</span>
-                <span className="text-sm text-gray-700">{work.competitionName}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-500">当前轮次</span>
-                <RoundTag round={work.currentRound} />
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-500">当前状态</span>
-                <StatusTag status={work.status} />
-              </div>
+        {/* 内容区 */}
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          {loading ? (
+            <div className="space-y-4">
+              <div className="h-20 bg-gray-100 rounded-lg animate-pulse"></div>
+              <div className="h-32 bg-gray-100 rounded-lg animate-pulse"></div>
+              <div className="h-32 bg-gray-100 rounded-lg animate-pulse"></div>
             </div>
-          </div>
-
-          <div className={DRAWER_STYLES.section}>
-            <h4 className={DRAWER_STYLES.sectionTitle}>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              评委分配
-            </h4>
-            <div className="space-y-2">
-              {work.reviewers?.map((reviewer, index) => (
-                <div key={index} className="flex items-center justify-between bg-gray-50 rounded-xl p-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">{reviewer.name}</p>
-                    <p className="text-xs text-gray-500">{reviewer.organization}</p>
+          ) : (
+            <>
+              {/* 概览 Tab */}
+              {activeTab === 'overview' && (
+                <div className="space-y-6">
+                  {/* 分配状态卡片 */}
+                  <div className={`p-4 rounded-xl ${currentStatus.color} bg-opacity-50`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">分配状态</span>
+                      <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${currentStatus.color}`}>
+                        {currentStatus.label}
+                      </span>
+                    </div>
+                    <p className="text-sm opacity-80">{currentStatus.desc}</p>
                   </div>
-                  <StatusTag status={reviewer.status} />
+
+                  {/* 基础信息 */}
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      基础信息
+                    </h4>
+                    <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">轮次名称</span>
+                        <span className="text-sm text-gray-800">{round.roundName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">所属赛事</span>
+                        <span className="text-sm text-gray-800">{round.competition?.name || '-'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">轮次顺序</span>
+                        <span className="text-sm text-gray-800">第 {round.roundOrder} 轮</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">评审类型</span>
+                        <span className="text-sm text-gray-800">{round.roundType === 'preliminary' ? '初审' : round.roundType === 'final' ? '终审' : round.roundType}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">当前状态</span>
+                        <StatusTag status={round.status} />
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">时间范围</span>
+                        <span className="text-sm text-gray-800">
+                          {round.startTime && round.endTime
+                            ? `${new Date(round.startTime).toLocaleDateString()} - ${new Date(round.endTime).toLocaleDateString()}`
+                            : '-'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 分配统计 */}
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                      分配统计
+                    </h4>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="bg-gray-50 rounded-lg p-3 text-center">
+                        <p className="text-xs text-gray-500 mb-1">已分配作品</p>
+                        <p className="text-xl font-bold text-gray-800">{uniqueWorks}</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3 text-center">
+                        <p className="text-xs text-gray-500 mb-1">参与评委</p>
+                        <p className="text-xl font-bold text-gray-800">{uniqueReviewers}</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3 text-center">
+                        <p className="text-xs text-gray-500 mb-1">总分配数</p>
+                        <p className="text-xl font-bold text-gray-800">{assignmentCount}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 评审进度摘要 */}
+                  {progress && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        评审进度
+                      </h4>
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex items-center justify-between text-sm mb-2">
+                          <span className="text-gray-600">总体完成度</span>
+                          <span className="font-semibold text-gray-800">{progress.submitted}/{progress.total}</span>
+                        </div>
+                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden mb-2">
+                          <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
+                        </div>
+                        <p className="text-xs text-gray-500">{progressPercent}% 已完成</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )) || <p className="text-sm text-gray-400">暂无评委分配</p>}
-            </div>
-          </div>
+              )}
 
-          <div className={DRAWER_STYLES.section}>
-            <h4 className={DRAWER_STYLES.sectionTitle}>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-              评分进度
-            </h4>
-            <div className="bg-gray-50 rounded-xl p-5">
-              <div className="flex items-center justify-between text-sm mb-3">
-                <span className="text-gray-600">已完成评分</span>
-                <span className="font-semibold text-gray-800">{work.completedReviewers}/{work.totalReviewers}</span>
-              </div>
-              <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
-              </div>
-              <p className="text-xs text-gray-500 mt-2">{progressPercent}% 已完成</p>
-            </div>
-          </div>
+              {/* 分配情况 Tab */}
+              {activeTab === 'assignments' && (
+                <div>
+                  {assignments.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                      </div>
+                      <p className="text-gray-500 mb-2">暂无分配记录</p>
+                      <p className="text-sm text-gray-400">点击底部按钮开始分配</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {assignments.map((assignment) => (
+                        <div key={assignment.id} className="p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-gray-800 truncate">{assignment.work?.title || '未知作品'}</span>
+                            {assignment.record?.status === 'submitted' ? (
+                              <span className="px-2 py-0.5 text-xs bg-green-100 text-green-600 rounded-full">已评分 {assignment.record?.overallScore}</span>
+                            ) : assignment.record?.status === 'draft' ? (
+                              <span className="px-2 py-0.5 text-xs bg-blue-100 text-blue-600 rounded-full">草稿</span>
+                            ) : (
+                              <span className="px-2 py-0.5 text-xs bg-gray-200 text-gray-600 rounded-full">待评审</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <span>评委: {assignment.reviewer?.username || assignment.reviewer?.name || '-'}</span>
+                            <span>·</span>
+                            <span>分配方式: {assignment.assignmentType === 'auto' ? '自动' : '手动'}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
-          <div className={DRAWER_STYLES.section}>
-            <h4 className={DRAWER_STYLES.sectionTitle}>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              截止时间
-            </h4>
-            <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-sm text-gray-800">{work.deadline}</p>
-            </div>
-          </div>
+              {/* 评审进度 Tab */}
+              {activeTab === 'progress' && (
+                <div className="space-y-6">
+                  {progress ? (
+                    <>
+                      <div>
+                        <h4 className="text-sm font-semibold text-gray-700 mb-3">总体进度</h4>
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <div className="flex items-center justify-between text-sm mb-3">
+                            <span className="text-gray-600">完成度</span>
+                            <span className="font-semibold text-gray-800">{progress.submitted}/{progress.total}</span>
+                          </div>
+                          <div className="h-3 bg-gray-200 rounded-full overflow-hidden mb-2">
+                            <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
+                          </div>
+                          <p className="text-xs text-gray-500">{progressPercent}% 已完成</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="bg-gray-50 rounded-lg p-3 text-center">
+                          <p className="text-xs text-gray-500 mb-1">总分配</p>
+                          <p className="text-2xl font-bold text-gray-800">{progress.total}</p>
+                        </div>
+                        <div className="bg-green-50 rounded-lg p-3 text-center">
+                          <p className="text-xs text-green-600 mb-1">已提交</p>
+                          <p className="text-2xl font-bold text-green-600">{progress.submitted}</p>
+                        </div>
+                        <div className="bg-orange-50 rounded-lg p-3 text-center">
+                          <p className="text-xs text-orange-600 mb-1">待评分</p>
+                          <p className="text-2xl font-bold text-orange-600">{progress.pending}</p>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-center text-gray-400 py-8">暂无进度数据</p>
+                  )}
+                </div>
+              )}
+            </>
+          )}
         </div>
 
-        <div className={DRAWER_STYLES.footer}>
-          <button onClick={onClose} className="w-full px-4 py-2.5 text-sm text-white bg-primary hover:bg-primary/90 rounded-xl transition-colors">
-            关闭
-          </button>
+        {/* 底部操作 */}
+        <div className="border-t border-gray-100 px-6 py-4 bg-gray-50">
+          <div className="flex items-center justify-end gap-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              关闭
+            </button>
+            <button
+              onClick={handleAssignClick}
+              className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors"
+            >
+              {assignmentCount === 0 ? '开始分配' : '调整分配'}
+            </button>
+          </div>
         </div>
       </div>
     </>
@@ -613,174 +717,173 @@ const DetailDrawer = ({ work, isOpen, onClose }) => {
 const AdminReviews = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [competitionFilter, setCompetitionFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isAssignOpen, setIsAssignOpen] = useState(false);
-  const [isProgressOpen, setIsProgressOpen] = useState(false);
-  const [isCreateRoundOpen, setIsCreateRoundOpen] = useState(false);
-  const [selectedWork, setSelectedWork] = useState(null);
+  const [selectedRound, setSelectedRound] = useState(null);
+  const [roundStats, setRoundStats] = useState({}); // 存储每个轮次的分配统计
   const [toast, setToast] = useState(null);
+  
+  const [rounds, setRounds] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [apiStatus, setApiStatus] = useState({ 
+    rounds: '-', 
+    roundCount: 0, 
+    assignmentCount: 0,
+    reviewers: '-',
+    reviewerCount: 0,
+    saveAssignment: '-',
+    progress: null 
+  });
+  
+  const [competitions, setCompetitions] = useState([]);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
   };
 
-  const [works, setWorks] = useState([
-    {
-      id: 1,
-      workName: '基于大语言模型的智能助手',
-      teamName: 'AI创新先锋队',
-      competitionName: '2024年梧桐·鸿鹄人工智能应用创新大赛',
-      currentRound: '初审',
-      totalReviewers: 3,
-      completedReviewers: 2,
-      status: '评审中',
-      deadline: '2024-12-20 23:59',
-      reviewers: [
-        { name: '王教授', organization: '清华大学计算机系', status: '已提交' },
-        { name: '李研究员', organization: '中科院自动化所', status: '已提交' },
-        { name: '张博士', organization: '北京大学AI研究院', status: '评分中' }
-      ]
-    },
-    {
-      id: 2,
-      workName: '医疗影像智能诊断系统',
-      teamName: '智慧医疗小组',
-      competitionName: '2024年梧桐·鸿鹄人工智能应用创新大赛',
-      currentRound: '初审',
-      totalReviewers: 3,
-      completedReviewers: 0,
-      status: '待分配',
-      deadline: '2024-12-20 23:59',
-      reviewers: []
-    },
-    {
-      id: 3,
-      workName: 'AI教育辅助平台',
-      teamName: '智慧未来小组',
-      competitionName: '2024年海淀区区县赛',
-      currentRound: '复审',
-      totalReviewers: 5,
-      completedReviewers: 5,
-      status: '已完成',
-      deadline: '2024-12-15 23:59',
-      reviewers: [
-        { name: '王教授', organization: '清华大学计算机系', status: '已提交' },
-        { name: '李研究员', organization: '中科院自动化所', status: '已提交' },
-        { name: '张博士', organization: '北京大学AI研究院', status: '已提交' },
-        { name: '陈专家', organization: '华为AI实验室', status: '已提交' },
-        { name: '刘教授', organization: '浙江大学计算机学院', status: '已提交' }
-      ]
-    },
-    {
-      id: 4,
-      workName: '智能交通流量预测系统',
-      teamName: '交通大脑团队',
-      competitionName: '2024年北京大学校园赛',
-      currentRound: '决赛',
-      totalReviewers: 7,
-      completedReviewers: 4,
-      status: '评审中',
-      deadline: '2024-12-25 23:59',
-      reviewers: [
-        { name: '王教授', organization: '清华大学计算机系', status: '已提交' },
-        { name: '李研究员', organization: '中科院自动化所', status: '已提交' },
-        { name: '张博士', organization: '北京大学AI研究院', status: '评分中' },
-        { name: '陈专家', organization: '华为AI实验室', status: '已提交' },
-        { name: '刘教授', organization: '浙江大学计算机学院', status: '未开始' },
-        { name: '赵研究员', organization: '腾讯AI Lab', status: '评分中' },
-        { name: '钱教授', organization: '上海交大计算机系', status: '未开始' }
-      ]
-    },
-    {
-      id: 5,
-      workName: '创意AI绘画工具',
-      teamName: '艺术科技工作室',
-      competitionName: '2024年清华大学校园赛',
-      currentRound: '初审',
-      totalReviewers: 3,
-      completedReviewers: 1,
-      status: '评审中',
-      deadline: '2024-12-20 23:59',
-      reviewers: [
-        { name: '王教授', organization: '清华大学计算机系', status: '已提交' },
-        { name: '李研究员', organization: '中科院自动化所', status: '未开始' },
-        { name: '张博士', organization: '北京大学AI研究院', status: '未开始' }
-      ]
+  const fetchRounds = async () => {
+    setLoading(true);
+    setError(null);
+    setApiStatus(prev => ({ ...prev, rounds: 'loading' }));
+
+    try {
+      const params = new URLSearchParams();
+      if (competitionFilter !== 'all') {
+        params.append('competitionId', competitionFilter);
+      }
+
+      const result = await request(`/v1/admin/review-rounds?${params.toString()}`);
+      
+      setApiStatus(prev => ({
+        ...prev,
+        rounds: result.status,
+        roundCount: result.ok && result.data?.code === 0 ? (result.data.data?.length || 0) : 0
+      }));
+
+      if (result.ok && result.data?.code === 0) {
+        setRounds(result.data.data || []);
+      } else {
+        setError(result.data?.message || '获取评审轮次失败');
+        setRounds([]);
+      }
+    } catch (err) {
+      console.error('Fetch rounds error:', err);
+      setError('获取评审轮次失败');
+      setApiStatus(prev => ({ ...prev, rounds: 'error' }));
+      setRounds([]);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
-  const competitions = useMemo(() => {
-    return [...new Set(works.map(w => w.competitionName))];
-  }, [works]);
+  const fetchCompetitions = async () => {
+    try {
+      const result = await request('/v1/competitions');
+      if (result.ok && result.data?.code === 0 && result.data.data) {
+        setCompetitions(Array.isArray(result.data.data.list) ? result.data.data.list : []);
+      } else {
+        setCompetitions([]);
+      }
+    } catch (err) {
+      console.error('Fetch competitions error:', err);
+      setCompetitions([]);
+    }
+  };
 
-  const filteredWorks = useMemo(() => {
-    return works.filter(work => {
-      const searchLower = searchQuery.toLowerCase();
-      const matchSearch =
-        work.workName.toLowerCase().includes(searchLower) ||
-        work.teamName.toLowerCase().includes(searchLower);
-      const matchCompetition = competitionFilter === 'all' || work.competitionName === competitionFilter;
-      const matchStatus = statusFilter === 'all' || work.status === statusFilter;
-      return matchSearch && matchCompetition && matchStatus;
-    });
-  }, [works, searchQuery, competitionFilter, statusFilter]);
+  useEffect(() => {
+    fetchCompetitions();
+    fetchRounds();
+  }, []);
 
-  const handleViewDetail = (work) => {
-    setSelectedWork(work);
+  useEffect(() => {
+    fetchRounds();
+  }, [competitionFilter]);
+
+  const filteredRounds = useMemo(() => {
+    if (!searchQuery) return rounds;
+    const searchLower = searchQuery.toLowerCase();
+    return rounds.filter(round => 
+      round.roundName?.toLowerCase().includes(searchLower) ||
+      round.competition?.name?.toLowerCase().includes(searchLower)
+    );
+  }, [rounds, searchQuery]);
+
+  const handleViewDetail = (round) => {
+    setSelectedRound(round);
     setIsDetailOpen(true);
   };
 
-  const handleAssign = (work) => {
-    setSelectedWork(work);
+  const handleAssign = (round) => {
+    setSelectedRound(round);
     setIsAssignOpen(true);
   };
 
-  const handleViewProgress = (work) => {
-    setSelectedWork(work);
-    setIsProgressOpen(true);
-  };
-
-  const handleAssignReviewers = (workId, reviewerIds) => {
-    setWorks(prev => prev.map(w => {
-      if (w.id === workId) {
-        const newStatus = reviewerIds.length > 0 ? '评审中' : '待分配';
-        return {
-          ...w,
-          totalReviewers: reviewerIds.length,
-          completedReviewers: 0,
-          status: newStatus,
-          reviewers: reviewerIds.map(id => ({
-            name: ['王教授', '李研究员', '张博士', '陈专家', '刘教授', '赵研究员', '钱教授'][id - 1],
-            organization: ['清华大学计算机系', '中科院自动化所', '北京大学AI研究院', '华为AI实验室', '浙江大学计算机学院', '腾讯AI Lab', '上海交大计算机系'][id - 1],
-            status: '未开始'
-          }))
-        };
+  // 获取轮次的分配统计（用于列表显示）
+  const fetchRoundStats = async (roundId) => {
+    try {
+      const result = await request(`/v1/admin/review-rounds/${roundId}/progress`);
+      if (result.ok && result.data?.code === 0) {
+        setRoundStats(prev => ({
+          ...prev,
+          [roundId]: result.data.data
+        }));
       }
-      return w;
-    }));
+    } catch (err) {
+      console.error('Fetch round stats error:', err);
+    }
   };
 
-  const handleCreateRound = (formData) => {
-    console.log('创建评审轮次:', formData);
+  // 获取所有轮次的统计
+  useEffect(() => {
+    if (rounds.length > 0) {
+      rounds.forEach(round => {
+        fetchRoundStats(round.id);
+      });
+    }
+  }, [rounds]);
+
+  const handleApiStatusUpdate = (updates) => {
+    setApiStatus(prev => ({ ...prev, ...updates }));
   };
+
+  if (error) {
+    return (
+      <div className={`${SPACING.section} pb-8`}>
+        <div className="text-center py-12">
+          <p className="text-red-500 mb-4">{error}</p>
+          <button 
+            onClick={fetchRounds} 
+            className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90"
+          >
+            重试
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`${SPACING.section} pb-8`}>
-      {/* Toast 通知 */}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-      {/* 页面标题区 */}
+      <ApiDebugPanel 
+        apiStatus={apiStatus} 
+        filters={{ 
+          competitionId: competitionFilter === 'all' ? '' : competitionFilter,
+          roundId: selectedRound?.id || ''
+        }}
+      />
+
       <div>
         <h2 className={TYPOGRAPHY.pageTitle}>评审管理</h2>
-        <p className={TYPOGRAPHY.pageSubtitle}>分配评审任务，跟踪评分进度与当前轮次</p>
+        <p className={TYPOGRAPHY.pageSubtitle}>管理评审轮次，分配评审任务，跟踪评分进度</p>
       </div>
 
-      {/* 顶部操作区 */}
       <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
         <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
-          <div>
-            <label className={TYPOGRAPHY.label}>搜索作品/团队</label>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <label className={TYPOGRAPHY.label}>搜索轮次</label>
             <div className="relative mt-2">
               <input
                 type="text"
@@ -788,6 +891,7 @@ const AdminReviews = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={`${FORM_STYLES.input} pl-10 w-full sm:w-64`}
+                style={{ height: '44px' }}
               />
               <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -795,7 +899,7 @@ const AdminReviews = () => {
             </div>
           </div>
 
-          <div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
             <label className={TYPOGRAPHY.label}>赛事筛选</label>
             <select
               value={competitionFilter}
@@ -803,152 +907,186 @@ const AdminReviews = () => {
               className={`${FORM_STYLES.select} mt-2 min-w-[180px]`}
             >
               <option value="all">全部赛事</option>
-              {competitions.map((comp, index) => (
-                <option key={index} value={comp}>{comp}</option>
+              {competitions.map((comp) => (
+                <option key={comp.id} value={comp.id}>{comp.name}</option>
               ))}
             </select>
           </div>
-
-          <div>
-            <label className={TYPOGRAPHY.label}>评审状态</label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className={`${FORM_STYLES.select} mt-2 min-w-[120px]`}
-            >
-              <option value="all">全部状态</option>
-              <option value="待分配">待分配</option>
-              <option value="评审中">评审中</option>
-              <option value="已完成">已完成</option>
-            </select>
-          </div>
         </div>
-
-        <button
-          onClick={() => setIsCreateRoundOpen(true)}
-          className={BUTTON_STYLES.primary}
-        >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          新建评审轮次
-        </button>
       </div>
 
-      {/* 评审任务列表区 */}
       <div className={TABLE_STYLES.container}>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className={TABLE_STYLES.header}>
               <tr>
-                <th className={TABLE_STYLES.headerCell}>作品名称</th>
-                <th className={TABLE_STYLES.headerCell}>团队名称</th>
+                <th className={TABLE_STYLES.headerCell}>轮次名称</th>
                 <th className={TABLE_STYLES.headerCell}>所属赛事</th>
-                <th className={TABLE_STYLES.headerCell}>当前轮次</th>
-                <th className={TABLE_STYLES.headerCell}>评委进度</th>
-                <th className={TABLE_STYLES.headerCell}>评审状态</th>
-                <th className={TABLE_STYLES.headerCell}>截止时间</th>
+                <th className={TABLE_STYLES.headerCell}>轮次顺序</th>
+                <th className={TABLE_STYLES.headerCell}>状态</th>
+                <th className={TABLE_STYLES.headerCell}>分配进度</th>
+                <th className={TABLE_STYLES.headerCell}>评审进度</th>
                 <th className={TABLE_STYLES.headerCell}>操作</th>
               </tr>
             </thead>
             <tbody className={TABLE_STYLES.divider}>
-              {filteredWorks.map((work) => (
-                <tr key={work.id} className={TABLE_STYLES.row}>
-                  <td className={TABLE_STYLES.cell}>
-                    <span className="text-sm font-semibold text-gray-800 line-clamp-1" title={work.workName}>
-                      {work.workName}
-                    </span>
-                  </td>
-                  <td className={TABLE_STYLES.cell}>
-                    <span className="text-sm text-gray-600">{work.teamName}</span>
-                  </td>
-                  <td className={TABLE_STYLES.cell}>
-                    <span className="text-sm text-gray-600 line-clamp-1" title={work.competitionName}>
-                      {work.competitionName}
-                    </span>
-                  </td>
-                  <td className={TABLE_STYLES.cell}>
-                    <RoundTag round={work.currentRound} />
-                  </td>
-                  <td className={TABLE_STYLES.cell}>
-                    <ReviewerProgress completed={work.completedReviewers} total={work.totalReviewers} />
-                  </td>
-                  <td className={TABLE_STYLES.cell}>
-                    <StatusTag status={work.status} />
-                  </td>
-                  <td className={TABLE_STYLES.cell}>
-                    <span className="text-sm text-gray-600">{work.deadline}</span>
-                  </td>
-                  <td className={TABLE_STYLES.cell}>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleViewDetail(work)}
-                        className={BUTTON_STYLES.secondaryBg}
-                      >
-                        查看详情
-                      </button>
-                      {work.status === '待分配' ? (
-                        <button
-                          onClick={() => handleAssign(work)}
-                          className={BUTTON_STYLES.primary}
-                        >
-                          分配评审
-                        </button>
-                      ) : (
-                        <ActionDropdown
-                          work={work}
-                          onViewDetail={handleViewDetail}
-                          onAssign={handleAssign}
-                          onViewProgress={handleViewProgress}
-                          showToast={showToast}
-                        />
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {loading ? (
+                Array.from({ length: 5 }).map((_, index) => (
+                  <tr key={index}>
+                    <td className={TABLE_STYLES.cell}><div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div></td>
+                    <td className={TABLE_STYLES.cell}><div className="h-4 bg-gray-200 rounded w-2/3 animate-pulse"></div></td>
+                    <td className={TABLE_STYLES.cell}><div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div></td>
+                    <td className={TABLE_STYLES.cell}><div className="h-6 bg-gray-200 rounded w-16 animate-pulse"></div></td>
+                    <td className={TABLE_STYLES.cell}><div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div></td>
+                    <td className={TABLE_STYLES.cell}><div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div></td>
+                    <td className={TABLE_STYLES.cell}><div className="h-8 bg-gray-200 rounded w-24 animate-pulse"></div></td>
+                  </tr>
+                ))
+              ) : (
+                filteredRounds.map((round) => {
+                  const stats = roundStats[round.id];
+                  const hasStats = stats && stats.total > 0;
+                  const progressPercent = hasStats && stats.total > 0
+                    ? Math.round((stats.submitted / stats.total) * 100)
+                    : 0;
+
+                  return (
+                    <tr key={round.id} className={TABLE_STYLES.row}>
+                      <td className={TABLE_STYLES.cell}>
+                        <span className="text-sm font-semibold text-gray-800">{round.roundName}</span>
+                      </td>
+                      <td className={TABLE_STYLES.cell}>
+                        <span className="text-sm text-gray-600 line-clamp-1" title={round.competition?.name}>
+                          {round.competition?.name || '-'}
+                        </span>
+                      </td>
+                      <td className={TABLE_STYLES.cell}>
+                        <span className="text-sm text-gray-600">第 {round.roundOrder} 轮</span>
+                      </td>
+                      <td className={TABLE_STYLES.cell}>
+                        <StatusTag status={round.status} />
+                      </td>
+                      <td className={TABLE_STYLES.cell}>
+                        {hasStats ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-600">{stats.total} 作品已分配</span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-400">未分配</span>
+                        )}
+                      </td>
+                      <td className={TABLE_STYLES.cell}>
+                        {hasStats ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-primary rounded-full"
+                                style={{ width: `${progressPercent}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-gray-600">{stats.submitted}/{stats.total}</span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-400">-</span>
+                        )}
+                      </td>
+                    <td className={TABLE_STYLES.cell}>
+                      {(() => {
+                        const stats = roundStats[round.id];
+                        const hasAssignments = stats && stats.total > 0;
+                        const hasSubmitted = stats && stats.submitted > 0;
+                        const isAllSubmitted = hasAssignments && stats.submitted === stats.total;
+
+                        // 状态判定
+                        let status = 'none';
+                        if (!hasAssignments) {
+                          status = 'none';
+                        } else if (isAllSubmitted) {
+                          status = 'completed';
+                        } else if (hasSubmitted) {
+                          status = 'in_progress';
+                        } else {
+                          status = 'assigned';
+                        }
+
+                        return (
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleViewDetail(round)}
+                              className="px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                            >
+                              查看详情
+                            </button>
+                            {status === 'none' && (
+                              <button
+                                onClick={() => handleAssign(round)}
+                                className="px-3 py-1.5 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors"
+                              >
+                                分配评审
+                              </button>
+                            )}
+                            {status === 'assigned' && (
+                              <button
+                                onClick={() => handleAssign(round)}
+                                className="px-3 py-1.5 text-sm font-medium text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors"
+                              >
+                                调整分配
+                              </button>
+                            )}
+                            {status === 'in_progress' && (
+                              <button
+                                onClick={() => handleAssign(round)}
+                                className="px-3 py-1.5 text-sm font-medium text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors"
+                              >
+                                调整分配
+                              </button>
+                            )}
+                            {status === 'completed' && (
+                              <button
+                                onClick={() => handleViewDetail(round)}
+                                className="px-3 py-1.5 text-sm font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+                              >
+                                评审完成
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </td>
+                  </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
 
-        {filteredWorks.length === 0 && (
+        {!loading && filteredRounds.length === 0 && (
           <div className="py-16 text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <p className="text-gray-500">暂无符合条件的评审任务</p>
+            <p className="text-gray-500">暂无评审轮次</p>
           </div>
         )}
       </div>
 
-      {/* 组件实例 */}
-      <DetailDrawer
-        work={selectedWork}
-        isOpen={isDetailOpen}
-        onClose={() => setIsDetailOpen(false)}
-      />
-
       <AssignReviewerModal
-        work={selectedWork}
+        round={selectedRound}
         isOpen={isAssignOpen}
         onClose={() => setIsAssignOpen(false)}
-        onAssign={handleAssignReviewers}
+        onAssign={fetchRounds}
         showToast={showToast}
+        onApiStatusUpdate={handleApiStatusUpdate}
       />
 
-      <ProgressModal
-        work={selectedWork}
-        isOpen={isProgressOpen}
-        onClose={() => setIsProgressOpen(false)}
-      />
-
-      <CreateRoundDrawer
-        isOpen={isCreateRoundOpen}
-        onClose={() => setIsCreateRoundOpen(false)}
-        onCreate={handleCreateRound}
-        competitions={competitions}
+      <RoundDetailDrawer
+        round={selectedRound}
+        isOpen={isDetailOpen}
+        onClose={() => setIsDetailOpen(false)}
+        onAssign={handleAssign}
         showToast={showToast}
       />
     </div>
