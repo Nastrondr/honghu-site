@@ -1,6 +1,14 @@
 const BASE_URL = '/api';
 
 function getToken() {
+  const currentRole = localStorage.getItem('currentRole');
+  
+  if (currentRole === 'admin') {
+    return localStorage.getItem('adminToken') || localStorage.getItem('accessToken');
+  }
+  if (currentRole === 'reviewer') {
+    return localStorage.getItem('reviewerToken') || localStorage.getItem('accessToken');
+  }
   return localStorage.getItem('accessToken');
 }
 
